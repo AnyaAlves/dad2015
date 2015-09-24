@@ -23,28 +23,46 @@ namespace WindowsFormsApplication2
         }
         private void Form1_Load(Object sender, EventArgs e)
         {
-            button1.Click += new EventHandler(this.Button1Click);
-            button2.Click += new EventHandler(this.Button2Click);
-            button3.Click += new EventHandler(this.Button3Click); 
+            button1.MouseClick += new MouseEventHandler(this.Button1Click);
+            button2.MouseClick += new MouseEventHandler(this.Button2Click);
+            button3.MouseClick += new MouseEventHandler(this.Button3Click);
+            button1.MouseMove += new MouseEventHandler(this.ButtonMouseMove);
+            button2.MouseMove += new MouseEventHandler(this.ButtonMouseMove);
+            button3.MouseMove += new MouseEventHandler(this.ButtonMouseMove);
+            button1.MouseLeave += new EventHandler(this.ButtonMouseLeave);
+            button2.MouseLeave += new EventHandler(this.ButtonMouseLeave);
+            button3.MouseLeave += new EventHandler(this.ButtonMouseLeave);
         }
 
         public void Button1Click(Object sender, System.EventArgs e)
         {
-            Button clickedButton = (Button)sender;
-            clickedButton.Text = "clicked!!!";
+            if (textBox1.Text != "")
+            {
+                list.AddName(textBox1.Text);
+                textBox1.Text = "";
+            }
         }
 
         public void Button2Click(Object sender, System.EventArgs e)
         {
-            Button clickedButton = (Button)sender;
-            clickedButton.Text = "clicked!!!";
+            richTextBox1.Text = list.ListNames();
         }
 
         public void Button3Click(Object sender, System.EventArgs e)
         {
-            Button clickedButton = (Button)sender;
-            clickedButton.Text = "clicked!!!";
+            list.ClearList();
         }
-  
+
+        public void ButtonMouseMove(Object sender, System.EventArgs e)
+        {
+            Button button = (Button)sender;
+            button.BackColor = Color.FromName("ControlDark");
+        }
+
+        public void ButtonMouseLeave(Object sender, System.EventArgs e)
+        {
+            Button button = (Button)sender;
+            button.BackColor = Color.FromName("Control");
+        }
     }
 }
