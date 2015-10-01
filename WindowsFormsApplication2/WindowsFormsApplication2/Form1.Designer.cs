@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             this.button1 = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
+            this.btMostrar = new System.Windows.Forms.Button();
             this.button3 = new System.Windows.Forms.Button();
             this.richTextBox1 = new System.Windows.Forms.RichTextBox();
             this.textBox1 = new System.Windows.Forms.TextBox();
@@ -44,14 +44,14 @@
             this.button1.Text = "Adicionar nome";
             this.button1.UseVisualStyleBackColor = true;
             // 
-            // button2
+            // btMostrar
             // 
-            this.button2.Location = new System.Drawing.Point(173, 160);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(75, 35);
-            this.button2.TabIndex = 1;
-            this.button2.Text = "Mostrar lista";
-            this.button2.UseVisualStyleBackColor = true;
+            this.btMostrar.Location = new System.Drawing.Point(173, 160);
+            this.btMostrar.Name = "btMostrar";
+            this.btMostrar.Size = new System.Drawing.Size(75, 35);
+            this.btMostrar.TabIndex = 1;
+            this.btMostrar.Text = "Mostrar lista";
+            this.btMostrar.UseVisualStyleBackColor = true;
             // 
             // button3
             // 
@@ -85,7 +85,7 @@
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.richTextBox1);
             this.Controls.Add(this.button3);
-            this.Controls.Add(this.button2);
+            this.Controls.Add(this.btMostrar);
             this.Controls.Add(this.button1);
             this.Name = "Form1";
             this.Text = "Lista Nomes";
@@ -98,7 +98,7 @@
         #endregion
 
         private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button btMostrar;
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.RichTextBox richTextBox1;
         private System.Windows.Forms.TextBox textBox1;

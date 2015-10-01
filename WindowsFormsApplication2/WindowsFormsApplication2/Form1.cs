@@ -24,13 +24,12 @@ namespace WindowsFormsApplication2
         private void Form1_Load(Object sender, EventArgs e)
         {
             button1.MouseClick += new MouseEventHandler(this.Button1Click);
-            button2.MouseClick += new MouseEventHandler(this.Button2Click);
             button3.MouseClick += new MouseEventHandler(this.Button3Click);
             button1.MouseMove += new MouseEventHandler(this.ButtonMouseMove);
-            button2.MouseMove += new MouseEventHandler(this.ButtonMouseMove);
+            btMostrar.MouseMove += new MouseEventHandler(this.ButtonMouseMove);
             button3.MouseMove += new MouseEventHandler(this.ButtonMouseMove);
             button1.MouseLeave += new EventHandler(this.ButtonMouseLeave);
-            button2.MouseLeave += new EventHandler(this.ButtonMouseLeave);
+            btMostrar.MouseLeave += new EventHandler(this.ButtonMouseLeave);
             button3.MouseLeave += new EventHandler(this.ButtonMouseLeave);
         }
 
@@ -64,5 +63,6 @@ namespace WindowsFormsApplication2
             Button button = (Button)sender;
             button.BackColor = Color.FromName("Control");
         }
+
     }
 }
