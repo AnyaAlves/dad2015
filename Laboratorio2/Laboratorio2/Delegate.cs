@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Exercicio1.cs
+using System;
+
 
 namespace Laboratorio2
 {
@@ -53,7 +51,7 @@ namespace Laboratorio2
     ///         </para>
     ///     </list>
     /// </summary>
-    class Exercicio1
+    class Delegate
     {
 
         /// <summary>
