@@ -1,5 +1,6 @@
 ﻿using System;
 
+
 namespace Laboratorio2
 {
     /// <summary>
@@ -33,7 +34,7 @@ namespace Laboratorio2
     {
         private int position;
 
-        public event MoveEventHandler OnMove;
+        public event MoveEventHandler Move;
 
         public int Position
         {
@@ -44,10 +45,14 @@ namespace Laboratorio2
             // e' este bloco que e' executado quando se move o slider
             set
             {
-                if (OnMove != null)
-                { MoveEventArgs args = new MoveEventArgs(value)
-                    OnMove(this, args);
-                    if (args.valid) position = args.Value;
+                if (Move != null)
+                {
+                    MoveEventArgs args = new MoveEventArgs(value);
+                    Move(this, args);
+                    if (args.valid)
+                    {
+                        position = args.Value;
+                    }
                 }
             }
         }
@@ -62,7 +67,7 @@ namespace Laboratorio2
             Slider slider = new Slider();
 
             // TODO: register with the Move event
-            slider.OnMove += new MoveEventHandler(slider_Move);
+            slider.Move += new MoveEventHandler(slider_Move);
 
             // estas sao as duas alteracoes simuladas no slider
             slider.Position = 20;
@@ -72,8 +77,7 @@ namespace Laboratorio2
         // este é o método que deve ser chamado quando o slider e' movido
         public static void slider_Move(object source, MoveEventArgs e)
         {
-            bool is_valid = true;
-            if (e.Value >  40)
+            if (e.Value >  50)
             {
                 e.valid = true;
             }

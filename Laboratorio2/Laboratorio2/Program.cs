@@ -16,6 +16,7 @@ namespace Laboratorio2
         public static void Main()
         {
             Delegate exercicio1 = new Delegate();
+            Threads exercicio3 = new Threads();
 
             exercicio1.Original();
 
@@ -26,7 +27,7 @@ namespace Laboratorio2
             exercicio1.Questao5();
             exercicio1.Questao6();
 
-            Console.Read();
+            exercicio3.Original();
 
         }
     }
