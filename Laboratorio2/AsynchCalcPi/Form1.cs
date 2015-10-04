@@ -177,9 +177,17 @@ namespace AsynchCalcPi {
 
     delegate void CalcPiDelegate(int digits);
 
+    int _digitsToCalc;
+
+    private void CalcPiThreadStart() {
+        CalcPi(_digitsToCalc);
+    }
+
     private void _calcButton_Click(object sender, System.EventArgs e) {
-      // Synch method
-      CalcPi((int)_digits.Value);
+        _digitsToCalc = (int)_digits.Value;
+        ThreadStart ts = new ThreadStart(CalcPiThreadStart);
+        Thread t = new Thread(ts);
+        t.Start();
     }
   }
 }
