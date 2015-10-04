@@ -15,8 +15,8 @@ namespace Laboratorio2
         /// </summary>
         public static void Main()
         {
-            Delegate exercicio1 = new Delegate();
-            Threads exercicio3 = new Threads();
+            MyDelegate.Delegate exercicio1 = new MyDelegate.Delegate();
+            MyThread.Threads exercicio3 = new MyThread.Threads();
 
             exercicio1.Original();
 

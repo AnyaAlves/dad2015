@@ -4,16 +4,15 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{151A5E7B-6D5E-4E0C-8845-34D896B8C1C1}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{0CCB78F9-AC14-4658-93BA-35C9DF827FA7}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Laboratorio2</RootNamespace>
-    <AssemblyName>Laboratorio2</AssemblyName>
+    <RootNamespace>MyThread</RootNamespace>
+    <AssemblyName>MyThread</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -21,10 +20,8 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Debug\Laboratorio2.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -42,27 +39,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config">
-      <SubType>Designer</SubType>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\MyDelegate\MyDelegate.csproj">
-      <Project>{eb164c10-ed80-40e7-a38a-b6ef4eff2c51}</Project>
-      <Name>MyDelegate</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MyEvent\MyEvent.csproj">
-      <Project>{fc518eae-2e5d-4793-b09c-6922561002b3}</Project>
-      <Name>MyEvent</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MyThread\MyThread.csproj">
-      <Project>{0ccb78f9-ac14-4658-93ba-35c9df827fa7}</Project>
-      <Name>MyThread</Name>
-    </ProjectReference>
+    <Compile Include="Thread.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

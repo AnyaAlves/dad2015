@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace Laboratorio2
+namespace MyEvent
 {
     /// <summary>
     /// este delegate e' a base para o event Move do slider

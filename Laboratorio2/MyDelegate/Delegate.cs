@@ -2,7 +2,7 @@
 using System;
 
 
-namespace Laboratorio2
+namespace MyDelegate
 {
 
     /// <summary>
@@ -51,7 +51,7 @@ namespace Laboratorio2
     ///         </para>
     ///     </list>
     /// </summary>
-    class Delegate
+    public class Delegate
     {
 
         /// <summary>
@@ -133,7 +133,7 @@ namespace Laboratorio2
         /// </summary>
         /// <param name="myDelegate">Delegate para ser invocado</param>
         /// <param name="s">String para ser usado no delegate</param>
-        public void Invoca(MyDelegate myDelegate, string s)
+        private void Invoca(MyDelegate myDelegate, string s)
         {
             myDelegate(s);
         }

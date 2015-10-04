@@ -3,7 +3,7 @@ using System.Threading;
 using System.Collections.Generic;
 
 
-namespace Laboratorio2
+namespace MyThread
 {
 
     delegate void ThrWork();
@@ -100,7 +100,7 @@ namespace Laboratorio2
     }
 
 
-    class Threads
+    public class Threads
     {
         public void Original()
         {
