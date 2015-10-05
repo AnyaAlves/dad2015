@@ -28,7 +28,6 @@ namespace Laboratorio2
             exercicio1.Questao6();
 
             exercicio3.Original();
-
         }
     }
 }

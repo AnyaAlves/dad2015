@@ -105,7 +105,7 @@ namespace MyThread
         public void Original()
         {
 	        ThrPool tpool = new ThrPool(5,10);
-	        ThrWork work = null;
+	        //ThrWork work = null;
 	        for (int i = 0; i < 50; i++) {
 		        A a = new A(i);
 	    	    tpool.AssyncInvoke(new ThrWork(a.DoWorkA));

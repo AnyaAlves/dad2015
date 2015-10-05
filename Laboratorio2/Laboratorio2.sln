@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyEvent", "MyEvent\MyEvent.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyThread", "MyThread\MyThread.csproj", "{0CCB78F9-AC14-4658-93BA-35C9DF827FA7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AsynchCalcPi", "AsynchCalcPi\AsynchCalcPi.csproj", "{1257DAA4-3164-43C4-8702-07DAF090B5D6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,6 +33,10 @@ Global
 		{0CCB78F9-AC14-4658-93BA-35C9DF827FA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0CCB78F9-AC14-4658-93BA-35C9DF827FA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0CCB78F9-AC14-4658-93BA-35C9DF827FA7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1257DAA4-3164-43C4-8702-07DAF090B5D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1257DAA4-3164-43C4-8702-07DAF090B5D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1257DAA4-3164-43C4-8702-07DAF090B5D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1257DAA4-3164-43C4-8702-07DAF090B5D6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
