@@ -10,6 +10,7 @@ using System.Diagnostics;
 
 namespace AsynchCalcPi
 {
+
     /// <summary>
     /// Summary description for Form1.
     /// </summary>
@@ -25,6 +26,25 @@ namespace AsynchCalcPi
         /// Required designer variable.
         /// </summary>
         private System.ComponentModel.Container components = null;
+
+        class ShowProgressArgs : EventArgs
+        {
+            public string Pi;
+            public int TotalDigits;
+            public int DigitsSoFar;
+            public bool Cancel;
+
+            public ShowProgressArgs(
+                string pi, int totalDigits, int digitsSoFar)
+            {
+
+                this.Pi = pi;
+                this.TotalDigits = totalDigits;
+                this.DigitsSoFar = digitsSoFar;
+
+            }
+
+        }
 
         public Form1()
         {
@@ -156,23 +176,23 @@ namespace AsynchCalcPi
             Application.Run(new Form1());
         }
 
-        delegate void ShowProgressDelegate(string pi, int totalDigits, int digitsSoFar, out bool cancel);
+        delegate void ShowProgressHandler(object sender, ShowProgressArgs e);
 
-        void ShowProgress(string pi, int totalDigits, int digitsSoFar, out bool cancel)
+        void ShowProgress(object sender, ShowProgressArgs e)
         {
 
             // Make sure we're on the UI thread
             if (_pi.InvokeRequired == false)
             {
-                _pi.Text = pi;
-                _piProgress.Maximum = totalDigits;
-                _piProgress.Value = digitsSoFar;
+                _pi.Text = e.Pi;
+                _piProgress.Maximum = e.TotalDigits;
+                _piProgress.Value = e.DigitsSoFar;
 
                 // Check for Cancel
-                cancel = (_state == CalcState.Canceled);
+                e.Cancel = (_state == CalcState.Canceled);
 
                 // Check for completion
-                if (cancel || (digitsSoFar == totalDigits))
+                if (e.Cancel || (e.DigitsSoFar == e.TotalDigits))
                 {
                     _state = CalcState.Pending;
                     _calcButton.Text = "Calc";
@@ -182,25 +202,21 @@ namespace AsynchCalcPi
             else
             {
                 // Get ready to show progress asynchronously
-                ShowProgressDelegate showProgress = new ShowProgressDelegate(ShowProgress);
-                
-                // Avoid boxing and losing our return value
-                object inoutCancel = false;
-
+                ShowProgressHandler showProgress = new ShowProgressHandler(ShowProgress);
                 // Show progress
-                Invoke(showProgress, new object[] { pi, totalDigits, digitsSoFar, inoutCancel });
-                cancel = (bool)inoutCancel;
+                Invoke(showProgress, new object[] { sender, e });
             }
 
         }
 
         void CalcPi(int digits)
         {
-            bool cancel = false;
             StringBuilder pi = new StringBuilder("3", digits + 2);
+            object sender = System.Threading.Thread.CurrentThread;
+            ShowProgressArgs e = new ShowProgressArgs(pi.ToString(), digits, 0);
 
             // Show progress
-            ShowProgress(pi.ToString(), digits, 0, out cancel);
+            ShowProgress(sender, e);
 
             if (digits > 0)
             {
@@ -214,11 +230,10 @@ namespace AsynchCalcPi
                     pi.Append(ds.Substring(0, digitCount));
 
                     // Show progress
-                    ShowProgress(pi.ToString(), digits, i + digitCount, out cancel);
-                    if (cancel)
-                    {
-                        break;
-                    }
+                    e.Pi = pi.ToString();
+                    e.DigitsSoFar = i + digitCount;
+                    ShowProgress(sender, e);
+                    if (e.Cancel) break;
                 }
             }
         }
@@ -266,17 +281,3 @@ namespace AsynchCalcPi
         }
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

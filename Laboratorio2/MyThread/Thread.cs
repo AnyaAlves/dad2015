@@ -11,108 +11,119 @@ namespace MyThread
     class ThrPool
     {
 
-        private Thread[]  thread_list;
+        private Queue<ThrWork> request_queue;
+        private int bufSize, thrNum;
+        private static int mainThreadId = 0;
 
-        private ThrWork[] request_queue;
-        private int write_index = 0, read_index = 0, bufSize = 0;
+        public static bool IsMainThread
+        {
+            get { return System.Threading.Thread.CurrentThread.ManagedThreadId == mainThreadId; }
+        }
 
-	    public ThrPool(int thrNum, int bufSize) {
-
-            this.bufSize       = bufSize;
-            this.thread_list   = new Thread[thrNum];
-            this.request_queue = new ThrWork[bufSize];
-            for(int i = 0; i < thrNum; i++)
-            {
-                ThreadStart tw = new ThreadStart(Worker);
-                this.thread_list[i] = new Thread(tw);
-                this.thread_list[i].Start();
-            }
-
-	    }
-
-        public void Worker()
+        public ThrPool(int thrNum, int bufSize)
         {
 
-            ThrWork action;
-
-            while (true)
-            {
-                int new_index = (this.read_index + 1) % this.bufSize;
-
-                Monitor.Enter(this.request_queue);
-                if (this.request_queue[new_index] == null)
-                {
-                    Monitor.Exit(this.request_queue);
-                    continue;
-                }
-                this.read_index = new_index;
-                action = this.request_queue[new_index];
-                this.request_queue[new_index] = null;
-                Monitor.Exit(this.request_queue);
-                action();
-            }
+            this.bufSize = bufSize;
+            this.thrNum = thrNum;
+            this.request_queue = new Queue<ThrWork>(bufSize);
 
         }
 
-	    public void AssyncInvoke(ThrWork action)
+        delegate void AssyncInvokeDelegate(ThrWork action);
+
+        public void AssyncInvoke(ThrWork action)
         {
 
-            int new_index = (this.write_index + 1) % this.bufSize;
-
-            Monitor.Enter(this.request_queue);
-            Thread.Sleep(10);
-            if (this.request_queue[new_index] != null)
+            if (!IsMainThread)
             {
-                Monitor.Exit(this.request_queue);
-                return;
+
+                while (true)
+                {
+                    action();
+                    try
+                    {
+                        action = this.request_queue.Dequeue();
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        break;
+                    }
+                }
+
+                thrNum++;
             }
-            this.write_index = new_index;
-            this.request_queue[new_index] = action;
-            Monitor.Exit(this.request_queue);
+            else
+            {
+                mainThreadId = System.Threading.Thread.CurrentThread.ManagedThreadId;
 
-	    }
+                if (thrNum > 0)
+                {
+                    thrNum--;
+                    AssyncInvokeDelegate thread = new AssyncInvokeDelegate(AssyncInvoke);
+                    thread.BeginInvoke(action, null, null);
+                }
+                else
+                {
+                    if (this.request_queue.Count >= bufSize)
+                    {
+                        return;
+                    }
+
+                    this.request_queue.Enqueue(action);
+
+                }
+            }
+        }
     }
 
 
-    class A {
-	    private int _id;
-	
-	    public A(int id) {
-		    _id = id;
-	    }
+    class A
+    {
+        private int _id;
 
-	    public void DoWorkA() {
-		    Console.WriteLine("A-{0}",_id);
-	    }
+        public A(int id)
+        {
+            _id = id;
+        }
+
+        public void DoWorkA()
+        {
+            Console.WriteLine("A-{0}", _id);
+        }
     }
 
 
-    class B {
-	    private int _id;
-	
-	    public B(int id) {
-		    _id = id;
-	    }
+    class B
+    {
+        private int _id;
 
-	    public void DoWorkB() {
-		    Console.WriteLine("B-{0}",_id);
-	    }
+        public B(int id)
+        {
+            _id = id;
+        }
+
+        public void DoWorkB()
+        {
+            Console.WriteLine("B-{0}", _id);
+        }
     }
 
 
     public class Threads
     {
-        public void Original()
+        [STAThread]
+        public static void Main()
         {
-	        ThrPool tpool = new ThrPool(5,10);
-	        //ThrWork work = null;
-	        for (int i = 0; i < 50; i++) {
-		        A a = new A(i);
-	    	    tpool.AssyncInvoke(new ThrWork(a.DoWorkA));
-		        B b = new B(i);
-		        tpool.AssyncInvoke(new ThrWork(b.DoWorkB));
-	        }
-	        Console.ReadLine();
+            ThrPool tpool = new ThrPool(5, 10);
+
+            for (int i = 0; i < 5; i++)
+            {
+                A a = new A(i);
+                tpool.AssyncInvoke(new ThrWork(a.DoWorkA));
+                B b = new B(i);
+                tpool.AssyncInvoke(new ThrWork(b.DoWorkB));
+            }
+            Console.ReadLine();
         }
     }
 
