@@ -7,8 +7,8 @@ namespace CommonTypes
     //</summary>
     public interface IConversation
     {
-        void Message(String value);
-        void ClientName(String value);
-        string ShowMessage();
+        void Message { get; set; }
+        void Register(String nickname, String value);
+        String getPort(String nickname);
     }
 }
