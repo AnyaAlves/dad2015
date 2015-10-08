@@ -22,8 +22,18 @@ namespace ChatClient {
         }
 
         private void connectButton_Click(object sender, EventArgs e) {
-            conversation = ChatClient.Connect(nicknameBox.Text, portBox.Text);
-            connectButton.Text = "Disconnect";
+            if (connectButton.Text.Equals("Connect")) {
+                try {
+                    conversation = ChatClient.Connect(nicknameBox.Text, portBox.Text);
+                    connectButton.Text = "Disconnect";
+                }
+                catch (NullReferenceException) {
+                    chatBox.Text = "Could not locate server\n";
+                }
+            }
+            else {
+                ChatClient.Disconnect();
+            }
         }
 
         private void sendButton_Click(object sender, EventArgs e) {
