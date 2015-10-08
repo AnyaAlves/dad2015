@@ -15,36 +15,34 @@ namespace ChatClient {
     delegate void delegateChat(String s);
 
     public partial class Form1 : Form {
-        private IConversation conversation;
+        private Client client;
 
         public Form1() {
             InitializeComponent();
+            client = new Client();
         }
 
         private void connectButton_Click(object sender, EventArgs e) {
             if (connectButton.Text.Equals("Connect")) {
-                try {
-                    conversation = ChatClient.Connect(nicknameBox.Text, portBox.Text);
+                    client.Connect(nicknameBox.Text, portBox.Text);
                     connectButton.Text = "Disconnect";
-                }
-                catch (NullReferenceException) {
-                    chatBox.Text = "Could not locate server\n";
-                }
+                    sendButton.Enabled = true;
+                    nicknameBox.Enabled = false;
+                    portBox.Enabled = false;
             }
             else {
-                ChatClient.Disconnect();
+                client.Disconnect();
+                connectButton.Text = "Connect";
+                sendButton.Enabled = false;
+                nicknameBox.Enabled = true;
+                portBox.Enabled = true;
             }
         }
 
         private void sendButton_Click(object sender, EventArgs e) {
-            if (conversation == null) {
-                System.Windows.Forms.MessageBox.Show("You must be connected to send messages");
-            }
-            else {
                 chatBox.Text += messageBox.Text + "\n";
-                ChatClient.SendMessage(conversation, messageBox.Text);
+                client.SendMessage(messageBox.Text);
                 messageBox.Text = "";
-            }
         }
 
         private void portBox_KeyDown(object sender, KeyEventArgs e) {

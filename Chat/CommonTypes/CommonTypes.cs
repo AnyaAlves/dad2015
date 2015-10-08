@@ -5,8 +5,9 @@ namespace CommonTypes {
     // Message repository Interface
     //</summary>
     public interface IConversation {
-        String Message { get; set; }
-        void Register(String nickname, String value);
-        String getPort(String nickname);
+        void PutMessage(String nickname, String message);
+        void RegisterClient(String nickname, String port);
+        void UnregisterClient(String nickname);
+        String getPortByNickname(String nickname);
     }
 }

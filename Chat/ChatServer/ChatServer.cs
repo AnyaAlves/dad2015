@@ -8,13 +8,11 @@ using CommonTypes;
 
 namespace ChatServer {
 
-    class Server {
-
-
+    public class App {
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
-        static void Main() {
+        public static void Main() {
             ConversationHandler conversationHandler = new ConversationHandler(Conversation_Set);
             RegistryHandler registryHandler = new RegistryHandler(Register_Set);
             Conversation chat = new Conversation();
@@ -28,7 +26,7 @@ namespace ChatServer {
             Console.WriteLine("Started server");
             Console.Read();
         }
-
+        
         public static void Conversation_Set(object sender, ConversationEventArgs e) {
             Console.WriteLine("Conversation_Set");
         }
@@ -66,22 +64,29 @@ namespace ChatServer {
     // Message repository between clients and servers
     //</summary>
     public class Conversation : MarshalByRefObject, IConversation {
-        private IDictionary<String, String> registry = new Dictionary<String, String>();
+        private IDictionary<String,String> registry;
+        private Queue<KeyValuePair<String,String>> messages;
 
-        private String message;
-        public String Message {
-            get {
-                String outputMessage = message;
-                message = "";
-                return outputMessage;
-            }
-            set { message = value; }
+        public Conversation() {
+            registry = new Dictionary<String,String>();
+            messages = new Queue<KeyValuePair<String,String>>();
         }
-        public String getPort(String nickname) {
-            return registry[nickname];
+
+        public void PutMessage(String nickname, String message) {
+            messages.Enqueue(new KeyValuePair<String,String>(nickname, message));
+            
         }
-        public void Register(String nickname, String port) {
+
+        public void RegisterClient(String nickname, String port) {
             registry.Add(nickname, port);
+        }
+
+        public void UnregisterClient(String nickname) {
+            registry.Remove(nickname);
+        }
+
+        public String getPortByNickname(String nickname) {
+            return registry[nickname];
         }
         /*   private event ConversationHandler conversationHandler;
            private event RegistryHandler registryHandler;

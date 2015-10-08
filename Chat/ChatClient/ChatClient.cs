@@ -12,49 +12,52 @@ using System.Net.Sockets;
 using CommonTypes;
 
 namespace ChatClient {
+    class Client {
+        private String nickname;
+        private IConversation conversation;
+        private TcpChannel channel;
 
-    static class ChatClient {
-
-        public static IConversation Connect(String nickname, String port) {
+        public void Connect(String nickname, String port) {
             //validate input
-            TcpChannel channel = new TcpChannel();
+            channel = new TcpChannel();
             ChannelServices.RegisterChannel(channel, true);
-
-            IConversation conversation = (IConversation)Activator.GetObject(
+            conversation = (IConversation)Activator.GetObject(
                 typeof(IConversation),
                 "tcp://localhost:8086/Conversation");
-
-            if (conversation == null) {
-                throw new NullReferenceException();
-            }
-            return conversation;
-        }
-
-        public static void Disconnect() {
-            
-        }
-
-        public static void SendMessage(IConversation conversation, String message) {
             try {
-                conversation.Message = message;
+                conversation.RegisterClient(nickname, port);
+                this.nickname = nickname;
             }
             catch (SocketException) {
                 System.Windows.Forms.MessageBox.Show("Could not locate server");
             }
         }
 
+        public void Disconnect() {
+            conversation.UnregisterClient(nickname);
+            conversation = null;
+            ChannelServices.UnregisterChannel(channel);
+        }
 
+        public void SendMessage(String message) {
+            try {
+                conversation.PutMessage(nickname, message);
+            }
+            catch (SocketException) {
+                System.Windows.Forms.MessageBox.Show("Could not locate server");
+            }
+        }
+    }
+
+
+    static class App {
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
-        [STAThread]
-        static void Main() {
+        public static void Main() {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Form1());
-
-
-
         }
     }
 }

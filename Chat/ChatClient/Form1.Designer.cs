@@ -40,78 +40,109 @@
             // 
             // messageBox
             // 
-            this.messageBox.Location = new System.Drawing.Point(40, 388);
+            this.messageBox.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(50)))), ((int)(((byte)(50)))));
+            this.messageBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.messageBox.Font = new System.Drawing.Font("Calibri", 12F);
+            this.messageBox.ForeColor = System.Drawing.SystemColors.Control;
+            this.messageBox.Location = new System.Drawing.Point(53, 567);
+            this.messageBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.messageBox.Name = "messageBox";
-            this.messageBox.Size = new System.Drawing.Size(366, 33);
+            this.messageBox.Size = new System.Drawing.Size(487, 67);
             this.messageBox.TabIndex = 1;
             this.messageBox.Text = "";
             // 
             // portBox
             // 
-            this.portBox.Location = new System.Drawing.Point(368, 44);
+            this.portBox.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(50)))), ((int)(((byte)(50)))));
+            this.portBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.portBox.Font = new System.Drawing.Font("Calibri", 12F);
+            this.portBox.ForeColor = System.Drawing.SystemColors.Control;
+            this.portBox.Location = new System.Drawing.Point(491, 66);
+            this.portBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.portBox.Name = "portBox";
-            this.portBox.Size = new System.Drawing.Size(38, 20);
+            this.portBox.Size = new System.Drawing.Size(49, 27);
             this.portBox.TabIndex = 2;
             this.portBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.portBox_KeyDown);
             // 
             // chatBox
             // 
-            this.chatBox.Location = new System.Drawing.Point(40, 89);
+            this.chatBox.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(50)))), ((int)(((byte)(50)))));
+            this.chatBox.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.chatBox.ForeColor = System.Drawing.SystemColors.Control;
+            this.chatBox.Location = new System.Drawing.Point(53, 130);
+            this.chatBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.chatBox.Name = "chatBox";
-            this.chatBox.Size = new System.Drawing.Size(451, 263);
+            this.chatBox.Size = new System.Drawing.Size(600, 383);
             this.chatBox.TabIndex = 3;
             this.chatBox.Text = "";
             // 
             // sendButton
             // 
-            this.sendButton.Location = new System.Drawing.Point(425, 388);
+            this.sendButton.BackColor = System.Drawing.SystemColors.Highlight;
+            this.sendButton.Enabled = false;
+            this.sendButton.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.sendButton.ForeColor = System.Drawing.Color.White;
+            this.sendButton.Location = new System.Drawing.Point(567, 567);
+            this.sendButton.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.sendButton.Name = "sendButton";
-            this.sendButton.Size = new System.Drawing.Size(75, 33);
+            this.sendButton.Size = new System.Drawing.Size(100, 69);
             this.sendButton.TabIndex = 4;
             this.sendButton.Text = "Send";
-            this.sendButton.UseVisualStyleBackColor = true;
+            this.sendButton.UseVisualStyleBackColor = false;
             this.sendButton.Click += new System.EventHandler(this.sendButton_Click);
             // 
             // connectButton
             // 
-            this.connectButton.Location = new System.Drawing.Point(416, 41);
+            this.connectButton.BackColor = System.Drawing.SystemColors.Highlight;
+            this.connectButton.FlatStyle = System.Windows.Forms.FlatStyle.Popup;
+            this.connectButton.ForeColor = System.Drawing.Color.White;
+            this.connectButton.Location = new System.Drawing.Point(555, 60);
+            this.connectButton.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.connectButton.Name = "connectButton";
-            this.connectButton.Size = new System.Drawing.Size(75, 23);
+            this.connectButton.Size = new System.Drawing.Size(100, 34);
             this.connectButton.TabIndex = 5;
             this.connectButton.Text = "Connect";
-            this.connectButton.UseVisualStyleBackColor = true;
+            this.connectButton.UseVisualStyleBackColor = false;
             this.connectButton.Click += new System.EventHandler(this.connectButton_Click);
             // 
             // portLabel
             // 
             this.portLabel.AutoSize = true;
-            this.portLabel.Location = new System.Drawing.Point(333, 47);
+            this.portLabel.Location = new System.Drawing.Point(440, 68);
+            this.portLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.portLabel.Name = "portLabel";
-            this.portLabel.Size = new System.Drawing.Size(29, 13);
+            this.portLabel.Size = new System.Drawing.Size(43, 19);
             this.portLabel.TabIndex = 6;
             this.portLabel.Text = "Port:";
             // 
             // nicknameLabel
             // 
             this.nicknameLabel.AutoSize = true;
-            this.nicknameLabel.Location = new System.Drawing.Point(37, 47);
+            this.nicknameLabel.Location = new System.Drawing.Point(49, 68);
+            this.nicknameLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.nicknameLabel.Name = "nicknameLabel";
-            this.nicknameLabel.Size = new System.Drawing.Size(58, 13);
+            this.nicknameLabel.Size = new System.Drawing.Size(81, 19);
             this.nicknameLabel.TabIndex = 7;
             this.nicknameLabel.Text = "Nickname:";
             // 
             // nicknameBox
             // 
-            this.nicknameBox.Location = new System.Drawing.Point(101, 43);
+            this.nicknameBox.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(50)))), ((int)(((byte)(50)))));
+            this.nicknameBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.nicknameBox.Font = new System.Drawing.Font("Calibri", 12F);
+            this.nicknameBox.ForeColor = System.Drawing.SystemColors.Control;
+            this.nicknameBox.Location = new System.Drawing.Point(138, 66);
+            this.nicknameBox.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.nicknameBox.Name = "nicknameBox";
-            this.nicknameBox.Size = new System.Drawing.Size(204, 20);
+            this.nicknameBox.Size = new System.Drawing.Size(271, 27);
             this.nicknameBox.TabIndex = 8;
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 19F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(531, 447);
+            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
+            this.ClientSize = new System.Drawing.Size(708, 674);
             this.Controls.Add(this.nicknameBox);
             this.Controls.Add(this.nicknameLabel);
             this.Controls.Add(this.portLabel);
@@ -120,6 +151,9 @@
             this.Controls.Add(this.chatBox);
             this.Controls.Add(this.portBox);
             this.Controls.Add(this.messageBox);
+            this.Font = new System.Drawing.Font("Calibri", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ForeColor = System.Drawing.SystemColors.Control;
+            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.Name = "Form1";
             this.Text = "Chat";
             this.ResumeLayout(false);
