@@ -1,0 +1,56 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Laboratorio4", "Laboratorio4\Laboratorio4.csproj", "{D9555905-2F01-40D7-B4E5-05AB05561EFE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "AsynchronousRemoting\Client.csproj", "{10814E0A-3901-4218-A466-E7660471CEE6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ObjectSerialization", "ObjectSerialization\ObjectSerialization.csproj", "{FCEDBBBB-E2F7-4B80-92A8-B69E9601F557}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteExceptionsCliente", "RemoteExceptions\Cliente\RemoteExceptionsCliente.csproj", "{4BCBA168-7B85-47B2-A2B8-5C6A6E4DFAB2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteExceptionsLibTesteExcepcoesRemotas", "RemoteExceptions\LibTesteExcepcoesRemotas\RemoteExceptionsLibTesteExcepcoesRemotas.csproj", "{C1807080-5DF8-4ED2-857A-85C0B56249E6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteExceptionsServidor", "RemoteExceptions\Servidor\RemoteExceptionsServidor.csproj", "{C2940F65-E7B4-4943-82A8-0CFC2F99C312}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteExceptionsTesteExcepcoesRemotas", "RemoteExceptions\TesteExcepcoesRemotas\RemoteExceptionsTesteExcepcoesRemotas.csproj", "{628EE2AD-13DB-4F06-89F3-CB9881A48F4D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D9555905-2F01-40D7-B4E5-05AB05561EFE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9555905-2F01-40D7-B4E5-05AB05561EFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9555905-2F01-40D7-B4E5-05AB05561EFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9555905-2F01-40D7-B4E5-05AB05561EFE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{10814E0A-3901-4218-A466-E7660471CEE6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{10814E0A-3901-4218-A466-E7660471CEE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{10814E0A-3901-4218-A466-E7660471CEE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{10814E0A-3901-4218-A466-E7660471CEE6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FCEDBBBB-E2F7-4B80-92A8-B69E9601F557}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FCEDBBBB-E2F7-4B80-92A8-B69E9601F557}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FCEDBBBB-E2F7-4B80-92A8-B69E9601F557}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FCEDBBBB-E2F7-4B80-92A8-B69E9601F557}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4BCBA168-7B85-47B2-A2B8-5C6A6E4DFAB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BCBA168-7B85-47B2-A2B8-5C6A6E4DFAB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BCBA168-7B85-47B2-A2B8-5C6A6E4DFAB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BCBA168-7B85-47B2-A2B8-5C6A6E4DFAB2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1807080-5DF8-4ED2-857A-85C0B56249E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1807080-5DF8-4ED2-857A-85C0B56249E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1807080-5DF8-4ED2-857A-85C0B56249E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1807080-5DF8-4ED2-857A-85C0B56249E6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C2940F65-E7B4-4943-82A8-0CFC2F99C312}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C2940F65-E7B4-4943-82A8-0CFC2F99C312}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C2940F65-E7B4-4943-82A8-0CFC2F99C312}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C2940F65-E7B4-4943-82A8-0CFC2F99C312}.Release|Any CPU.Build.0 = Release|Any CPU
+		{628EE2AD-13DB-4F06-89F3-CB9881A48F4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{628EE2AD-13DB-4F06-89F3-CB9881A48F4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{628EE2AD-13DB-4F06-89F3-CB9881A48F4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{628EE2AD-13DB-4F06-89F3-CB9881A48F4D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

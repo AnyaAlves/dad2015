@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cliente", "Cliente\Cliente.csproj", "{4BCBA168-7B85-47B2-A2B8-5C6A6E4DFAB2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Servidor", "Servidor\Servidor.csproj", "{C2940F65-E7B4-4943-82A8-0CFC2F99C312}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibTesteExcepcoesRemotas", "LibTesteExcepcoesRemotas\LibTesteExcepcoesRemotas.csproj", "{C1807080-5DF8-4ED2-857A-85C0B56249E6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4BCBA168-7B85-47B2-A2B8-5C6A6E4DFAB2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4BCBA168-7B85-47B2-A2B8-5C6A6E4DFAB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4BCBA168-7B85-47B2-A2B8-5C6A6E4DFAB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4BCBA168-7B85-47B2-A2B8-5C6A6E4DFAB2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C2940F65-E7B4-4943-82A8-0CFC2F99C312}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C2940F65-E7B4-4943-82A8-0CFC2F99C312}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C2940F65-E7B4-4943-82A8-0CFC2F99C312}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C2940F65-E7B4-4943-82A8-0CFC2F99C312}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1807080-5DF8-4ED2-857A-85C0B56249E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1807080-5DF8-4ED2-857A-85C0B56249E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1807080-5DF8-4ED2-857A-85C0B56249E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1807080-5DF8-4ED2-857A-85C0B56249E6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
