@@ -14,13 +14,31 @@ namespace PuppetMaster {
         IList<String> subscriberList;
         IList<String> publisherList;
         IList<String> brokerList;
+        BinaryTree<String> SESDADBinaryTree;
+        IDictionary<String, BinaryTreeNode<String>> SESDADTable;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void parseLine(String line) {
             String[] fields = line.Split(' ');
             String command = fields[0];
 
-            if (command.Equals("Site")) {
+            if (command.Equals("Site") && fields.Length == 4 && fields[2].Equals("Parent")) {
+                if (fields[3].Equals("none")) {
+                    SESDADBinaryTree.Root = new BinaryTreeNode<String>(fields[1]);
+                    SESDADTable.Add(fields[1], SESDADBinaryTree.Root);
+                }
+                else {
+                    BinaryTreeNode<String> node;
+                    SESDADTable.TryGetValue(fields[3], out node);
+                    if (node != null) {
+                        if (node.Left == null) {
+                            node.Left = new BinaryTreeNode<String>(fields[1]);
+                        }
+                        else {
+                            node.Right = new BinaryTreeNode<String>(fields[1]);
+                        }
+                    }
+                }
             }
             else if (command.Equals("Process")) {
             }
@@ -46,10 +64,11 @@ namespace PuppetMaster {
             }
         }
 
-        public PuppetMaster (String confFileName) {
+        public PuppetMaster(String confFileName) {
             subscriberList = new List<String>();
             publisherList = new List<String>();
             brokerList = new List<String>();
+            SESDADBinaryTree = new BinaryTree<String>();
             String line;
             StreamReader file = new StreamReader(confFileName);
             while ((line = file.ReadLine()) != null) {
@@ -59,7 +78,7 @@ namespace PuppetMaster {
         }
 
         public void Start() {
-        
+
         }
     }
 }
