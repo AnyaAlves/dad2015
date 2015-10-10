@@ -15,16 +15,22 @@ using CommonTypes;
 
 namespace ChatClient {
     class Client {
+        public readonly int MINPORT, MAXPORT;
         private String nickname;
-        private IConversation conversation;
+        private IServerRemoteObject conversation;
         private TcpChannel channel;
+
+        public Client() {
+            MINPORT = 1;
+            MAXPORT = 10000;
+        }
 
         public void Connect(String nickname, String port) {
             //validate input
             channel = new TcpChannel();
             ChannelServices.RegisterChannel(channel, true);
-            conversation = (IConversation)Activator.GetObject(
-                typeof(IConversation),
+            conversation = (IServerRemoteObject)Activator.GetObject(
+                typeof(IServerRemoteObject),
                 "tcp://localhost:8086/Conversation");
             try {
                 // Create delegate to remote method

@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PuppetMaster", "PuppetMaster\PuppetMaster.csproj", "{BCE59E73-7FE3-4D66-B4E4-53706538F9E2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BinaryTreeStruct", "BinaryTreeStruct\BinaryTreeStruct.csproj", "{96B7912C-C12A-472A-9DBE-51697CD44895}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BCE59E73-7FE3-4D66-B4E4-53706538F9E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BCE59E73-7FE3-4D66-B4E4-53706538F9E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BCE59E73-7FE3-4D66-B4E4-53706538F9E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BCE59E73-7FE3-4D66-B4E4-53706538F9E2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{96B7912C-C12A-472A-9DBE-51697CD44895}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{96B7912C-C12A-472A-9DBE-51697CD44895}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{96B7912C-C12A-472A-9DBE-51697CD44895}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{96B7912C-C12A-472A-9DBE-51697CD44895}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
