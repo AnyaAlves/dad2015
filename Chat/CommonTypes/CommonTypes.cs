@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace CommonTypes {
     //<summary>
@@ -6,7 +7,11 @@ namespace CommonTypes {
     //</summary>
     public interface IServerRemoteObject {
         void PutMessage(String nickname, String message);
-        void RegisterClient(String nickname, String port);
+        void RegisterClient(String nickname, int port);
         void UnregisterClient(String nickname);
+    }
+
+    public interface IClientRemoteObject {
+        void UpdateChat(String lattestMessage);
     }
 }

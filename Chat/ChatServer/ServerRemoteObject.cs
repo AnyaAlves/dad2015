@@ -6,33 +6,35 @@ namespace ChatServer {
     // Message repository between clients and servers
     //</summary>
     public class ServerRemoteObject : MarshalByRefObject, IServerRemoteObject {
-        EventHandler<ServerEventArgs> putMessageHandler, registerClientHandler, unregisterClientHandler;
+        EventHandler<PutMessageEventArgs> putMessageHandler;
+        EventHandler<RegisterClientEventArgs> registerClientHandler;
+        EventHandler<UnregisterClientEventArgs> unregisterClientHandler;
 
         public ServerRemoteObject(
-            EventHandler<ServerEventArgs> putMessageHandlerValue,
-            EventHandler<ServerEventArgs> registerClientHandlerValue,
-            EventHandler<ServerEventArgs> unregisterClientHandlerValue) {
+            EventHandler<PutMessageEventArgs> putMessageHandlerValue,
+            EventHandler<RegisterClientEventArgs> registerClientHandlerValue,
+            EventHandler<UnregisterClientEventArgs> unregisterClientHandlerValue) {
             putMessageHandler = putMessageHandlerValue;
             registerClientHandler = registerClientHandlerValue;
             unregisterClientHandler = unregisterClientHandlerValue;
         }
 
         public void PutMessage(String nickname, String message) {
-            ServerEventArgs e = new ServerEventArgs(nickname, message);
+            PutMessageEventArgs e = new PutMessageEventArgs(nickname, message);
             if (putMessageHandler != null) {
                 putMessageHandler(this, e);
             }
         }
 
-        public void RegisterClient(String nickname, String port) {
-            ServerEventArgs e = new ServerEventArgs(nickname, port);
+        public void RegisterClient(String nickname, int port) {
+            RegisterClientEventArgs e = new RegisterClientEventArgs(nickname, port);
             if (registerClientHandler != null) {
                 registerClientHandler(this, e);
             }
         }
 
         public void UnregisterClient(String nickname) {
-            ServerEventArgs e = new ServerEventArgs(nickname);
+            UnregisterClientEventArgs e = new UnregisterClientEventArgs(nickname);
             if (unregisterClientHandler != null) {
                 unregisterClientHandler(this, e);
             }

@@ -1,19 +1,31 @@
 ﻿using System;
 
 namespace ChatServer {
-    public class ServerEventArgs : EventArgs {
-        public bool isValid;
-        public String key;
-        public String value;
+    public class PutMessageEventArgs : EventArgs {
+        public String nickname;
+        public String message;
 
-        public ServerEventArgs(String keyValue, String valueValue) {
-            isValid = false;
-            key = keyValue;
-            value = valueValue;
+        public PutMessageEventArgs(String nicknameValue, String messageValue) {
+            nickname = nicknameValue;
+            message = messageValue;
         }
+    }
 
-        public ServerEventArgs(String keyValue) {
-            new ServerEventArgs(keyValue, null);
+    public class RegisterClientEventArgs : EventArgs {
+        public String nickname;
+        public int port;
+
+        public RegisterClientEventArgs(String nicknameValue, int portValue) {
+            nickname = nicknameValue;
+            port = portValue;
+        }
+    }
+
+    public class UnregisterClientEventArgs : EventArgs {
+        public String nickname;
+
+        public UnregisterClientEventArgs(String nicknameValue) {
+            nickname = nicknameValue;
         }
     }
 }

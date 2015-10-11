@@ -11,43 +11,31 @@ using System.Windows.Forms;
 using CommonTypes;
 
 namespace ChatClient {
-
-    delegate void delegateChat(String s);
-
-    enum MessageState {
-        empty,
-        filled
-    }
-
     public partial class Form1 : Form {
         private Client client;
-        private MessageState messageState = MessageState.empty;
 
         public Form1() {
             InitializeComponent();
-            client = new Client();
+            Action<String> warningLabel_printDelegate = new Action<string>(warningLabel_print),
+                           chatBox_printDelegate = new Action<string>(chatBox_print),
+                           messageWarningLabel_printDelegate = new Action<string>(messageWarningLabel_print);
+            client = new Client(warningLabel_printDelegate, chatBox_printDelegate, messageWarningLabel_printDelegate);
         }
 
         private void connectButton_Click(object sender, EventArgs e) {
+            connectButton.Enabled = false;
             if (connectButton.Text.Equals("Connect")) {
-                int portNumber;
-                if (nicknameBox.Text.Equals("")) {
-                    warningLabel.Text = "Warning: The client cannot connect to the chat using an empty nickname.";
-                    return;
-                }
-                if (!int.TryParse(portBox.Text, out portNumber) ||
-                    portNumber < client.MINPORT ||
-                    portNumber > client.MAXPORT) {
-                    warningLabel.Text = "Warning: The client can only connect through ports between " + client.MINPORT + " and " + client.MAXPORT + ".";
+                if(!client.Connect(nicknameBox.Text, portBox.Text)) {
+                    nicknameBox.Text = "";
                     portBox.Text = "";
-                    return;
                 }
-                client.Connect(nicknameBox.Text, portBox.Text);
-                connectButton.Text = "Disconnect";
-                sendButton.Enabled = true;
-                nicknameBox.Enabled = false;
-                portBox.Enabled = false;
-                messageBox.ReadOnly = false;
+                else {
+                    connectButton.Text = "Disconnect";
+                    sendButton.Enabled = true;
+                    nicknameBox.Enabled = false;
+                    portBox.Enabled = false;
+                    messageBox.ReadOnly = false;
+                }
             }
             else {
                 client.Disconnect();
@@ -57,17 +45,14 @@ namespace ChatClient {
                 portBox.Enabled = true;
                 messageBox.ReadOnly = true;
             }
+            connectButton.Enabled = true;
         }
 
         private void sendButton_Click(object sender, EventArgs e) {
-            if (messageState == MessageState.empty) {
-                messageWarningLabel.Text = "Warning: The chat cannot send an empty message.";
-                return;
-            }
-            chatBox.Text += messageBox.Text + "\n";
+            sendButton.Enabled = false;
             client.SendMessage(messageBox.Text);
             messageBox.Text = "Write a new message...";
-            messageState = MessageState.empty;
+            sendButton.Enabled = true;
         }
 
         private void portBox_KeyDown(object sender, KeyEventArgs e) {
@@ -93,8 +78,38 @@ namespace ChatClient {
             if (messageBox.Text.Equals("")) {
                 messageBox.Text = "Write a new message...";
             }
+        }
+
+        private void warningLabel_print(String value) {
+            // Make sure we're on the UI thread
+            if (warningLabel.InvokeRequired == false) {
+                warningLabel.Text = value;
+            }
             else {
-                messageState = MessageState.filled;
+                // Show progress
+                Invoke(new Action<String>(warningLabel_print), new object[] { value });
+            }
+        }
+
+        private void chatBox_print(String value) {
+            // Make sure we're on the UI thread
+            if (chatBox.InvokeRequired == false) {
+                chatBox.Text += value;
+            }
+            else {
+                // Show progress
+                Invoke(new Action<String>(chatBox_print), new object[] { value });
+            }
+        }
+
+        private void messageWarningLabel_print(String value) {
+            // Make sure we're on the UI thread
+            if (messageWarningLabel.InvokeRequired == false) {
+                messageWarningLabel.Text = value;
+            }
+            else {
+                // Show progress
+                Invoke(new Action<String>(messageWarningLabel_print), new object[] { value });
             }
         }
     }
