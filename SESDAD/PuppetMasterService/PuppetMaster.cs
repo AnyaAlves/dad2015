@@ -7,9 +7,14 @@ using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
-using BinaryTreeStruct;
+using System.Runtime.Remoting;
+using System.Runtime.Remoting.Channels.Tcp;
+using System.Runtime.Remoting.Channels;
 
-namespace PuppetMaster {
+using BinaryTreeStruct;
+using PuppetMasterCommonTypes;
+
+namespace PuppetMasterService {
     //<Summary>
     // "Provides a singe console from where it is possible to control experiments"
     //</Summary>
@@ -131,21 +136,28 @@ namespace PuppetMaster {
             }
         }
 
-        public PuppetMaster(String confFileName) {
-            subscriberList = new List<String>();
-            publisherList = new List<String>();
-            brokerList = new List<String>();
-            SESDADBinaryTree = new BinaryTree<String>();
-            String line;
-            StreamReader file = new StreamReader(confFileName);
-            while ((line = file.ReadLine()) != null) {
-                parseLineToCommand(line);
-            }
-            file.Close();
+        public PuppetMaster() {
+            //subscriberList = new List<String>();
+            //publisherList = new List<String>();
+            //brokerList = new List<String>();
+            //SESDADBinaryTree = new BinaryTree<String>();
+            //String line;
+            //StreamReader file = new StreamReader("sesdadrc");
+            //while ((line = file.ReadLine()) != null) {
+            //    parseLineToCommand(line);
+            //}
+            //file.Close();
         }
 
-        public void Start() {
+        public void Connect(int port = 8086) {
+            TcpChannel channel = new TcpChannel(port);
+            ChannelServices.RegisterChannel(channel, true);
+            PuppetMasterRemoteObject remoteObject = new PuppetMasterRemoteObject();
 
+            RemotingServices.Marshal(
+                remoteObject,
+                "PuppetMasterURL",
+                typeof(PuppetMasterRemoteObject));
         }
     }
 }

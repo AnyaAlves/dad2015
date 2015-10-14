@@ -8,35 +8,35 @@ namespace PuppetMasterConsole {
     // Puppet Master Text User Interface
     //</Summary>
     public class PuppetMasterConsole {
+        private IExecutioner puppetMasterRemoteObject;
+
         //<Summary>
         // Starts connection with Puppet Master Service
         //</Summary>
-        private static IExecutioner Connect(String puppetMasterURL) {
+        public void Connect(String puppetMasterURL) {
             TcpChannel channel = new TcpChannel();
             ChannelServices.RegisterChannel(channel, true);
-            return (IExecutioner)Activator.GetObject(
+            puppetMasterRemoteObject = (IExecutioner)Activator.GetObject(
                 typeof(IExecutioner),
                 puppetMasterURL);
         }
         //<Summary>
         // Send a command to Puppet Master Service for execution
         //</Summary>
-        public static void ExecuteCommand(String puppetMasterURL, String command) {
+        public void ExecuteCommand(String command) {
             String reply;
-            IExecutioner puppetMasterRemoeObject = Connect(puppetMasterURL);
-            reply = puppetMasterRemoeObject.ExecuteCommand(command);
+            reply = puppetMasterRemoteObject.ExecuteCommand(command);
             System.Console.WriteLine(reply);
 
         }
         //<Summary>
         // Create CLI interface for user interaction with Puppet Master Service
         //</Summary>
-        public static void StartCLI(String puppetMasterURL) {
+        public void StartCLI() {
             String command, reply;
-            IExecutioner puppetMasterRemoeObject = Connect(puppetMasterURL);
             while (true) {
                 command = System.Console.ReadLine();
-                reply = puppetMasterRemoeObject.ExecuteCommand(command);
+                reply = puppetMasterRemoteObject.ExecuteCommand(command);
                 System.Console.WriteLine(reply);
             }
         }

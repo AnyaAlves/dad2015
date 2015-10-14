@@ -3,7 +3,6 @@ using System.Collections.Generic;
 
 namespace PuppetMasterService {
     public class Site {
-        private static rootHasBeenDefined
         private Site parent;
         private IList<Site> children;
 
