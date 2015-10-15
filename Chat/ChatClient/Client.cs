@@ -20,6 +20,7 @@ namespace ChatClient {
         private IServerRemoteObject conversation;
         private TcpChannel channel;
         private Action<String> printOnWarningLabel, printOnChatBox, printOnMessageWarningLabel;
+        private ObjRef conversationReference;
 
         public Client(Action<String> printOnWarningLabelValue,
                       Action<String> printOnChatBoxValue,
@@ -50,7 +51,7 @@ namespace ChatClient {
             conversation = (IServerRemoteObject)Activator.GetObject(
                 typeof(IServerRemoteObject),
                 "tcp://localhost:8086/Conversation");
-            RemotingServices.Marshal(
+            conversationReference = RemotingServices.Marshal(
                 remoteObject,
                 "Conversation",
                 typeof(ClientRemoteObject));
@@ -72,7 +73,6 @@ namespace ChatClient {
         }
 
         public void Disconnect() {
-
             // Create delegate to remote method
             Action<String> RemoteDel = new Action<String>(conversation.UnregisterClient);
             // Create delegate to local callback
@@ -81,6 +81,8 @@ namespace ChatClient {
             IAsyncResult RemAr = RemoteDel.BeginInvoke(nickname, RemoteCallback, null);
 
             conversation = null;
+            ClientRemoteObject remoteObject = (ClientRemoteObject) RemotingServices.Unmarshal(conversationReference);
+            RemotingServices.Disconnect(remoteObject);
             ChannelServices.UnregisterChannel(channel);
         }
 

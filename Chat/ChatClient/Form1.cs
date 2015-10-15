@@ -94,7 +94,7 @@ namespace ChatClient {
         private void chatBox_print(String value) {
             // Make sure we're on the UI thread
             if (chatBox.InvokeRequired == false) {
-                chatBox.Text += value;
+                chatBox.Text += value + "\n";
             }
             else {
                 // Show progress
