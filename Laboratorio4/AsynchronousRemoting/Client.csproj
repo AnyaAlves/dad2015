@@ -77,6 +77,10 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\RemoteExceptions\LibTesteExcepcoesRemotas\RemoteExceptionsLibTesteExcepcoesRemotas.csproj">
+      <Project>{c1807080-5df8-4ed2-857a-85c0b56249e6}</Project>
+      <Name>RemoteExceptionsLibTesteExcepcoesRemotas</Name>
+    </ProjectReference>
     <Reference Include="System">
       <Name>System</Name>
     </Reference>

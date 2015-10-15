@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteExceptionsServidor", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteExceptionsTesteExcepcoesRemotas", "RemoteExceptions\TesteExcepcoesRemotas\RemoteExceptionsTesteExcepcoesRemotas.csproj", "{628EE2AD-13DB-4F06-89F3-CB9881A48F4D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PeopleDataBaseLibrary", "PeopleDataBaseLibrary\PeopleDataBaseLibrary.csproj", "{741D6199-BD93-4D12-ACF6-F8DB88C02825}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -49,6 +51,10 @@ Global
 		{628EE2AD-13DB-4F06-89F3-CB9881A48F4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{628EE2AD-13DB-4F06-89F3-CB9881A48F4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{628EE2AD-13DB-4F06-89F3-CB9881A48F4D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{741D6199-BD93-4D12-ACF6-F8DB88C02825}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{741D6199-BD93-4D12-ACF6-F8DB88C02825}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{741D6199-BD93-4D12-ACF6-F8DB88C02825}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{741D6199-BD93-4D12-ACF6-F8DB88C02825}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,13 +1,20 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.IO;
 
 public class MyRemoteObject : MarshalByRefObject, MyRemoteInterface {
+    private readonly 
+
+    public MyRemoteObject() {
+        
+    }
+
 	public string MetodoOla() {
 		//return "ola!";
 		throw new MyException(3, this);
 	}
-	public string OlaSemExcepcao() {
+	public TextReader get() {
 		return "ola!";
 	}
 }

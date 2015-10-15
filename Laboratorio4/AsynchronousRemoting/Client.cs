@@ -9,63 +9,66 @@ using System.Threading;
 
 namespace RemotingSample {
 
-	class Client {
+    class Client {
 
-		public delegate string RemoteAsyncDelegate();
+        public delegate string RemoteAsyncDelegate();
 
-	  // This is the call that the AsyncCallBack delegate will reference.
-   public static void OurRemoteAsyncCallBack(IAsyncResult ar){
-		 // Alternative 2: Use the callback to get the return value
-      RemoteAsyncDelegate del = (RemoteAsyncDelegate)((AsyncResult)ar).AsyncDelegate;
-      Console.WriteLine("\r\n**SUCCESS**: Result of the remote AsyncCallBack: "  + del.EndInvoke(ar) );
-      
-        return;
-   }
+        // This is the call that the AsyncCallBack delegate will reference.
+        public static void OurRemoteAsyncCallBack(IAsyncResult ar) {
+            // Alternative 2: Use the callback to get the return value
+            RemoteAsyncDelegate del = (RemoteAsyncDelegate)((AsyncResult)ar).AsyncDelegate;
+            Console.WriteLine("\r\n**SUCCESS**: Result of the remote AsyncCallBack: " + del.EndInvoke(ar));
 
-		static void Main() {
-                // allocate and register channel
-			TcpChannel channel = new TcpChannel();
-			ChannelServices.RegisterChannel(channel,true);
-                // get reference to remote service
-			MyRemoteObject obj = (MyRemoteObject) Activator.GetObject(
-				typeof(MyRemoteObject),
-				"tcp://localhost:8086/MyRemoteObjectName");   
+            return;
+        }
 
-	 		try
-	 		{
-                        // first a simple synchronous call
-	 			Console.WriteLine(obj.MetodoOla());
+        static void Main() {
+            // allocate and register channel
+            TcpChannel channel = new TcpChannel();
+            ChannelServices.RegisterChannel(channel, true);
+            // get reference to remote service
+            MyRemoteInterface obj = (MyRemoteInterface)Activator.GetObject(
+                typeof(MyRemoteInterface),
+                "tcp://localhost:8086/MyRemoteObjectName");
 
-                        // change this to true to use the callback (alt.2)
-                        bool useCallback = false;
+            try {
+                // first a simple synchronous call
+                Console.WriteLine(obj.MetodoOla());
 
-                        if (!useCallback) {
-                        // Alternative 1: asynchronous call without callback
-                        // Create delegate to remote method
-				RemoteAsyncDelegate RemoteDel = new RemoteAsyncDelegate(obj.MetodoOla);
-                                // Call delegate to remote method
-				IAsyncResult RemAr = RemoteDel.BeginInvoke(null, null);
-			  // Wait for the end of the call and then explictly call EndInvoke
-				RemAr.AsyncWaitHandle.WaitOne();
-				Console.WriteLine(RemoteDel.EndInvoke(RemAr));
+                // change this to true to use the callback (alt.2)
+                bool useCallback = false;
 
-                               } else {
-                        // Alternative 2: asynchronous call with callback
-                        // Create delegate to remote method
-				RemoteAsyncDelegate RemoteDel = new RemoteAsyncDelegate(obj.MetodoOla);
-                        // Create delegate to local callback
-				AsyncCallback RemoteCallback = new AsyncCallback(Client.OurRemoteAsyncCallBack);
-                                // Call remote method
-				IAsyncResult RemAr = RemoteDel.BeginInvoke(RemoteCallback, null);
-                               }
+                if (!useCallback) {
+                    // Alternative 1: asynchronous call without callback
+                    // Create delegate to remote method
+                    RemoteAsyncDelegate RemoteDel = new RemoteAsyncDelegate(obj.MetodoOla);
+                    // Call delegate to remote method
+                    IAsyncResult RemAr = RemoteDel.BeginInvoke(null, null);
+                    // Wait for the end of the call and then explictly call EndInvoke
+                    RemAr.AsyncWaitHandle.WaitOne();
+                    Console.WriteLine(RemoteDel.EndInvoke(RemAr));
 
-			}
-	 		catch(SocketException)
-	 		{
-	 			System.Console.WriteLine("Could not locate server");
-	 		}
+                }
+                else {
+                    // Alternative 2: asynchronous call with callback
+                    // Create delegate to remote method
+                    RemoteAsyncDelegate RemoteDel = new RemoteAsyncDelegate(obj.MetodoOla);
+                    // Create delegate to local callback
+                    AsyncCallback RemoteCallback = new AsyncCallback(Client.OurRemoteAsyncCallBack);
+                    // Call remote method
+                    IAsyncResult RemAr = RemoteDel.BeginInvoke(RemoteCallback, null);
+                }
 
-			Console.ReadLine();
-		}
-	}
+            }
+            catch (SocketException) {
+                System.Console.WriteLine("Could not locate server");
+            }
+            catch (MyException e) {
+                Console.WriteLine("I caught an exception: " + e.campo);
+                Console.WriteLine("I caught an exception: " + e.mo.OlaSemExcepcao());
+            }
+
+            Console.ReadLine();
+        }
+    }
 }
