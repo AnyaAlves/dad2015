@@ -1,0 +1,11 @@
+Site DM Parent none
+Site Rodrigo Parent DM
+Site YorkHunt Parent DM
+Process MikeHawk Is broker On YorkHunt URL tcp://localhost:8086/MikeHawk
+RoutingPolicy flooding
+Ordering NO
+Crash MikeHawk
+Freeze MikeHawk
+Unfreeze MikeHawk
+Wait 2
+LoggingLevel light
