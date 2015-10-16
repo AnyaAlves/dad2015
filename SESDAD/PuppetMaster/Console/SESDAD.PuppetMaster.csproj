@@ -49,7 +49,7 @@
     <Compile Include="Node.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="PuppetMasterURL.cs" />
+    <Compile Include="PuppetMasterService.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CommonTypes\SESDAD.PuppetMaster.CommonTypes.csproj">

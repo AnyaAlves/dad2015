@@ -17,179 +17,28 @@ using System.Diagnostics;
 
 namespace SESDAD.PuppetMaster {
     public class PuppetMaster {
-        private IList<IPuppetMasterURL> puppetMasterRemoteObject;
+        private IList<IPuppetMasterService> puppetMasters;
         private int port;
 
-        public PuppetMaster () {
-            puppetMasterRemoteObject = new List<IPuppetMasterURL>();
+        public PuppetMaster() {
+            puppetMasters = new List<IPuppetMasterService>();
             port = 1000;
         }
 
-        //<summary>
-        // Identify command
-        //</summary>
-        private String parseLineToCommand(String line) {
-            String[] fields = line.Split(' ');
-            String command = fields[0];
-
-            switch (fields.Length) {
-                case 1:
-                    if (command.Equals("Status")) { foreach (IPuppetMasterURL pmro in puppetMasterRemoteObject) pmro.ExecuteStatusCommand(); }
-                    break;
-                case 2:
-                    switch (command[0]) {
-                        case 'R':
-                            if (command.Equals("RoutingPolicy")) {
-                                if (fields[1] == "flooding") {
-                                    foreach (IPuppetMasterURL pmro in puppetMasterRemoteObject) pmro.ExecuteFloodingRoutingPolicyCommand();
-                                }
-                                else if (fields[1] == "filter") {
-                                    foreach (IPuppetMasterURL pmro in puppetMasterRemoteObject) pmro.ExecuteFilterRoutingPolicyCommand();
-                                }
-                            }
-                            break;
-                        case 'O':
-                            if (command.Equals("Ordering")) {
-                                if (fields[1] == "NO") {
-                                    foreach (IPuppetMasterURL pmro in puppetMasterRemoteObject) pmro.ExecuteNoOrderingCommand();
-                                }
-                                if (fields[1] == "FIFO") {
-                                    foreach (IPuppetMasterURL pmro in puppetMasterRemoteObject) pmro.ExecuteFIFOOrderingCommand();
-                                }
-                                if (fields[1] == "TOTAL") {
-                                    foreach (IPuppetMasterURL pmro in puppetMasterRemoteObject) pmro.ExecuteTotalOrderingCommand();
-                                }
-                            }
-                            break;
-                        case 'C':
-                            if (command.Equals("Crash")) {
-                                foreach (IPuppetMasterURL pmro in puppetMasterRemoteObject) pmro.ExecuteCrashCommand(fields[1]);
-                            }
-                            break;
-                        case 'F':
-                            if (command.Equals("Freeze")) {
-                                foreach (IPuppetMasterURL pmro in puppetMasterRemoteObject) pmro.ExecuteFreezeCommand(fields[1]);
-                            }
-                            break;
-                        case 'U':
-                            if (command.Equals("Unfreeze")) {
-                                foreach (IPuppetMasterURL pmro in puppetMasterRemoteObject) pmro.ExecuteUnfreezeCommand(fields[1]);
-                            }
-                            break;
-                        case 'W':
-                            if (command.Equals("Wait")) {
-                                int integerTime;
-                                if (Int32.TryParse(fields[3], out integerTime)) {
-                                    foreach (IPuppetMasterURL pmro in puppetMasterRemoteObject) pmro.ExecuteWaitCommand(integerTime);
-                                }
-                            }
-                            break;
-                        case 'L':
-                            if (command.Equals("LoggingLevel")) {
-                                if (fields[1] == "full") {
-                                    foreach (IPuppetMasterURL pmro in puppetMasterRemoteObject) pmro.ExecuteFullLoggingLevelCommand();
-                                }
-                                if (fields[1] == "light") {
-                                    foreach (IPuppetMasterURL pmro in puppetMasterRemoteObject) pmro.ExecuteLightLoggingLevelCommand();
-                                }
-                            }
-                            break;
-                    }
-                    break;
-                case 4:
-                    if (command.Equals("Site") &&
-                        fields[2].Equals("Parent")) {
-                            String puppetMasterURL = fields[1] + ":" + (port++).ToString() + "/PuppetMasterURL";
-                            CreatePuppetMasterURL(puppetMasterURL);
-                            GetRemoteObject(puppetMasterURL);
-                            foreach (IPuppetMasterURL pmro in puppetMasterRemoteObject) pmro.ExecuteSiteCommand(
-                                fields[1],
-                                fields[3]);
-                    }
-                    else if (command.Equals("Subscriber")) {
-                        if (fields[2].Equals("Subscribe")) {
-                            foreach (IPuppetMasterURL pmro in puppetMasterRemoteObject) pmro.ExecuteSubscribeCommand(
-                                fields[1],
-                                fields[3]);
-                        }
-                        else if (fields[2].Equals("Unsubscribe")) {
-                            foreach (IPuppetMasterURL pmro in puppetMasterRemoteObject) pmro.ExecuteUnsubscribeCommand(
-                                fields[1],
-                                fields[3]);
-                        }
-                    }
-                    break;
-                case 8:
-                    if (command.Equals("Publisher") &&
-                        fields[2].Equals("Publish") &&
-                        fields[4].Equals("Ontopic") &&
-                        fields[6].Equals("Interval")) {
-                        int publishTimes, intervalTimes;
-                        if (Int32.TryParse(fields[3], out publishTimes) &&
-                           Int32.TryParse(fields[7], out intervalTimes))
-                            foreach (IPuppetMasterURL pmro in puppetMasterRemoteObject) pmro.ExecutePublishCommand(
-                                fields[1],
-                                publishTimes,
-                                fields[5],
-                                intervalTimes);
-                    }
-                    else if (command.Equals("Process") &&
-                        fields[2].Equals("Is") &&
-                        fields[4].Equals("On") &&
-                        fields[6].Equals("URL") &&
-                        new Regex("^tcp:\\/{2}[\\d\\.]+\\:\\d+\\/\\w*$").IsMatch(fields[7])) {
-                        if (fields[3].Equals("broker")) {
-                            foreach (IPuppetMasterURL pmro in puppetMasterRemoteObject) pmro.ExecuteBrokerCommand(
-                                fields[1],
-                                fields[5],
-                                fields[7]);
-                        }
-                        else if (fields[3].Equals("publisher")) {
-                            foreach (IPuppetMasterURL pmro in puppetMasterRemoteObject) pmro.ExecutePublisherCommand(
-                                fields[1],
-                                fields[5],
-                                fields[7]);
-                        }
-                        else if (fields[3].Equals("subscriber")) {
-                            foreach (IPuppetMasterURL pmro in puppetMasterRemoteObject) pmro.ExecuteSubscriberCommand(
-                                fields[1],
-                                fields[5],
-                                fields[7]);
-                        }
-                    }
-                    break;
-            }
-
-            return "test";
-        }
-        private void CreatePuppetMasterURL(String puppetMasterURL) {
-            String[] args = new [] {puppetMasterURL};
-            Action<String[]> thread = new Action<String[]>(SESDAD.PuppetMaster.Program.Main);
-            thread.BeginInvoke(args, null, null);
-            System.Console.WriteLine("Ok... Now what?");
-            System.Console.ReadLine();
-        }
-        //<summary>
-        // Starts connection with Puppet Master Service
-        //</summary>
-        private void GetRemoteObject(String puppetMasterURL) {
-            puppetMasterRemoteObject.Add((IPuppetMasterURL)Activator.GetObject(
-                typeof(IPuppetMasterURL),
-                puppetMasterURL));
-        }
         //<summary>
         // Starts connection with Puppet Master Service
         //</summary>
         public void Connect() {
             TcpChannel channel = new TcpChannel(port++);
             ChannelServices.RegisterChannel(channel, true);
-            PuppetMasterURL puppetMasterURL = new PuppetMasterURL();
+            PuppetMasterService puppetMasterService = new PuppetMasterService();
             RemotingServices.Marshal(
-                puppetMasterURL,
-                "PuppetMasterURL",
-                typeof(PuppetMasterURL));
-            puppetMasterRemoteObject.Add((IPuppetMasterURL)puppetMasterURL);
+                puppetMasterService,
+                "puppetMasterService",
+                typeof(PuppetMasterService));
+            puppetMasters.Add((IPuppetMasterService)puppetMasterService);
         }
+
         public void ExecuteConfigurationFile() {
             String line;
             StreamReader file = new StreamReader("sesdadrc");
@@ -198,6 +47,7 @@ namespace SESDAD.PuppetMaster {
             }
             file.Close();
         }
+
         //<summary>
         // Create CLI interface for user interaction with Puppet Master Service
         //</summary>
@@ -208,6 +58,138 @@ namespace SESDAD.PuppetMaster {
                 reply = parseLineToCommand(command);
                 System.Console.WriteLine(reply);
             }
+        }
+
+        //<summary>
+        // Identify command
+        //</summary>
+        private String parseLineToCommand(String line) {
+            String[] fields = line.Split(' ');
+            String command = fields[0];
+
+            if (fields.Length==1 && command.Equals("Status")) {
+                foreach (IPuppetMasterService puppetMasterService in puppetMasters)
+                    puppetMasterService.ExecuteStatusCommand();
+            }
+            if (fields.Length==2 && command.Equals("RoutingPolicy")) {
+                if (fields[1] == "flooding") {
+                    foreach (IPuppetMasterService puppetMasterService in puppetMasters)
+                        puppetMasterService.ExecuteFloodingRoutingPolicyCommand();
+                } else if (fields[1] == "filter") {
+                    foreach (IPuppetMasterService puppetMasterService in puppetMasters)
+                        puppetMasterService.ExecuteFilterRoutingPolicyCommand();
+                }
+            }
+            if (fields.Length==2 && command.Equals("Ordering")) {
+                if (fields[1] == "NO") {
+                    foreach (IPuppetMasterService puppetMasterService in puppetMasters)
+                        puppetMasterService.ExecuteNoOrderingCommand();
+                }else if (fields[1] == "FIFO") {
+                    foreach (IPuppetMasterService puppetMasterService in puppetMasters)
+                        puppetMasterService.ExecuteFIFOOrderingCommand();
+                }else if (fields[1] == "TOTAL") {
+                    foreach (IPuppetMasterService puppetMasterService in puppetMasters)
+                        puppetMasterService.ExecuteTotalOrderingCommand();
+                }
+            }
+            if (fields.Length==2 && command.Equals("Crash")) {
+                foreach (IPuppetMasterService puppetMasterService in puppetMasters)
+                    puppetMasterService.ExecuteCrashCommand(fields[1]);
+            }
+            if (fields.Length==2 && command.Equals("Freeze")) {
+                foreach (IPuppetMasterService puppetMasterService in puppetMasters)
+                    puppetMasterService.ExecuteFreezeCommand(fields[1]);
+            }
+            if (fields.Length==2 && command.Equals("Unfreeze")) {
+                foreach (IPuppetMasterService puppetMasterService in puppetMasters)
+                    puppetMasterService.ExecuteUnfreezeCommand(fields[1]);
+            }
+            if (fields.Length == 2 && command.Equals("Wait")) {
+                int integerTime;
+                if (Int32.TryParse(fields[1], out integerTime)) {
+                    foreach (IPuppetMasterService puppetMasterService in puppetMasters)
+                        puppetMasterService.ExecuteWaitCommand(integerTime);
+                }
+                if (fields.Length == 2 && command.Equals("LoggingLevel")) {
+                    if (fields[1] == "full") {
+                        foreach (IPuppetMasterService puppetMasterService in puppetMasters)
+                            puppetMasterService.ExecuteFullLoggingLevelCommand();
+                    }
+                    else if (fields[1] == "light") {
+                        foreach (IPuppetMasterService puppetMasterService in puppetMasters)
+                            puppetMasterService.ExecuteLightLoggingLevelCommand();
+                    }
+                }
+            }
+            if (fields.Length == 4 && command.Equals("Site") && fields[2].Equals("Parent")) {
+                String puppetMasterURL = "tcp://" + fields[1] + ":" + (port++).ToString() + "/puppetMasterService";
+                CreatePuppetMasterService(puppetMasterURL);
+                foreach (IPuppetMasterService puppetMasterService in puppetMasters)
+                    puppetMasterService.ExecuteSiteCommand(fields[1], fields[3]);
+            }
+            if (fields.Length == 4 && command.Equals("Subscriber")) {
+                if (fields[2].Equals("Subscribe")) {
+                    foreach (IPuppetMasterService puppetMasterService in puppetMasters)
+                        puppetMasterService.ExecuteSubscribeCommand(fields[1], fields[3]);
+                }
+                else if (fields[2].Equals("Unsubscribe")) {
+                    foreach (IPuppetMasterService puppetMasterService in puppetMasters)
+                        puppetMasterService.ExecuteUnsubscribeCommand(fields[1], fields[3]);
+                }
+            }
+            if (fields.Length == 8 && command.Equals("Publisher") &&
+                        fields[2].Equals("Publish") &&
+                        fields[4].Equals("Ontopic") &&
+                        fields[6].Equals("Interval")) {
+                int publishTimes, intervalTimes;
+                if (Int32.TryParse(fields[3], out publishTimes) && Int32.TryParse(fields[7], out intervalTimes)) {
+                    foreach (IPuppetMasterService puppetMasterService in puppetMasters)
+                        puppetMasterService.ExecutePublishCommand(
+                                fields[1],
+                                publishTimes,
+                                fields[5],
+                                intervalTimes);
+                }
+            }
+            if (fields.Length == 8 && command.Equals("Process") &&
+                        fields[2].Equals("Is") &&
+                        fields[4].Equals("On") &&
+                        fields[6].Equals("URL") &&
+                        new Regex("^tcp://\\w+:\\d\\d\\d\\d/\\w+$").IsMatch(fields[7])) {
+                if (fields[3].Equals("broker")) {
+                    foreach (IPuppetMasterService puppetMasterService in puppetMasters)
+                        puppetMasterService.ExecuteBrokerCommand(
+                                fields[1],
+                                fields[5],
+                                fields[7]);
+                } else if (fields[3].Equals("publisher")) {
+                    foreach (IPuppetMasterService puppetMasterService in puppetMasters)
+                        puppetMasterService.ExecutePublisherCommand(
+                                fields[1],
+                                fields[5],
+                                fields[7]);
+                } else if (fields[3].Equals("subscriber")) {
+                    foreach (IPuppetMasterService puppetMasterService in puppetMasters)
+                        puppetMasterService.ExecuteSubscriberCommand(
+                                fields[1],
+                                fields[5],
+                                fields[7]);
+                }
+            }
+            return "test";
+        }
+
+        //wtf is this
+        private void CreatePuppetMasterService(String puppetMasterURL) {
+        /*    String[] args = new[] { puppetMasterURL }; //what
+            Action<String[]> thread = new Action<String[]>(SESDAD.PuppetMaster.Program.Main); //?????
+            thread.BeginInvoke(args, null, null);
+            puppetMasters.Add((IPuppetMasterService)Activator.GetObject(
+                typeof(IPuppetMasterService),
+                puppetMasterURL));
+           
+            System.Console.WriteLine("Ok... Now what?");
+            System.Console.ReadLine();*/
         }
     }
 

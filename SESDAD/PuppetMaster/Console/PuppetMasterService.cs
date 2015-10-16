@@ -8,30 +8,30 @@ using System.Runtime.Remoting;
 using SESDAD.PuppetMaster.CommonTypes;
 
 namespace SESDAD.PuppetMaster {
-    public class PuppetMasterURL : MarshalByRefObject, IPuppetMasterURL {
+    public class PuppetMasterService : MarshalByRefObject, IPuppetMasterService {
 
         public void ExecuteSiteCommand(
             String siteName,
             String parentName) {
-                Console.WriteLine("Site");
+                Console.WriteLine("Site "+siteName+parentName);
         }
         public void ExecuteBrokerCommand(
             String brokerName,
             String siteName,
             String urlName) {
-                Console.WriteLine("Broker");
+                Console.WriteLine("Broker"+brokerName+siteName+urlName);
         }
         public void ExecutePublisherCommand(
             String publisherName,
             String siteName,
             String urlName) {
-                Console.WriteLine("Publisher");
+                Console.WriteLine("Publisher"+publisherName+siteName+urlName);
         }
         public void ExecuteSubscriberCommand(
             String subscriberName,
             String siteName,
             String urlName) {
-                Console.WriteLine("Subscriber");
+                Console.WriteLine("Subscriber"+subscriberName+siteName+urlName);
         }
         public void ExecuteFloodingRoutingPolicyCommand() {
             Console.WriteLine("FloodingRoutingPolicy");
