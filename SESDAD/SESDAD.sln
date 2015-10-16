@@ -3,13 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PuppetMaster", "PuppetMaster", "{6AFA35C1-DE53-4147-A0F5-5CFA0C8D95AD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SESDAD.PuppetMaster.CommonTypes", "PuppetMaster\CommonTypes\SESDAD.PuppetMaster.CommonTypes.csproj", "{8830E1F4-7B06-4A60-9283-4EBFCBA38C6C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SESDAD.PuppetMaster", "PuppetMaster\Console\SESDAD.PuppetMaster.csproj", "{B7882D9B-9AF4-4F33-83AD-B3538B6ED133}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SESDAD.PuppetMaster.Library", "PuppetMaster\Library\SESDAD.PuppetMaster.Library.csproj", "{DB9588E4-4AEA-4319-A520-2C853719154D}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SESDAD.PuppetMaster.Service", "PuppetMaster\Service\SESDAD.PuppetMaster.Service.csproj", "{EA5CFA13-7FE7-4CAA-939F-66A92C72EAB0}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SESDAD.PuppetMaster.Console", "PuppetMaster\Console\SESDAD.PuppetMaster.Console.csproj", "{B7882D9B-9AF4-4F33-83AD-B3538B6ED133}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SESDAD.PuppetMaster.CommonTypes", "PuppetMaster\CommonTypes\SESDAD.PuppetMaster.CommonTypes.csproj", "{CF403C66-9408-42FE-A9A1-93EF82810AF0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,30 +13,20 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{8830E1F4-7B06-4A60-9283-4EBFCBA38C6C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8830E1F4-7B06-4A60-9283-4EBFCBA38C6C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8830E1F4-7B06-4A60-9283-4EBFCBA38C6C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8830E1F4-7B06-4A60-9283-4EBFCBA38C6C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DB9588E4-4AEA-4319-A520-2C853719154D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DB9588E4-4AEA-4319-A520-2C853719154D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DB9588E4-4AEA-4319-A520-2C853719154D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DB9588E4-4AEA-4319-A520-2C853719154D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EA5CFA13-7FE7-4CAA-939F-66A92C72EAB0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EA5CFA13-7FE7-4CAA-939F-66A92C72EAB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EA5CFA13-7FE7-4CAA-939F-66A92C72EAB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EA5CFA13-7FE7-4CAA-939F-66A92C72EAB0}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B7882D9B-9AF4-4F33-83AD-B3538B6ED133}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B7882D9B-9AF4-4F33-83AD-B3538B6ED133}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B7882D9B-9AF4-4F33-83AD-B3538B6ED133}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B7882D9B-9AF4-4F33-83AD-B3538B6ED133}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF403C66-9408-42FE-A9A1-93EF82810AF0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF403C66-9408-42FE-A9A1-93EF82810AF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF403C66-9408-42FE-A9A1-93EF82810AF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF403C66-9408-42FE-A9A1-93EF82810AF0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{8830E1F4-7B06-4A60-9283-4EBFCBA38C6C} = {6AFA35C1-DE53-4147-A0F5-5CFA0C8D95AD}
-		{DB9588E4-4AEA-4319-A520-2C853719154D} = {6AFA35C1-DE53-4147-A0F5-5CFA0C8D95AD}
-		{EA5CFA13-7FE7-4CAA-939F-66A92C72EAB0} = {6AFA35C1-DE53-4147-A0F5-5CFA0C8D95AD}
 		{B7882D9B-9AF4-4F33-83AD-B3538B6ED133} = {6AFA35C1-DE53-4147-A0F5-5CFA0C8D95AD}
+		{CF403C66-9408-42FE-A9A1-93EF82810AF0} = {6AFA35C1-DE53-4147-A0F5-5CFA0C8D95AD}
 	EndGlobalSection
 EndGlobal

@@ -5,7 +5,7 @@ namespace SESDAD.PuppetMaster.CommonTypes {
     //<summary>
     // Type of Logging Level
     //</summary>
-    public interface IPuppetMaster {
+    public interface IPuppetMasterURL {
         void ExecuteSiteCommand(String siteName, String parentName);
         void ExecuteBrokerCommand(String brokerName, String SiteName, String urlName);
         void ExecutePublisherCommand(String publisherName, String SiteName, String urlName);

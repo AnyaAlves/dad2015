@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace SESDAD.PuppetMaster.Library {
+namespace SESDAD.PuppetMaster {
     public class Node {
         private Node parent;
         private IList<Node> children;

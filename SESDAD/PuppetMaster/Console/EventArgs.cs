@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SESDAD.PuppetMaster.Library {
+namespace SESDAD.PuppetMaster {
     //<summary>
     // Type of Routing Policy
     //</summary>

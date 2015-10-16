@@ -7,8 +7,8 @@
     <ProjectGuid>{B7882D9B-9AF4-4F33-83AD-B3538B6ED133}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SESDAD.PuppetMaster.Console</RootNamespace>
-    <AssemblyName>SESDAD.PuppetMaster.Console</AssemblyName>
+    <RootNamespace>SESDAD.PuppetMaster</RootNamespace>
+    <AssemblyName>SESDAD.PuppetMaster</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -32,13 +32,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <StartupObject>SESDAD.PuppetMaster.Console.Program</StartupObject>
+    <StartupObject>SESDAD.PuppetMaster.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CommandLine, Version=1.9.71.2, Culture=neutral, PublicKeyToken=de6f01bd326f8c32, processorArchitecture=MSIL">
-      <HintPath>..\packages\CommandLineParser.1.9.71\lib\net45\CommandLine.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Remoting" />
@@ -49,21 +45,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EventArgs.cs" />
+    <Compile Include="Node.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-    <None Include="packages.config" />
+    <Compile Include="PuppetMasterURL.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CommonTypes\SESDAD.PuppetMaster.CommonTypes.csproj">
-      <Project>{8830e1f4-7b06-4a60-9283-4ebfcba38c6c}</Project>
+      <Project>{cf403c66-9408-42fe-a9a1-93ef82810af0}</Project>
       <Name>SESDAD.PuppetMaster.CommonTypes</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Service\SESDAD.PuppetMaster.Service.csproj">
-      <Project>{ea5cfa13-7fe7-4caa-939f-66a92c72eab0}</Project>
-      <Name>SESDAD.PuppetMaster.Service</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
