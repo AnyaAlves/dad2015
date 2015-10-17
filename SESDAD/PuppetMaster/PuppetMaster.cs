@@ -23,7 +23,7 @@ namespace SESDAD.PuppetMaster {
         private RoutingPolicyType routingPolicy;
         private OrderingType ordering;
         private LoggingLevelType loggingLevel;
-        private const int DEFAULTPORT = 1000;
+        private IDictionary<String, String> siteURLTable;
 
         public PuppetMaster() {
             puppetMasters = new List<IPuppetMasterService>();
@@ -35,18 +35,29 @@ namespace SESDAD.PuppetMaster {
             routingPolicy = RoutingPolicyType.flooding;
             ordering = OrderingType.FIFO;
             loggingLevel = LoggingLevelType.light;
+            siteURLTable = new Dictionary<String, String>();
+            siteURLTable.Add("Site0","tcp://localhost:1000/Site0");
+            siteURLTable.Add("Site1","tcp://localhost:1001/Site1");
+            siteURLTable.Add("Site2","tcp://localhost:1002/Site2");
+            siteURLTable.Add("Site3","tcp://localhost:1003/Site3");
+            siteURLTable.Add("Site4","tcp://localhost:1004/Site4");
+            siteURLTable.Add("Site5","tcp://localhost:1005/Site5");
+            siteURLTable.Add("Site6","tcp://localhost:1006/Site6");
+            siteURLTable.Add("Site7","tcp://localhost:1007/Site7");
+            siteURLTable.Add("Site8","tcp://localhost:1008/Site8");
+            siteURLTable.Add("Site9","tcp://localhost:1009/Site9");
         }
 
         //<summary>
         // Starts connection with Puppet Master Service
         //</summary>
-        public void Connect() {
-            TcpChannel channel = new TcpChannel(DEFAULTPORT);
+        public void Connect(String site, int port) {
+            TcpChannel channel = new TcpChannel(port);
             ChannelServices.RegisterChannel(channel, true);
             PuppetMasterService puppetMasterService = new PuppetMasterService();
             RemotingServices.Marshal(
                 puppetMasterService,
-                "PuppetMasterURL",
+                site + "/PuppetMasterURL",
                 typeof(PuppetMasterService));
             serviceTable.Add("127.0.0.1", (IPuppetMasterService)puppetMasterService);
         }
@@ -255,18 +266,29 @@ namespace SESDAD.PuppetMaster {
             }
             else if (fields.Length == 4 && command.Equals("Site") && fields[2].Equals("Parent")) {
                 // Assumption : The site has necessarily a Puppet Master
-                IPuppetMasterService puppetMasterService = (IPuppetMasterService)Activator.GetObject(
-                    typeof(IPuppetMasterService),
-                    "tcp://" + fields[1] + ":" + DEFAULTPORT + "/PuppetMasterURL");
-                try {
-                    puppetMasterService.SetPolicies(routingPolicy, ordering, loggingLevel);
-                    puppetMasterService.ExecuteSiteCommand(fields[1], fields[3]);
+                String url;
+                if (siteURLTable.TryGetValue(fields[1], out url)) {
+                    IPuppetMasterService puppetMasterService = (IPuppetMasterService)Activator.GetObject(
+                        typeof(IPuppetMasterService),
+                        url + "/PuppetMasterURL");
+                    try {
+                        puppetMasterService.SetPolicies(routingPolicy, ordering, loggingLevel);
+                        if (fields[3].Equals("none")) {
+                            puppetMasterService.ExecuteRootSiteCommand(fields[1]);
+                        }
+                        else {
+                            puppetMasterService.ExecuteSiteCommand(fields[1], fields[3]);
+                        }
+                    }
+                    catch (SocketException) {
+                        return putServiceAside(fields[1]);
+                    }
+                    serviceTable.Add(fields[1], puppetMasterService);
+                    return line;
                 }
-                catch (SocketException) {
-                    return putServiceAside(fields[1]);
+                else {
+                    return "Site " + fields[1] + " not found.";
                 }
-                serviceTable.Add(fields[1], puppetMasterService);
-                return line;
             }
             else if (fields.Length == 4 && command.Equals("Subscriber")) {
                 if (fields[2].Equals("Subscribe")) {
@@ -403,10 +425,17 @@ namespace SESDAD.PuppetMaster {
         // Entry Point
         //</summary>
         public static void Main(string[] args) {
-            PuppetMaster puppetMaster = new PuppetMaster();
-            puppetMaster.Connect();
-            puppetMaster.ExecuteConfigurationFile();
-            puppetMaster.StartCLI();
+            if (args.Length == 2) {
+                PuppetMaster puppetMaster = new PuppetMaster();
+                puppetMaster.Connect(args[0],Int32.Parse(args[1]));
+                if (File.Exists(args[2])) {
+                    puppetMaster.ExecuteConfigurationFile();
+                    puppetMaster.StartCLI();
+                }
+                while (true) {
+                    
+                }
+            }
         }
     }
 }

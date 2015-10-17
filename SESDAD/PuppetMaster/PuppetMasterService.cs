@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.Remoting;
 
-using SESDAD.PuppetMaster;
+using SESDAD.CommonTypes;
 
 namespace SESDAD.PuppetMaster {
     public class PuppetMasterService : MarshalByRefObject, IPuppetMasterService {
@@ -13,6 +13,7 @@ namespace SESDAD.PuppetMaster {
         private RoutingPolicyType routingPolicy;
         private OrderingType ordering;
         private LoggingLevelType loggingLevel;
+        private Site site;
 
         public PuppetMasterService() {
             log = "";
@@ -30,24 +31,33 @@ namespace SESDAD.PuppetMaster {
             loggingLevel = newLoggingLevel;
         }
 
+        public void ExecuteRootSiteCommand(
+            String siteName) {
+            site = new Site(siteName, null);
+        }
+
         public void ExecuteSiteCommand(
             String siteName,
             String parentName) {
+            site = new Site(siteName, null/*parentName*/);
         }
         public void ExecuteBrokerCommand(
             String brokerName,
             String siteName,
             String urlName) {
+            System.Diagnostics.Process.Start("SESDAD.MessageBroker.exe");
         }
         public void ExecutePublisherCommand(
             String publisherName,
             String siteName,
             String urlName) {
+            System.Diagnostics.Process.Start("SESDAD.Publisher.exe");
         }
         public void ExecuteSubscriberCommand(
             String subscriberName,
             String siteName,
             String urlName) {
+            System.Diagnostics.Process.Start("SESDAD.Subscriber.exe");
         }
         public void ExecuteFloodingRoutingPolicyCommand() {
             routingPolicy = RoutingPolicyType.flooding;

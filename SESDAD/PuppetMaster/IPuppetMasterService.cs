@@ -7,6 +7,7 @@ namespace SESDAD.PuppetMaster {
     //</summary>
     public interface IPuppetMasterService {
         void SetPolicies(RoutingPolicyType newRoutingPolicy, OrderingType newOrdering, LoggingLevelType newLoggingLevel);
+        void ExecuteRootSiteCommand(String siteName);
         void ExecuteSiteCommand(String siteName, String parentName);
         void ExecuteBrokerCommand(String brokerName, String SiteName, String urlName);
         void ExecutePublisherCommand(String publisherName, String SiteName, String urlName);
