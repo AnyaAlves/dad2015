@@ -13,6 +13,8 @@ using System.Threading;
 
 using SESDAD.CommonTypes;
 
+using TestApp;
+
 namespace SESDAD.MessageBroker {
 
     public class MessageBroker : Process {
@@ -27,18 +29,12 @@ namespace SESDAD.MessageBroker {
             channel = new TcpChannel(portNumber);
             ChannelServices.RegisterChannel(channel, true);
 
-            BrokerPubService pubService = new BrokerPubService(this);
+            BrokerService service = new BrokerService(this);
             /*serviceReference = */
             RemotingServices.Marshal(
-                pubService,
-                "BrokerPubService",
-                typeof(BrokerPubService));
-
-            BrokerSubService subService = new BrokerSubService(this);
-            RemotingServices.Marshal(
-                subService,
-                "BrokerSubService",
-                typeof(BrokerSubService));
+                service,
+                "broker",
+                typeof(BrokerService));
         }
 
         public void registerSubscription(String processName, String processURL, String topicName) {
@@ -54,6 +50,7 @@ namespace SESDAD.MessageBroker {
                 subscriptions.Add(topicName, subscribers);
             }
             subscribers.Add(processName, newSubscriber);
+            Console.WriteLine("New subcriber: " + processName);
         }
 
         public void removeSubscription(String processName, String processURL, String topicName) {
@@ -62,6 +59,7 @@ namespace SESDAD.MessageBroker {
             if (subscriptions.TryGetValue(topicName, out subscribers)) {
                 subscribers.Remove(processName);
             }
+            Console.WriteLine("Removed subcriber: " + processName);
         }
 
         public void ForwardEntry(String processName, String processURL, String entry) {
@@ -73,6 +71,15 @@ namespace SESDAD.MessageBroker {
                     subscriber.Value.DeliverEntry(entry);
                 }
             }
+            Console.WriteLine("Forwarding entry to all subscribers");
+        }
+    }
+
+    class Program {
+        static void Main(string[] args) {
+            MessageBroker broker0 = new MessageBroker("broker0", TestApp.Program.site0, "tcp://1.2.3.4:3333/broker");
+            broker0.Connect();
+            Console.ReadLine();
         }
     }
 }

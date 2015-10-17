@@ -14,10 +14,12 @@ using System.Threading;
 
 using SESDAD.CommonTypes;
 
+using TestApp;
+
 namespace SESDAD.Subscriber {
 
     public class Subscriber : Process {
-        private IBrokerSubService brokerService;
+        private IBrokerService brokerService;
 
         public Subscriber(String processName, Site site, String processURL) :
             base(processName, site, processURL) {
@@ -27,8 +29,8 @@ namespace SESDAD.Subscriber {
             channel = new TcpChannel(portNumber);
             ChannelServices.RegisterChannel(channel, true);
 
-            brokerService = (IBrokerSubService)Activator.GetObject(
-                typeof(IBrokerSubService),
+            brokerService = (IBrokerService)Activator.GetObject(
+                typeof(IBrokerService),
                 site.BrokerURL);
 
             SubscriberService service = new SubscriberService();
@@ -44,6 +46,15 @@ namespace SESDAD.Subscriber {
 
         public void Unsubscribe(String topicName) {
             brokerService.Unsubscribe(processName, processURL, topicName);
+        }
+    }
+
+    class Program {
+        static void Main(string[] args) {
+            Subscriber subscriber0 = new Subscriber("subscriber0", TestApp.Program.site0, "tcp://1.2.3.4:3334/sub");
+            subscriber0.Connect();
+            subscriber0.Subscribe("Cenas Fixes");
+            Console.ReadLine();
         }
     }
 }

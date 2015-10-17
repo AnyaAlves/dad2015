@@ -77,7 +77,7 @@ namespace SESDAD.PuppetMaster {
                 foreach (KeyValuePair<String, IPuppetMasterService> puppetMasterService in serviceTable)
                     puppetMasterService.Value.ExecuteStatusCommand();
             }
-            if (fields.Length == 2 && command.Equals("Crash")) {
+            else if (fields.Length == 2 && command.Equals("Crash")) {
                 String service;
                 IPuppetMasterService puppetMasterService;
                 if ((brokerTable.TryGetValue(fields[1], out service) ||
@@ -90,7 +90,7 @@ namespace SESDAD.PuppetMaster {
                     System.Console.WriteLine("Process " + fields[1] + " not found.");
                 }
             }
-            if (fields.Length == 2 && command.Equals("Freeze")) {
+            else if (fields.Length == 2 && command.Equals("Freeze")) {
                 String service;
                 IPuppetMasterService puppetMasterService;
                 if ((brokerTable.TryGetValue(fields[1], out service) ||
@@ -103,7 +103,7 @@ namespace SESDAD.PuppetMaster {
                     System.Console.WriteLine("Process " + fields[1] + " not found.");
                 }
             }
-            if (fields.Length == 2 && command.Equals("Unfreeze")) {
+            else if (fields.Length == 2 && command.Equals("Unfreeze")) {
                 String service;
                 IPuppetMasterService puppetMasterService;
                 if ((brokerTable.TryGetValue(fields[1], out service) ||
@@ -116,14 +116,14 @@ namespace SESDAD.PuppetMaster {
                     System.Console.WriteLine("Process " + fields[1] + " not found.");
                 }
             }
-            if (fields.Length == 2 && command.Equals("Wait")) {
+            else if (fields.Length == 2 && command.Equals("Wait")) {
                 int integerTime;
                 if (Int32.TryParse(fields[1], out integerTime)) {
                     foreach (KeyValuePair<String, IPuppetMasterService> puppetMasterService in serviceTable)
                         puppetMasterService.Value.ExecuteWaitCommand(integerTime);
                 }
             }
-            if (fields.Length == 2 && command.Equals("RoutingPolicy")) {
+            else if (fields.Length == 2 && command.Equals("RoutingPolicy")) {
                 if (fields[1] == "flooding") {
                     foreach (KeyValuePair<String, IPuppetMasterService> puppetMasterService in serviceTable)
                         puppetMasterService.Value.ExecuteFloodingRoutingPolicyCommand();
@@ -133,7 +133,7 @@ namespace SESDAD.PuppetMaster {
                         puppetMasterService.Value.ExecuteFilterRoutingPolicyCommand();
                 }
             }
-            if (fields.Length == 2 && command.Equals("Ordering")) {
+            else if (fields.Length == 2 && command.Equals("Ordering")) {
                 if (fields[1] == "NO") {
                     foreach (KeyValuePair<String, IPuppetMasterService> puppetMasterService in serviceTable)
                         puppetMasterService.Value.ExecuteNoOrderingCommand();
@@ -147,7 +147,7 @@ namespace SESDAD.PuppetMaster {
                         puppetMasterService.Value.ExecuteTotalOrderingCommand();
                 }
             }
-            if (fields.Length == 2 && command.Equals("LoggingLevel")) {
+            else if (fields.Length == 2 && command.Equals("LoggingLevel")) {
                 if (fields[1].Equals("full")) {
                     foreach (KeyValuePair<String, IPuppetMasterService> puppetMasterService in serviceTable)
                         puppetMasterService.Value.ExecuteFullLoggingLevelCommand();
@@ -157,7 +157,7 @@ namespace SESDAD.PuppetMaster {
                         puppetMasterService.Value.ExecuteLightLoggingLevelCommand();
                 }
             }
-            if (fields.Length == 4 && command.Equals("Site") && fields[2].Equals("Parent")) {
+            else if (fields.Length == 4 && command.Equals("Site") && fields[2].Equals("Parent")) {
                 // Temporary: Main Puppet Master add it's own service into each list
                 CreatePuppetMasterService(fields[1], port++);
                 serviceTable.Add(fields[1], (IPuppetMasterService)Activator.GetObject(
@@ -167,7 +167,7 @@ namespace SESDAD.PuppetMaster {
                 foreach (KeyValuePair<String, IPuppetMasterService> puppetMasterService in serviceTable)
                     puppetMasterService.Value.ExecuteSiteCommand(fields[1], fields[3]);
             }
-            if (fields.Length == 4 && command.Equals("Subscriber")) {
+            else if (fields.Length == 4 && command.Equals("Subscriber")) {
                 if (fields[2].Equals("Subscribe")) {
                     String service;
                     IPuppetMasterService puppetMasterService;
@@ -191,7 +191,7 @@ namespace SESDAD.PuppetMaster {
                     }
                 }
             }
-            if (fields.Length == 8 && command.Equals("Publisher") &&
+            else if (fields.Length == 8 && command.Equals("Publisher") &&
                         fields[2].Equals("Publish") &&
                         fields[4].Equals("Ontopic") &&
                         fields[6].Equals("Interval")) {
@@ -212,7 +212,7 @@ namespace SESDAD.PuppetMaster {
                     }
                 }
             }
-            if (fields.Length == 8 && command.Equals("Process") &&
+            else if (fields.Length == 8 && command.Equals("Process") &&
                         fields[2].Equals("Is") &&
                         fields[4].Equals("On") &&
                         fields[6].Equals("URL") &&

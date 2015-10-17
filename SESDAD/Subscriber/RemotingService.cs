@@ -9,7 +9,9 @@ using SESDAD.CommonTypes;
 namespace SESDAD.Subscriber {
 
     public class SubscriberService : MarshalByRefObject, ISubscriberService {
-        public SubscriberService() { }
+
+        public SubscriberService() : base() {}
+        
         public void DeliverEntry(String entry) {
             Console.WriteLine("New entry: " + entry);
         }
