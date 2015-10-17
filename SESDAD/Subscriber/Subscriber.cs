@@ -36,7 +36,7 @@ namespace SESDAD.Subscriber {
             SubscriberService service = new SubscriberService();
             serviceReference = RemotingServices.Marshal(
                 service,
-                "SubscriberService",
+                "sub",
                 typeof(SubscriberService));
         }
 
@@ -54,6 +54,7 @@ namespace SESDAD.Subscriber {
             Subscriber subscriber0 = new Subscriber("subscriber0", TestApp.Program.site0, "tcp://1.2.3.4:3334/sub");
             subscriber0.Connect();
             subscriber0.Subscribe("Cenas Fixes");
+            Console.WriteLine("Hello I'm a Subscriber");
             Console.ReadLine();
         }
     }

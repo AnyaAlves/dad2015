@@ -11,6 +11,9 @@ namespace TestApp {
         public static Site site0 = new Site("site0", null); 
 
         static void Main(string[] args) {
+        /*    System.Diagnostics.Process.Start(@"C:\Users\Ana Beatriz\Documents\Visual Studio 2012\Projects\DAD\SESDAD\MessageBroker\bin\Debug\SESDAD.MessageBroker.exe");
+            System.Diagnostics.Process.Start(@"C:\Users\Ana Beatriz\Documents\Visual Studio 2012\Projects\DAD\SESDAD\Publisher\bin\Debug\SESDAD.Publisher.exe");
+            System.Diagnostics.Process.Start(@"C:\Users\Ana Beatriz\Documents\Visual Studio 2012\Projects\DAD\SESDAD\Subscriber\bin\Debug\SESDAD.Subscriber.exe");
         /*    IList<Process> processes = new List<Process>();
             Site site0 = new Site("site0", null);
             MessageBroker broker0 = new MessageBroker("broker0", site0, "tcp://1.2.3.4:3333/broker");

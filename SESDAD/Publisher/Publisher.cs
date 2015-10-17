@@ -44,6 +44,7 @@ namespace SESDAD.Publisher {
             Publisher publisher0 = new Publisher("publisher0", TestApp.Program.site0, "tcp://1.2.3.4:3335/pub");
             publisher0.Connect();
             publisher0.Publish("Cenas Fixes", "jdgskuayhcbsiufcglasijk");
+            Console.WriteLine("Hello I'm a Publisher");
             Console.ReadLine();
         }
     }
