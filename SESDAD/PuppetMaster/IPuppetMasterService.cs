@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SESDAD.PuppetMaster.CommonTypes {
+namespace SESDAD.PuppetMaster {
 
     //<summary>
     // Type of Logging Level

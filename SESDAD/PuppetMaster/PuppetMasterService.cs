@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.Remoting;
 
-using SESDAD.PuppetMaster.CommonTypes;
+using SESDAD.PuppetMaster;
 
 namespace SESDAD.PuppetMaster {
     public class PuppetMasterService : MarshalByRefObject, IPuppetMasterService {
