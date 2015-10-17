@@ -1,11 +1,24 @@
-Site DM Parent none
-Site Rodrigo Parent DM
-Site YorkHunt Parent DM
-Process MikeHawk Is broker On YorkHunt URL tcp://localhost:8086/MikeHawk
+Status
+Site localhost Parent none
+Status
+Process bro0 Is broker On localhost URL tcp://localhost:8086/bro0
+Status
+Process pub0 Is publisher On localhost URL tcp://localhost:8087/pub0
+Status
+Process sub0 Is subscriber On localhost URL tcp://localhost:8088/sub0
+Status
 RoutingPolicy flooding
+Status
+Subscriber sub0 Subscribe test
+Status
 Ordering NO
-Crash MikeHawk
-Freeze MikeHawk
-Unfreeze MikeHawk
+Status
+Crash bro0
+Status
+Freeze pub0
+Status
+Unfreeze sub0
+Status
 Wait 2
 LoggingLevel light
+Status

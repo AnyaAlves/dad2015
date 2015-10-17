@@ -21,6 +21,9 @@ namespace SESDAD.PuppetMaster {
         private IDictionary<String, IPuppetMasterService> serviceTable;
         private IDictionary<String, IPuppetMasterService> brokenServiceTable;
         private IDictionary<String, String> brokerTable, publisherTable, subscriberTable;
+        private RoutingPolicyType routingPolicy;
+        private OrderingType ordering;
+        private LoggingLevelType loggingLevel;
         private const int DEFAULTPORT = 1000;
 
         public PuppetMaster() {
@@ -30,6 +33,9 @@ namespace SESDAD.PuppetMaster {
             brokerTable = new Dictionary<String, String>();
             publisherTable = new Dictionary<String, String>();
             subscriberTable = new Dictionary<String, String>();
+            routingPolicy = RoutingPolicyType.flooding;
+            ordering = OrderingType.FIFO;
+            loggingLevel = LoggingLevelType.light;
         }
 
         //<summary>
@@ -47,10 +53,11 @@ namespace SESDAD.PuppetMaster {
         }
 
         public void ExecuteConfigurationFile() {
-            String line;
+            String line, reply;
             StreamReader file = new StreamReader("sesdadrc");
             while ((line = file.ReadLine()) != null) {
-                parseLineToCommand(line);
+                reply = parseLineToCommand(line);
+                System.Console.WriteLine(reply);
             }
             file.Close();
         }
@@ -67,14 +74,14 @@ namespace SESDAD.PuppetMaster {
             }
         }
 
-        private void putServiceAside(String key) {
+        private String putServiceAside(String key) {
             IPuppetMasterService brokenPuppetMasterService;
             if (serviceTable.TryGetValue(key, out brokenPuppetMasterService)) {
-                System.Console.WriteLine("Site " + key + " not found.");
                 brokenServiceTable.Add(key, brokenPuppetMasterService);
                 serviceTable.Remove(key);
-                System.Console.WriteLine("Site " + key + " removed from list of Services.");
+                return "Site " + key + " removed from list of Services.";
             }
+            return "Site does not exist";
         }
 
         //<summary>
@@ -87,11 +94,12 @@ namespace SESDAD.PuppetMaster {
             if (fields.Length == 1 && command.Equals("Status")) {
                 foreach (KeyValuePair<String, IPuppetMasterService> puppetMasterService in serviceTable)
                     try {
-                        puppetMasterService.Value.ExecuteStatusCommand();
+                        return puppetMasterService.Value.ExecuteStatusCommand();
                     }
                     catch (SocketException) {
-                        putServiceAside(puppetMasterService.Key);
+                        return putServiceAside(puppetMasterService.Key);
                     }
+                return line;
             }
             else if (fields.Length == 2 && command.Equals("Crash")) {
                 String service;
@@ -104,11 +112,12 @@ namespace SESDAD.PuppetMaster {
                         puppetMasterService.ExecuteCrashCommand(fields[1]);
                     }
                     catch (SocketException) {
-                        putServiceAside(service);
+                        return putServiceAside(service);
                     }
+                    return line;
                 }
                 else {
-                    System.Console.WriteLine("Process " + fields[1] + " not found.");
+                    return "Process " + fields[1] + " not found.";
                 }
             }
             else if (fields.Length == 2 && command.Equals("Freeze")) {
@@ -122,11 +131,12 @@ namespace SESDAD.PuppetMaster {
                         puppetMasterService.ExecuteFreezeCommand(fields[1]);
                     }
                     catch (SocketException) {
-                        putServiceAside(service);
+                        return putServiceAside(service);
                     }
+                    return line;
                 }
                 else {
-                    System.Console.WriteLine("Process " + fields[1] + " not found.");
+                    return "Process " + fields[1] + " not found.";
                 }
             }
             else if (fields.Length == 2 && command.Equals("Unfreeze")) {
@@ -140,11 +150,12 @@ namespace SESDAD.PuppetMaster {
                         puppetMasterService.ExecuteUnfreezeCommand(fields[1]);
                     }
                     catch (SocketException) {
-                        putServiceAside(service);
+                        return putServiceAside(service);
                     }
+                    return line;
                 }
                 else {
-                    System.Console.WriteLine("Process " + fields[1] + " not found.");
+                    return "Process " + fields[1] + " not found.";
                 }
             }
             else if (fields.Length == 2 && command.Equals("Wait")) {
@@ -155,77 +166,92 @@ namespace SESDAD.PuppetMaster {
                             puppetMasterService.Value.ExecuteWaitCommand(integerTime);
                         }
                         catch (SocketException) {
-                            putServiceAside(puppetMasterService.Key);
+                            return putServiceAside(puppetMasterService.Key);
                         }
+                    return line;
                 }
             }
             else if (fields.Length == 2 && command.Equals("RoutingPolicy")) {
                 if (fields[1] == "flooding") {
+                    routingPolicy = RoutingPolicyType.flooding;
                     foreach (KeyValuePair<String, IPuppetMasterService> puppetMasterService in serviceTable)
                         try {
                             puppetMasterService.Value.ExecuteFloodingRoutingPolicyCommand();
                         }
                         catch (SocketException) {
-                            putServiceAside(puppetMasterService.Key);
+                            return putServiceAside(puppetMasterService.Key);
                         }
+                    return line;
                 }
                 else if (fields[1] == "filter") {
+                    routingPolicy = RoutingPolicyType.filter;
                     foreach (KeyValuePair<String, IPuppetMasterService> puppetMasterService in serviceTable)
                         try {
                             puppetMasterService.Value.ExecuteFilterRoutingPolicyCommand();
                         }
                         catch (SocketException) {
-                            putServiceAside(puppetMasterService.Key);
+                            return putServiceAside(puppetMasterService.Key);
                         }
+                    return line;
                 }
             }
             else if (fields.Length == 2 && command.Equals("Ordering")) {
                 if (fields[1] == "NO") {
+                    ordering = OrderingType.NO;
                     foreach (KeyValuePair<String, IPuppetMasterService> puppetMasterService in serviceTable)
                         try {
                             puppetMasterService.Value.ExecuteNoOrderingCommand();
                         }
                         catch (SocketException) {
-                            putServiceAside(puppetMasterService.Key);
+                            return putServiceAside(puppetMasterService.Key);
                         }
+                    return line;
                 }
                 else if (fields[1] == "FIFO") {
+                    ordering = OrderingType.FIFO;
                     foreach (KeyValuePair<String, IPuppetMasterService> puppetMasterService in serviceTable)
                         try {
                             puppetMasterService.Value.ExecuteFIFOOrderingCommand();
                         }
                         catch (SocketException) {
-                            putServiceAside(puppetMasterService.Key);
+                            return putServiceAside(puppetMasterService.Key);
                         }
+                    return line;
                 }
                 else if (fields[1] == "TOTAL") {
+                    ordering = OrderingType.TOTAL;
                     foreach (KeyValuePair<String, IPuppetMasterService> puppetMasterService in serviceTable)
                         try {
                             puppetMasterService.Value.ExecuteTotalOrderingCommand();
                         }
                         catch (SocketException) {
-                            putServiceAside(puppetMasterService.Key);
+                            return putServiceAside(puppetMasterService.Key);
                         }
+                    return line;
                 }
             }
             else if (fields.Length == 2 && command.Equals("LoggingLevel")) {
                 if (fields[1].Equals("full")) {
+                    loggingLevel = LoggingLevelType.full;
                     foreach (KeyValuePair<String, IPuppetMasterService> puppetMasterService in serviceTable)
                         try {
                             puppetMasterService.Value.ExecuteFullLoggingLevelCommand();
                         }
                         catch (SocketException) {
-                            putServiceAside(puppetMasterService.Key);
+                            return putServiceAside(puppetMasterService.Key);
                         }
+                    return line;
                 }
                 else if (fields[1].Equals("light")) {
+                    loggingLevel = LoggingLevelType.light;
                     foreach (KeyValuePair<String, IPuppetMasterService> puppetMasterService in serviceTable)
                         try {
                             puppetMasterService.Value.ExecuteLightLoggingLevelCommand();
                         }
                         catch (SocketException) {
-                            putServiceAside(puppetMasterService.Key);
+                            return putServiceAside(puppetMasterService.Key);
                         }
+                    return line;
                 }
             }
             else if (fields.Length == 4 && command.Equals("Site") && fields[2].Equals("Parent")) {
@@ -234,12 +260,14 @@ namespace SESDAD.PuppetMaster {
                     typeof(IPuppetMasterService),
                     "tcp://" + fields[1] + ":" + DEFAULTPORT + "/PuppetMasterURL");
                 try {
+                    puppetMasterService.SetPolicies(routingPolicy, ordering, loggingLevel);
                     puppetMasterService.ExecuteSiteCommand(fields[1], fields[3]);
                 }
                 catch (SocketException) {
-                    putServiceAside(fields[1]);
+                    return putServiceAside(fields[1]);
                 }
                 serviceTable.Add(fields[1], puppetMasterService);
+                return line;
             }
             else if (fields.Length == 4 && command.Equals("Subscriber")) {
                 if (fields[2].Equals("Subscribe")) {
@@ -251,11 +279,12 @@ namespace SESDAD.PuppetMaster {
                             puppetMasterService.ExecuteSubscribeCommand(fields[1], fields[3]);
                         }
                         catch (SocketException) {
-                            putServiceAside(service);
+                            return putServiceAside(service);
                         }
+                        return line;
                     }
                     else {
-                        System.Console.WriteLine("Subscriber " + fields[1] + " not found.");
+                        return "Subscriber " + fields[1] + " not found.";
                     }
                 }
                 else if (fields[2].Equals("Unsubscribe")) {
@@ -267,11 +296,12 @@ namespace SESDAD.PuppetMaster {
                             puppetMasterService.ExecuteUnsubscribeCommand(fields[1], fields[3]);
                         }
                         catch (SocketException) {
-                            putServiceAside(service);
+                            return putServiceAside(service);
                         }
+                        return line;
                     }
                     else {
-                        System.Console.WriteLine("Subscriber " + fields[1] + " not found.");
+                        return "Subscriber " + fields[1] + " not found.";
                     }
                 }
             }
@@ -293,11 +323,12 @@ namespace SESDAD.PuppetMaster {
                                     intervalTimes);
                         }
                         catch (SocketException) {
-                            putServiceAside(service);
+                            return putServiceAside(service);
                         }
+                        return line;
                     }
                     else {
-                        System.Console.WriteLine("Subscriber " + fields[1] + " not found.");
+                        return "Subscriber " + fields[1] + " not found.";
                     }
                 }
             }
@@ -317,11 +348,12 @@ namespace SESDAD.PuppetMaster {
                             brokerTable.Add(fields[1], fields[5]);
                         }
                         catch (SocketException) {
-                            putServiceAside(fields[5]);
+                            return putServiceAside(fields[5]);
                         }
+                        return line;
                     }
                     else {
-                        System.Console.WriteLine("Site " + fields[5] + " not found.");
+                        return "Site " + fields[5] + " not found.";
                     }
                 }
                 else if (fields[3].Equals("publisher")) {
@@ -335,11 +367,12 @@ namespace SESDAD.PuppetMaster {
                             publisherTable.Add(fields[1], fields[5]);
                         }
                         catch (SocketException) {
-                            putServiceAside(fields[5]);
+                            return putServiceAside(fields[5]);
                         }
+                        return line;
                     }
                     else {
-                        System.Console.WriteLine("Site " + fields[5] + " not found.");
+                        return "Site " + fields[5] + " not found.";
                     }
                 }
                 else if (fields[3].Equals("subscriber")) {
@@ -353,15 +386,16 @@ namespace SESDAD.PuppetMaster {
                             subscriberTable.Add(fields[1], fields[5]);
                         }
                         catch (SocketException) {
-                            putServiceAside(fields[5]);
+                            return putServiceAside(fields[5]);
                         }
+                        return line;
                     }
                     else {
-                        System.Console.WriteLine("Site " + fields[5] + " not found.");
+                        return "Site " + fields[5] + " not found.";
                     }
                 }
             }
-            return "test";
+            return "Invalid Command";
         }
     }
 

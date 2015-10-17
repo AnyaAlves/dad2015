@@ -9,11 +9,13 @@ using SESDAD.PuppetMaster.CommonTypes;
 
 namespace SESDAD.PuppetMaster {
     public class PuppetMasterService : MarshalByRefObject, IPuppetMasterService {
-        RoutingPolicyType routingPolicy;
-        OrderingType ordering;
-        LoggingLevelType loggingLevel;
+        private String log;
+        private RoutingPolicyType routingPolicy;
+        private OrderingType ordering;
+        private LoggingLevelType loggingLevel;
 
         public PuppetMasterService() {
+            log = "";
             routingPolicy = RoutingPolicyType.flooding;
             ordering = OrderingType.FIFO;
             loggingLevel = LoggingLevelType.light;
@@ -31,78 +33,91 @@ namespace SESDAD.PuppetMaster {
         public void ExecuteSiteCommand(
             String siteName,
             String parentName) {
-                Console.WriteLine("Site "+siteName+parentName);
         }
         public void ExecuteBrokerCommand(
             String brokerName,
             String siteName,
             String urlName) {
-                Console.WriteLine("Broker"+brokerName+siteName+urlName);
         }
         public void ExecutePublisherCommand(
             String publisherName,
             String siteName,
             String urlName) {
-                Console.WriteLine("Publisher"+publisherName+siteName+urlName);
         }
         public void ExecuteSubscriberCommand(
             String subscriberName,
             String siteName,
             String urlName) {
-                Console.WriteLine("Subscriber"+subscriberName+siteName+urlName);
         }
         public void ExecuteFloodingRoutingPolicyCommand() {
-            Console.WriteLine("FloodingRoutingPolicy");
+            routingPolicy = RoutingPolicyType.flooding;
         }
         public void ExecuteFilterRoutingPolicyCommand() {
-            Console.WriteLine("FilterRoutingPolicy");
+            routingPolicy = RoutingPolicyType.filter;
         }
         public void ExecuteNoOrderingCommand() {
-            Console.WriteLine("NoOrdering");
+            ordering = OrderingType.NO;
         }
         public void ExecuteFIFOOrderingCommand() {
-            Console.WriteLine("FIFOOrdering");
+            ordering = OrderingType.FIFO;
         }
         public void ExecuteTotalOrderingCommand() {
-            Console.WriteLine("TotalOrdering");
+            ordering = OrderingType.TOTAL;
         }
         public void ExecuteSubscribeCommand(
             String subscriberName,
             String topicName) {
-                Console.WriteLine("Subscribe");
+            log += String.Format(
+                "[{0}] Subscribe {1} Subscribe {2}",
+                DateTime.Now.ToString(),
+                subscriberName,
+                topicName);
         }
         public void ExecuteUnsubscribeCommand(
             String subscriberName,
             String topicName) {
-                Console.WriteLine("Unsubscribe");
+            log += String.Format(
+                "[{0}] Subscribe {1} Unsubscribe {2}",
+                DateTime.Now.ToString(),
+                subscriberName,
+                topicName);
         }
         public void ExecutePublishCommand(
             String publisherName,
             int publishTimes,
             String topicName,
             int intervalTime) {
-                Console.WriteLine("Publish");
+            log += String.Format(
+                "[{0}] Publish {1} Publish {2} Ontopic {3} Interval  {4}",
+                DateTime.Now.ToString(),
+                publisherName,
+                publishTimes,
+                topicName,
+                intervalTime);
         }
-        public void ExecuteStatusCommand() {
-            Console.WriteLine("Status");
+        public String ExecuteStatusCommand() {
+            String logMessage = "Log:";
+            if (log.Equals("")) {
+                logMessage += " EMPTY";
+            }
+            else {
+                logMessage += "\n" + log;
+            }
+            return "------------------------------------------------------------------------------\nRouting Policy: " + routingPolicy.ToString() + "\nOrdering: " + ordering.ToString() + "\nLogging Level: " + loggingLevel.ToString() + "\n" + logMessage + "\n------------------------------------------------------------------------------";
         }
         public void ExecuteCrashCommand(String processName) {
-            Console.WriteLine("Crash");
         }
         public void ExecuteFreezeCommand(String processName) {
-            Console.WriteLine("Freeze");
         }
         public void ExecuteUnfreezeCommand(String processName) {
-            Console.WriteLine("Unfreeze");
         }
         public void ExecuteWaitCommand(int waitingTime) {
-            Console.WriteLine("Wait");
         }
         public void ExecuteFullLoggingLevelCommand() {
-            Console.WriteLine("FullLoggingLevel");
+            loggingLevel = LoggingLevelType.full;
         }
         public void ExecuteLightLoggingLevelCommand() {
-            Console.WriteLine("LightLoggingLevel");
+            loggingLevel = LoggingLevelType.light;
         }
     }
 }

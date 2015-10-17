@@ -6,6 +6,7 @@ namespace SESDAD.PuppetMaster.CommonTypes {
     // Type of Logging Level
     //</summary>
     public interface IPuppetMasterService {
+        void SetPolicies(RoutingPolicyType newRoutingPolicy, OrderingType newOrdering, LoggingLevelType newLoggingLevel);
         void ExecuteSiteCommand(String siteName, String parentName);
         void ExecuteBrokerCommand(String brokerName, String SiteName, String urlName);
         void ExecutePublisherCommand(String publisherName, String SiteName, String urlName);
@@ -18,7 +19,7 @@ namespace SESDAD.PuppetMaster.CommonTypes {
         void ExecuteSubscribeCommand(String subscriberName, String topicName);
         void ExecuteUnsubscribeCommand(String subscriberName, String topicName);
         void ExecutePublishCommand(String publisherName, int publishTimes, String topicName, int intervalTime);
-        void ExecuteStatusCommand();
+        String ExecuteStatusCommand();
         void ExecuteCrashCommand(String processName);
         void ExecuteFreezeCommand(String processName);
         void ExecuteUnfreezeCommand(String processName);
