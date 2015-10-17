@@ -9,6 +9,24 @@ using SESDAD.PuppetMaster.CommonTypes;
 
 namespace SESDAD.PuppetMaster {
     public class PuppetMasterService : MarshalByRefObject, IPuppetMasterService {
+        RoutingPolicyType routingPolicy;
+        OrderingType ordering;
+        LoggingLevelType loggingLevel;
+
+        public PuppetMasterService() {
+            routingPolicy = RoutingPolicyType.flooding;
+            ordering = OrderingType.FIFO;
+            loggingLevel = LoggingLevelType.light;
+        }
+
+        public void SetPolicies(
+            RoutingPolicyType newRoutingPolicy,
+            OrderingType newOrdering,
+            LoggingLevelType newLoggingLevel) {
+            routingPolicy = newRoutingPolicy;
+            ordering = newOrdering;
+            loggingLevel = newLoggingLevel;
+        }
 
         public void ExecuteSiteCommand(
             String siteName,
