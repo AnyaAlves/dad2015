@@ -51,7 +51,7 @@ namespace SESDAD.Subscriber {
 
     class Program {
         static void Main(string[] args) {
-            Subscriber subscriber0 = new Subscriber("subscriber0", TestApp.Program.site0, "tcp://1.2.3.4:3334/sub");
+            Subscriber subscriber0 = new Subscriber("subscriber0", TestApp.Program.site0, "tcp://localhost:8081/sub");
             subscriber0.Connect();
             subscriber0.Subscribe("Cenas Fixes");
             Console.WriteLine("Hello I'm a Subscriber");

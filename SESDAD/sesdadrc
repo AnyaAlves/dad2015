@@ -2,11 +2,11 @@ Status
 Site Site1 Parent none
 Site Site0 Parent Site1
 Status
-Process bro0 Is broker On Site1 URL tcp://localhost:8086/bro0
+Process bro0 Is broker On Site1 URL tcplocalhost8086bro0
 Status
-Process pub0 Is publisher On Site1 URL tcp://localhost:8087/pub0
+Process pub0 Is publisher On Site1 URL tcplocalhost8087pub0
 Status
-Process sub0 Is subscriber On Site1 URL tcp://localhost:8088/sub0
+Process sub0 Is subscriber On Site1 URL tcplocalhost8088sub0
 Status
 RoutingPolicy flooding
 Status

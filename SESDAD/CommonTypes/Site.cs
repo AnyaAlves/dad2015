@@ -15,7 +15,7 @@ namespace SESDAD.CommonTypes {
             base(parent) {
             this.siteName = siteName;
 
-            brokerURL = "tcp://1.2.3.4:3333/broker";
+            brokerURL = "tcp://localhost:8080/broker";
         }
 
         public String getSiteName() { return siteName; }

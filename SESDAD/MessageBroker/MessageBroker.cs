@@ -77,7 +77,7 @@ namespace SESDAD.MessageBroker {
 
     class Program {
         static void Main(string[] args) {
-            MessageBroker broker0 = new MessageBroker("broker0", TestApp.Program.site0, "tcp://1.2.3.4:3333/broker");
+            MessageBroker broker0 = new MessageBroker("broker0", TestApp.Program.site0, "tcp://localhost:8080/broker");
             broker0.Connect();
             Console.WriteLine("Hello I'm a MessageBroker");
             Console.ReadLine();
