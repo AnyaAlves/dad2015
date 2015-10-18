@@ -28,8 +28,8 @@ namespace SESDAD.CommonTypes {
             this.site = site;
             this.processURL = processURL;
 
-            Regex regex = new Regex(@"tcp://[\w\.]+:(\d\d\d\d)/\w+");
-            Match match = regex.Match(processURL);
+            String pattern = @"tcp://[\w\.]+:(\d\d\d\d)/\w+";
+            Match match = Regex.Match(processURL, pattern);
             Int32.TryParse(match.Groups[1].Value, out portNumber);
         }
 
