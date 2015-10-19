@@ -16,20 +16,20 @@ using System.Diagnostics;
 
 namespace SESDAD.PuppetMaster {
     public class PuppetMaster {
-        private IDictionary<String, IPuppetMasterService> serviceTable;
-        private IDictionary<String, String> brokerTable, publisherTable, subscriberTable;
-
+        private IDictionary<String, IPuppetMasterService> URLToPuppetMasterServiceTable;
+        private IDictionary<String, IPuppetMasterService> brokerTable, publisherTable, subscriberTable;
         private RoutingPolicyType routingPolicy;
         private OrderingType ordering;
         private LoggingLevelType loggingLevel;
         private IDictionary<String, String> siteToPuppetMasterURLTable;
         private const int PORT = 1000;
+        private SESDAD.CommonTypes.Site site;
 
         public PuppetMaster() {
-            serviceTable = new Dictionary<String, IPuppetMasterService>();
-            brokerTable = new Dictionary<String, String>();
-            publisherTable = new Dictionary<String, String>();
-            subscriberTable = new Dictionary<String, String>();
+            URLToPuppetMasterServiceTable = new Dictionary<String, IPuppetMasterService>();
+            brokerTable = new Dictionary<String, IPuppetMasterService>();
+            publisherTable = new Dictionary<String, IPuppetMasterService>();
+            subscriberTable = new Dictionary<String, IPuppetMasterService>();
             routingPolicy = RoutingPolicyType.flooding;
             ordering = OrderingType.FIFO;
             loggingLevel = LoggingLevelType.light;
@@ -46,7 +46,7 @@ namespace SESDAD.PuppetMaster {
             PuppetMasterService puppetMasterService = new PuppetMasterService();
             RemotingServices.Marshal(
                 puppetMasterService,
-                "tcp://localhost:" + PORT + "/PuppetMasterURL",
+                "PuppetMasterService",
                 typeof(PuppetMasterService));
         }
 
@@ -73,19 +73,9 @@ namespace SESDAD.PuppetMaster {
         }
 
         private bool TryGetService(String process, out IPuppetMasterService service) {
-            String serviceName;
-            service = null;
-            return ((brokerTable.TryGetValue(process, out serviceName) ||
-                    publisherTable.TryGetValue(process, out serviceName) ||
-                    subscriberTable.TryGetValue(process, out serviceName)) &&
-                    serviceTable.TryGetValue(serviceName, out service));
-        }
-
-        private bool TryGetService(String process, out IPuppetMasterService service, IDictionary<String, String> list) {
-            String serviceName;
-            service = null;
-            return (list.TryGetValue(process, out serviceName)  &&
-                    serviceTable.TryGetValue(serviceName, out service));
+            return ((brokerTable.TryGetValue(process, out service) ||
+                    publisherTable.TryGetValue(process, out service) ||
+                    subscriberTable.TryGetValue(process, out service)));
         }
 
         //<summary>
@@ -96,7 +86,7 @@ namespace SESDAD.PuppetMaster {
             String command = fields[0];
 
             if (fields.Length == 1 && command.Equals("Status")) {
-                foreach (KeyValuePair<String, IPuppetMasterService> puppetMasterService in serviceTable) {
+                foreach (KeyValuePair<String, IPuppetMasterService> puppetMasterService in URLToPuppetMasterServiceTable) {
                     return puppetMasterService.Value.ExecuteStatusCommand();
                 }
             }
@@ -130,53 +120,53 @@ namespace SESDAD.PuppetMaster {
             else if (fields.Length == 2 && command.Equals("Wait")) {
                 int integerTime;
                 if (Int32.TryParse(fields[1], out integerTime)) {
-                    foreach (KeyValuePair<String, IPuppetMasterService> puppetMasterService in serviceTable)
+                    foreach (KeyValuePair<String, IPuppetMasterService> puppetMasterService in URLToPuppetMasterServiceTable)
                         puppetMasterService.Value.ExecuteWaitCommand(integerTime);
                 }
             }
             else if (fields.Length == 2 && command.Equals("RoutingPolicy")) {
                 if (fields[1] == "flooding") {
                     routingPolicy = RoutingPolicyType.flooding;
-                    foreach (KeyValuePair<String, IPuppetMasterService> puppetMasterService in serviceTable)
+                    foreach (KeyValuePair<String, IPuppetMasterService> puppetMasterService in URLToPuppetMasterServiceTable)
                         puppetMasterService.Value.ExecuteFloodingRoutingPolicyCommand();
                 }
                 else if (fields[1] == "filter") {
                     routingPolicy = RoutingPolicyType.filter;
-                    foreach (KeyValuePair<String, IPuppetMasterService> puppetMasterService in serviceTable)
+                    foreach (KeyValuePair<String, IPuppetMasterService> puppetMasterService in URLToPuppetMasterServiceTable)
                         puppetMasterService.Value.ExecuteFilterRoutingPolicyCommand();
                 }
             }
             else if (fields.Length == 2 && command.Equals("Ordering")) {
                 if (fields[1] == "NO") {
                     ordering = OrderingType.NO;
-                    foreach (KeyValuePair<String, IPuppetMasterService> puppetMasterService in serviceTable)
+                    foreach (KeyValuePair<String, IPuppetMasterService> puppetMasterService in URLToPuppetMasterServiceTable)
                         puppetMasterService.Value.ExecuteNoOrderingCommand();
                 }
                 else if (fields[1] == "FIFO") {
                     ordering = OrderingType.FIFO;
-                    foreach (KeyValuePair<String, IPuppetMasterService> puppetMasterService in serviceTable)
+                    foreach (KeyValuePair<String, IPuppetMasterService> puppetMasterService in URLToPuppetMasterServiceTable)
                         puppetMasterService.Value.ExecuteFIFOOrderingCommand();
                 }
                 else if (fields[1] == "TOTAL") {
                     ordering = OrderingType.TOTAL;
-                    foreach (KeyValuePair<String, IPuppetMasterService> puppetMasterService in serviceTable)
+                    foreach (KeyValuePair<String, IPuppetMasterService> puppetMasterService in URLToPuppetMasterServiceTable)
                         puppetMasterService.Value.ExecuteTotalOrderingCommand();
                 }
             }
             else if (fields.Length == 2 && command.Equals("LoggingLevel")) {
                 if (fields[1].Equals("full")) {
                     loggingLevel = LoggingLevelType.full;
-                    foreach (KeyValuePair<String, IPuppetMasterService> puppetMasterService in serviceTable)
+                    foreach (KeyValuePair<String, IPuppetMasterService> puppetMasterService in URLToPuppetMasterServiceTable)
                         puppetMasterService.Value.ExecuteFullLoggingLevelCommand();
                 }
                 else if (fields[1].Equals("light")) {
                     loggingLevel = LoggingLevelType.light;
-                    foreach (KeyValuePair<String, IPuppetMasterService> puppetMasterService in serviceTable)
+                    foreach (KeyValuePair<String, IPuppetMasterService> puppetMasterService in URLToPuppetMasterServiceTable)
                         puppetMasterService.Value.ExecuteLightLoggingLevelCommand();
                 }
             }
             else if (fields.Length == 4 && command.Equals("Site") && fields[2].Equals("Parent")) {
-                foreach (KeyValuePair<String, IPuppetMasterService> puppetMasterService in serviceTable)
+                foreach (KeyValuePair<String, IPuppetMasterService> puppetMasterService in URLToPuppetMasterServiceTable)
                     if (fields[3].Equals("none")) {
                         puppetMasterService.Value.ExecuteRootSiteCommand(fields[1]);
                     }
@@ -186,7 +176,7 @@ namespace SESDAD.PuppetMaster {
             }
             else if (fields.Length == 4 && command.Equals("Subscriber")) {
                 IPuppetMasterService puppetMasterService;
-                if (TryGetService(fields[1], out puppetMasterService, subscriberTable)) {
+                if (subscriberTable.TryGetValue(fields[1], out puppetMasterService)) {
                     if (fields[2].Equals("Subscribe")) {
                         puppetMasterService.ExecuteSubscribeCommand(fields[1], fields[3]);
                     }
@@ -207,7 +197,7 @@ namespace SESDAD.PuppetMaster {
                 if (Int32.TryParse(fields[3], out publishTimes) &&
                     Int32.TryParse(fields[7], out intervalTimes)) {
                     IPuppetMasterService puppetMasterService;
-                    if (TryGetService(fields[1], out puppetMasterService, publisherTable) {
+                    if (publisherTable.TryGetValue(fields[1], out puppetMasterService)) {
                         puppetMasterService.ExecutePublishCommand(
                                 fields[1],
                                 publishTimes,
@@ -223,36 +213,38 @@ namespace SESDAD.PuppetMaster {
                         fields[2].Equals("Is") &&
                         fields[4].Equals("On") &&
                         fields[6].Equals("URL") &&
-                        new Regex(@"^tcp://\w+:\d{1,5}/\w+$").IsMatch(fields[7])) {
+                        new Regex(@"^tcp://[\w\.]+:\d{1,5}/\w+$").IsMatch(fields[7])) {
+                String pattern = @"tcp://([\w\.]+):\d{1,5}/\w+", url = Regex.Match(fields[7], pattern).Groups[1].Value;
                 IPuppetMasterService puppetMasterService;
-                if (!serviceTable.TryGetValue(fields[5], out puppetMasterService)) {
-                    String url, pattern = @"tcp://([\w\.]+):\d{1,5}/\w+";
-                    Match match = Regex.Match(fields[7], pattern);
+                if (!siteToPuppetMasterURLTable.Contains(new KeyValuePair<String, String>(fields[5], url))) {
+                    return "Site " + fields[5] + " not found.";
+                }
+                if (!URLToPuppetMasterServiceTable.TryGetValue(url, out puppetMasterService)) {
                     puppetMasterService = (IPuppetMasterService)Activator.GetObject(
                            typeof(IPuppetMasterService),
-                           match.Groups[1].Value);
-                    serviceTable.Add(fields[5], puppetMasterService);
+                           @"tcp://" + url + ":" + PORT + @"/PuppetMasterService");
+                    URLToPuppetMasterServiceTable.Add(url, puppetMasterService);
                 }
                 if (fields[3].Equals("broker")) {
                     puppetMasterService.ExecuteBrokerCommand(
                             fields[1],
                             fields[5],
                             fields[7]);
-                    brokerTable.Add(fields[1], fields[5]);
+                    brokerTable.Add(fields[1], puppetMasterService);
                 }
                 else if (fields[3].Equals("publisher")) {
                     puppetMasterService.ExecutePublisherCommand(
                             fields[1],
                             fields[5],
                             fields[7]);
-                    publisherTable.Add(fields[1], fields[5]);
+                    publisherTable.Add(fields[1], puppetMasterService);
                 }
                 else if (fields[3].Equals("subscriber")) {
                     puppetMasterService.ExecuteSubscriberCommand(
                             fields[1],
                             fields[5],
                             fields[7]);
-                    subscriberTable.Add(fields[1], fields[5]);
+                    subscriberTable.Add(fields[1], puppetMasterService);
                 }
             }
             return line;
