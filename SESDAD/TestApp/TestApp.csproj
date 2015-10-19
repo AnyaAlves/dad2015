@@ -51,9 +51,17 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CommonTypes\SESDAD.CommonTypes.csproj">
-      <Project>{33bb861b-c2ea-4135-9a01-d3aac85d4443}</Project>
-      <Name>SESDAD.CommonTypes</Name>
+    <ProjectReference Include="..\MessageBroker\SESDAD.MessageBroker.csproj">
+      <Project>{fd782c32-d5b2-47b2-beb5-72b3ffeedf76}</Project>
+      <Name>SESDAD.MessageBroker</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Publisher\SESDAD.Publisher.csproj">
+      <Project>{6c590d7e-e05f-4d30-be64-ecfb50210bbb}</Project>
+      <Name>SESDAD.Publisher</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Subscriber\SESDAD.Subscriber.csproj">
+      <Project>{23dfb7b6-d6f5-4ac0-8b1b-5bd55f98a182}</Project>
+      <Name>SESDAD.Subscriber</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

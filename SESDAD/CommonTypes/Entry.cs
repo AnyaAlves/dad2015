@@ -4,8 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
 namespace SESDAD.CommonTypes {
+
+    [Serializable]
     public class Entry {
+
         private String topicName;
         private String content;
 
@@ -13,5 +17,8 @@ namespace SESDAD.CommonTypes {
             this.topicName = topicName;
             this.content = content;
         }
+
+        public String getTopicName() { return topicName; }
+        public String getContent() { return content; }
     }
 }

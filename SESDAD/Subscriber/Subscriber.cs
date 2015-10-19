@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Messaging;
@@ -11,62 +12,63 @@ using System.Runtime.Remoting.Channels;
 using System.Net.Sockets;
 using System.Threading;
 
-
 using SESDAD.CommonTypes;
 
-using TestApp;
 
 namespace SESDAD.Subscriber {
 
-    public class Subscriber {
-        private String processName;
-        private String siteName;
-        private String processURL;
+    public class Subscriber : Process {
+
         private String brokerURL;
-        private int portNumber;
-        //service attributes
-        private ObjRef serviceReference;
-        private TcpChannel channel;
         private IBrokerRemoteService brokerService;
 
-        public Subscriber(String processName, String siteName, String processURL, String brokerURL) {
-            this.processName = processName;
-            this.siteName = siteName;
-            this.processURL = processURL;
+        public Subscriber(String processName, String siteName, String processURL, String brokerURL)
+                : base(processName, siteName, processURL) {
             this.brokerURL = brokerURL;
         }
 
-        public void Connect() {
-            channel = new TcpChannel(portNumber);
-            ChannelServices.RegisterChannel(channel, true);
-
+        public override void Connect() {
+            base.Connect();
             brokerService = (IBrokerRemoteService)Activator.GetObject(
                 typeof(IBrokerRemoteService),
                 brokerURL);
 
-            SubscriberRemoteObject service = new SubscriberRemoteObject();
             RemotingServices.Marshal(
-                service,
-                "sub",
+                new SubscriberRemoteObject(),
+                serviceName,
                 typeof(SubscriberRemoteObject));
         }
 
         public void Subscribe(String topicName) {
-
             brokerService.Subscribe(processName, processURL, topicName);
+            Console.WriteLine("Subscribed to <" + topicName + ">");
         }
 
         public void Unsubscribe(String topicName) {
             brokerService.Unsubscribe(processName, processURL, topicName);
+            Console.WriteLine("Unsubscribed to <" + topicName + ">");
+        }
+
+        public void Debug() {
+            String debugMessage =
+                "**********************************************" + "\n" +
+                "* Hello, I'm a Subscriber. Here's my info:" + "\n" +
+                "* Process Name: " + processName + "\n" +
+                "* Site Name: " + siteName + "\n" +
+                "* Process URL: " + processURL + "\n" +
+                "* Port Number: " + portNumber + "\n" +
+                "* Parent URL: " + brokerURL + "\n" +
+                "**********************************************" + "\n";
+            Console.Write(debugMessage);
         }
     }
 
     class Program {
         static void Main(string[] args) {
-            Subscriber subscriber0 = new Subscriber("subscriber0", "site0", "tcp://localhost:8081/sub", "tcp://localhost:8080/broker");
-            subscriber0.Connect();
-            subscriber0.Subscribe("Cenas Fixes");
-            Console.WriteLine("Hello I'm a Subscriber");
+            Subscriber subscriber = new Subscriber(args[0], args[1], args[2], args[3]);
+            subscriber.Connect();
+            subscriber.Debug();
+            subscriber.Subscribe("Cenas Fixes");
             Console.ReadLine();
         }
     }

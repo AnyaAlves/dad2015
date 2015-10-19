@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Messaging;
@@ -13,49 +14,52 @@ using System.Threading;
 
 using SESDAD.CommonTypes;
 
-using TestApp;
 
 namespace SESDAD.Publisher {
 
-    public class Publisher {
-        private String processName;
-        private String siteName;
-        private String processURL;
+    public class Publisher : Process {
+
         private String brokerURL;
-        private int portNumber;
-        //service attributes
-        private ObjRef serviceReference;
-        private TcpChannel channel;
         private IBrokerRemoteService brokerService;
 
-        public Publisher(String processName, String siteName, String processURL, String brokerURL) {
-            this.processName = processName;
-            this.siteName = siteName;
-            this.processURL = processURL;
+        public Publisher(String processName, String siteName, String processURL, String brokerURL)
+                : base(processName, siteName, processURL) {
             this.brokerURL = brokerURL;
         }
 
-        public void Connect() {
-            channel = new TcpChannel(portNumber);
-            ChannelServices.RegisterChannel(channel, true);
-
+        public override void Connect() {
+            base.Connect();
             brokerService = (IBrokerRemoteService)Activator.GetObject(
                 typeof(IBrokerRemoteService),
                 brokerURL);
         }
 
         public void Publish(String topicName, String content) {
-            new Entry(topicName, content);
-            brokerService.Publish(processName, processURL, topicName);
+            Entry entry = new Entry(topicName, content);
+            brokerService.Publish(processName, processURL, entry);
+            Console.WriteLine("I published a new entry about <" + topicName + ">");
+        }
+
+        public void Debug() {
+            String debugMessage =
+                "**********************************************" + "\n" +
+                "* Hello, I'm a Publisher. Here's my info:" + "\n" +
+                "* Process Name: " + processName + "\n" +
+                "* Site Name: " + siteName + "\n" +
+                "* Process URL: " + processURL + "\n" +
+                "* Port Number: " + portNumber + "\n" +
+                "* Parent URL: " + brokerURL + "\n" +
+                "**********************************************" + "\n";
+            Console.Write(debugMessage);
         }
     }
 
     class Program {
         static void Main(string[] args) {
-            Publisher publisher0 = new Publisher("publisher0", "site0", "tcp://localhost:8082/pub", "tcp://localhost:8080/broker");
-            publisher0.Connect();
-            publisher0.Publish("Cenas Fixes", "jdgskuayhcbsiufcglasijk");
-            Console.WriteLine("Hello I'm a Publisher");
+            Publisher publisher = new Publisher(args[0], args[1], args[2], args[3]);
+            publisher.Debug();
+            publisher.Connect();
+            publisher.Publish("Cenas Fixes", "Isto fala sobre cenas bueda fixes");
             Console.ReadLine();
         }
     }

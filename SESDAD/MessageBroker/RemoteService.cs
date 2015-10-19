@@ -14,7 +14,7 @@ namespace SESDAD.MessageBroker {
             this.broker = broker;
         }
 
-        public void Publish(String processName, String processURL, String entry) {
+        public void Publish(String processName, String processURL, Entry entry) {
             broker.ForwardEntry(processName, processURL, entry);
         }
 

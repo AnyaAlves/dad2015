@@ -16,10 +16,16 @@ namespace SESDAD.MessageBroker {
         private IBrokerRemoteService parent;
         private IList<IBrokerRemoteService> children;
 
-        public EventRouter() { }
+        public EventRouter() {
+            policyType = RoutingPolicyType.FLOODING;
+        }
 
-        public void SetRoutingPolicyType(RoutingPolicyType policyType) {
-            this.policyType = policyType;
+        public void ChangePolicyToFlooding() {
+            policyType = RoutingPolicyType.FLOODING;
+        }
+
+        public void ChangePolicyToFiltering() {
+            policyType = RoutingPolicyType.FILTERING;
         }
 
         public void BroadcastEntry(String processName, String processURL, String entry) {

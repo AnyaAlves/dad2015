@@ -12,8 +12,9 @@ namespace SESDAD.Subscriber {
 
         public SubscriberRemoteObject() : base() {}
         
-        public void DeliverEntry(String entry) {
-            Console.WriteLine("New entry: " + entry);
+        public void DeliverEntry(Entry entry) {
+            Console.WriteLine("New entry!");
+            Console.WriteLine(entry.getTopicName() + ": " + entry.getContent());
         }
     }
 }

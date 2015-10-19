@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Process.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Publisher.cs" />
   </ItemGroup>
@@ -54,10 +55,6 @@
     <ProjectReference Include="..\CommonTypes\SESDAD.CommonTypes.csproj">
       <Project>{33bb861b-c2ea-4135-9a01-d3aac85d4443}</Project>
       <Name>SESDAD.CommonTypes</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\TestApp\TestApp.csproj">
-      <Project>{7b370ddc-5a97-4dbe-8d40-e9b9d35672f5}</Project>
-      <Name>TestApp</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
