@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 using SESDAD.CommonTypes;
 
 namespace SESDAD.MessageBroker {
-    public class BrokerService : MarshalByRefObject, IBrokerService {
+    public class BrokerRemoteService : MarshalByRefObject, IBrokerRemoteService {
         MessageBroker broker;
 
-        public BrokerService(MessageBroker broker) : base() {
+        public BrokerRemoteService(MessageBroker broker) : base() {
             this.broker = broker;
         }
 
@@ -20,12 +20,14 @@ namespace SESDAD.MessageBroker {
 
         public void Subscribe(String processName, String processURL, String topicName) {
             broker.registerSubscription(processName, processURL, topicName);
-            Console.WriteLine("SUB");
         }
 
         public void Unsubscribe(String processName, String processURL, String topicName) {
             broker.removeSubscription(processName, processURL, topicName);
-            Console.WriteLine("PUB");
+        }
+
+        public void RegisterBroker(String procesName, String processURL) {
+            //broker.AddChild(String processName, String processURL);
         }
     }
 }

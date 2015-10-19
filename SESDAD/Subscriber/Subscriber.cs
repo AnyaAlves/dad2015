@@ -18,29 +18,41 @@ using TestApp;
 
 namespace SESDAD.Subscriber {
 
-    public class Subscriber : Process {
-        private IBrokerService brokerService;
+    public class Subscriber {
+        private String processName;
+        private String siteName;
+        private String processURL;
+        private String brokerURL;
+        private int portNumber;
+        //service attributes
+        private ObjRef serviceReference;
+        private TcpChannel channel;
+        private IBrokerRemoteService brokerService;
 
-        public Subscriber(String processName, Site site, String processURL) :
-            base(processName, site, processURL) {
+        public Subscriber(String processName, String siteName, String processURL, String brokerURL) {
+            this.processName = processName;
+            this.siteName = siteName;
+            this.processURL = processURL;
+            this.brokerURL = brokerURL;
         }
 
-        public override void Connect() {
+        public void Connect() {
             channel = new TcpChannel(portNumber);
             ChannelServices.RegisterChannel(channel, true);
 
-            brokerService = (IBrokerService)Activator.GetObject(
-                typeof(IBrokerService),
-                site.BrokerURL);
+            brokerService = (IBrokerRemoteService)Activator.GetObject(
+                typeof(IBrokerRemoteService),
+                brokerURL);
 
-            SubscriberService service = new SubscriberService();
-            serviceReference = RemotingServices.Marshal(
+            SubscriberRemoteObject service = new SubscriberRemoteObject();
+            RemotingServices.Marshal(
                 service,
                 "sub",
-                typeof(SubscriberService));
+                typeof(SubscriberRemoteObject));
         }
 
         public void Subscribe(String topicName) {
+
             brokerService.Subscribe(processName, processURL, topicName);
         }
 
@@ -51,7 +63,7 @@ namespace SESDAD.Subscriber {
 
     class Program {
         static void Main(string[] args) {
-            Subscriber subscriber0 = new Subscriber("subscriber0", TestApp.Program.site0, "tcp://localhost:8081/sub");
+            Subscriber subscriber0 = new Subscriber("subscriber0", "site0", "tcp://localhost:8081/sub", "tcp://localhost:8080/broker");
             subscriber0.Connect();
             subscriber0.Subscribe("Cenas Fixes");
             Console.WriteLine("Hello I'm a Subscriber");

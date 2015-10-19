@@ -8,9 +8,9 @@ using SESDAD.CommonTypes;
 
 namespace SESDAD.Subscriber {
 
-    public class SubscriberService : MarshalByRefObject, ISubscriberService {
+    public class SubscriberRemoteObject : MarshalByRefObject, ISubscriberRemoteObject {
 
-        public SubscriberService() : base() {}
+        public SubscriberRemoteObject() : base() {}
         
         public void DeliverEntry(String entry) {
             Console.WriteLine("New entry: " + entry);
