@@ -1,25 +1,65 @@
 ﻿using System;
 
 namespace SESDAD.PuppetMaster {
-
-    //<summary>
-    // Type of Logging Level
-    //</summary>
+    ///<summary>
+    /// Puppet Master Service interface
+    ///</summary>
     public interface IPuppetMasterService {
+        ///<summary>
+        /// Puppet Master Service interface routing policy
+        ///</summary>
         RoutingPolicyType RoutingPolicy { set; }
+        ///<summary>
+        /// Puppet Master Service interface ordering
+        ///</summary>
         OrderingType Ordering { set; }
+        ///<summary>
+        /// Puppet Master Service interface logging level
+        ///</summary>
         LoggingLevelType LoggingLevel { set; }
-        String ParentBrokerURI { set; }
+        ///<summary>
+        /// Creates a broker process
+        ///</summary>
         void ExecuteBrokerCommand(String brokerName, String SiteName, String urlName, String parentBrokerURI);
+        ///<summary>
+        /// Creates a publisher process
+        ///</summary>
         void ExecutePublisherCommand(String publisherName, String SiteName, String urlName);
+        ///<summary>
+        /// Creates a subscriber process
+        ///</summary>
         void ExecuteSubscriberCommand(String subscriberName, String SiteName, String urlName);
+        ///<summary>
+        /// Subscribes into a topic
+        ///</summary>
         void ExecuteSubscribeCommand(String subscriberName, String topicName);
+        ///<summary>
+        /// Unsubscribes from a topic
+        ///</summary>
         void ExecuteUnsubscribeCommand(String subscriberName, String topicName);
+        ///<summary>
+        /// Publishes a message
+        ///</summary>
         void ExecutePublishCommand(String publisherName, int publishTimes, String topicName, int intervalTime);
+        ///<summary>
+        /// Gets Puppet Master Service interface status
+        ///</summary>
         String ExecuteStatusCommand();
+        ///<summary>
+        /// Crashes a process
+        ///</summary>
         void ExecuteCrashCommand(String processName);
+        ///<summary>
+        /// Freezes a process
+        ///</summary>
         void ExecuteFreezeCommand(String processName);
+        ///<summary>
+        /// Unfreezes a process
+        ///</summary>
         void ExecuteUnfreezeCommand(String processName);
+        ///<summary>
+        /// Waits for a determined time
+        ///</summary>
         void ExecuteWaitCommand(int waitingTime);
     }
 }

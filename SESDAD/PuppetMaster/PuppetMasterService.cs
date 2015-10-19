@@ -9,13 +9,16 @@ using System.Text.RegularExpressions;
 using SESDAD.CommonTypes;
 
 namespace SESDAD.PuppetMaster {
+    ///<summary>
+    /// Puppet Master Service
+    ///</summary>
     public class PuppetMasterService : MarshalByRefObject, IPuppetMasterService {
         private String log;
         private RoutingPolicyType routingPolicy;
         private OrderingType ordering;
         private LoggingLevelType loggingLevel;
         private IDictionary<String, ISubscriberRemoteObject> subscriberToSubscriberRemoteObjectTable;
-        //private IDictionary<String, IPublisherRemoteObject> publisherToPublisherRemoteObjectTable;
+        ///private IDictionary<String, IPublisherRemoteObject> publisherToPublisherRemoteObjectTable;
         private IDictionary<String, IBrokerRemoteService> brokerToBrokerRemoteObjectTable;
         private IDictionary<String, String> siteNameToBrokerURITable;
         private readonly String REGEXURL,
@@ -23,37 +26,47 @@ namespace SESDAD.PuppetMaster {
                                 PUBLISHERFILE,
                                 SUBSCRIBERFILE;
         private IDictionary<String, bool> isFrozen;
-
+        ///<summary>
+        /// Puppet Master Service constructor
+        ///</summary>
         public PuppetMasterService() {
             log = "";
             routingPolicy = RoutingPolicyType.flooding;
             ordering = OrderingType.FIFO;
             loggingLevel = LoggingLevelType.light;
             siteNameToBrokerURITable = new Dictionary<String, String>();
-            REGEXURL = @"^tcp://([\w\.])+:\d{1,5}/\w+$";
+            REGEXURL = @"^tcp:///([\w\.])+:\d{1,5}/\w+$";
             BROKERFILE = "SESDAD.MessageBroker.exe";
             PUBLISHERFILE = "SESDAD.Publisher.exe";
             SUBSCRIBERFILE = "SESDAD.Subscriber.exe";
         }
-
+        ///<summary>
+        /// Puppet Master Service routing policy
+        ///</summary>
         public RoutingPolicyType RoutingPolicy {
             set {
                 routingPolicy = value;
             }
         }
-
+        ///<summary>
+        /// Puppet Master Service ordering
+        ///</summary>
         public OrderingType Ordering {
             set {
                 ordering = value;
             }
         }
-
+        ///<summary>
+        /// Puppet Master Service logging level
+        ///</summary>
         public LoggingLevelType LoggingLevel {
             set {
                 loggingLevel = value;
             }
         }
-
+        ///<summary>
+        /// Creates a broker process
+        ///</summary>
         public void ExecuteBrokerCommand(
             String brokerName,
             String siteName,
@@ -67,6 +80,9 @@ namespace SESDAD.PuppetMaster {
             siteNameToBrokerURITable.Add(siteName, urlName);
             isFrozen.Add(brokerName, false);
         }
+        ///<summary>
+        /// Creates a publisher process
+        ///</summary>
         public void ExecutePublisherCommand(
             String publisherName,
             String siteName,
@@ -82,6 +98,9 @@ namespace SESDAD.PuppetMaster {
             //brokerToBrokerRemoteObjectTable.Add(publisherName, remoteObject);
             isFrozen.Add(publisherName, false);
         }
+        ///<summary>
+        /// Creates a subscriber process
+        ///</summary>
         public void ExecuteSubscriberCommand(
             String subscriberName,
             String siteName,
@@ -97,6 +116,9 @@ namespace SESDAD.PuppetMaster {
             subscriberToSubscriberRemoteObjectTable.Add(subscriberName, remoteObject);
             isFrozen.Add(subscriberName, false);
         }
+        ///<summary>
+        /// Subscribes into a topic
+        ///</summary>
         public void ExecuteSubscribeCommand(
             String subscriberName,
             String topicName) {
@@ -106,6 +128,9 @@ namespace SESDAD.PuppetMaster {
                 subscriberName,
                 topicName);
         }
+        ///<summary>
+        /// Unsubscribes from a topic
+        ///</summary>
         public void ExecuteUnsubscribeCommand(
             String subscriberName,
             String topicName) {
@@ -117,6 +142,9 @@ namespace SESDAD.PuppetMaster {
                     topicName);
             }
         }
+        ///<summary>
+        /// Publishes a message
+        ///</summary>
         public void ExecutePublishCommand(
             String publisherName,
             int publishTimes,
@@ -130,6 +158,9 @@ namespace SESDAD.PuppetMaster {
                 topicName,
                 intervalTime);
         }
+        ///<summary>
+        /// Gets Puppet Master Service status
+        ///</summary>
         public String ExecuteStatusCommand() {
             String logMessage = "Log:";
             if (log.Equals("")) {
@@ -140,24 +171,36 @@ namespace SESDAD.PuppetMaster {
             }
             return "------------------------------------------------------------------------------\nRouting Policy: " + routingPolicy.ToString() + "\nOrdering: " + ordering.ToString() + "\nLogging Level: " + loggingLevel.ToString() + "\n" + logMessage + "\n------------------------------------------------------------------------------";
         }
+        ///<summary>
+        /// Crashes a process
+        ///</summary>
         public void ExecuteCrashCommand(String processName) {
-            //Choose a process
-            //Crash process
+            ///Choose a process
+            ///Crash process
         }
+        ///<summary>
+        /// Freezes a process
+        ///</summary>
         public void ExecuteFreezeCommand(String processName) {
-            //Choose a process
+            ///Choose a process
             if (!isFrozen[processName]) {
-                //Freeze process if Unfreeze
+                ///Freeze process if Unfreeze
             }
             isFrozen[processName] = true;
         }
+        ///<summary>
+        /// Unfreezes a process
+        ///</summary>
         public void ExecuteUnfreezeCommand(String processName) {
-            //Choose a process
+            ///Choose a process
             if (isFrozen[processName]) {
-                //Unfreeze process if Unfreeze
+                ///Unfreeze process if Unfreeze
             }
             isFrozen[processName] = false;
         }
+        ///<summary>
+        /// Waits for a determined time
+        ///</summary>
         public void ExecuteWaitCommand(int waitingTime) {
         }
     }

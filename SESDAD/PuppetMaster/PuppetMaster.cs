@@ -15,26 +15,34 @@ using System.Threading;
 using System.Diagnostics;
 
 namespace SESDAD.PuppetMaster {
+    ///<summary>
+    /// Puppet Master CLI
+    ///</summary>
     public class PuppetMaster {
         //States
         private RoutingPolicyType routingPolicy;
         private OrderingType ordering;
         private LoggingLevelType loggingLevel;
         //Constants
-        private const int PORT = 1000;
-        private const String REGEXURI = @"^tcp://[\w\.]+:\d{1,5}/\w+$",
-                             REGEXURL = @"^tcp://([\w\.])+:\d{1,5}/\w+$";
+        private readonly int PORT;
+        private readonly String REGEXURI,
+                                REGEXURL;
         //Tables
         private IDictionary<String, String> siteNameToBrokerURLTable,
                                             siteNameToParentSiteNameTable;
         private IDictionary<String, IPuppetMasterService> machineURLToPuppetMasterServiceTable,
                                                           publisherNameToPuppetMasterServiceTable,
                                                           subscriberNameToPuppetMasterServiceTable;
-
+        ///<summary>
+        /// Puppet Master CLI constructor
+        ///</summary>
         public PuppetMaster() {
             routingPolicy = RoutingPolicyType.flooding;
             ordering = OrderingType.FIFO;
             loggingLevel = LoggingLevelType.light;
+            PORT = 1000;
+            REGEXURI = @"^tcp://[\w\.]+:\d{1,5}/\w+$";
+            REGEXURL = @"^tcp://([\w\.])+:\d{1,5}/\w+$";
             siteNameToBrokerURLTable = new Dictionary<String, String>();
             siteNameToParentSiteNameTable = new Dictionary<String, String>();
             siteNameToBrokerURLTable.Add("none", null);
@@ -42,7 +50,6 @@ namespace SESDAD.PuppetMaster {
             publisherNameToPuppetMasterServiceTable = new Dictionary<String, IPuppetMasterService>();
             subscriberNameToPuppetMasterServiceTable = new Dictionary<String, IPuppetMasterService>();
         }
-
         //<summary>
         // Starts connection with Puppet Master Service
         //</summary>
@@ -55,9 +62,8 @@ namespace SESDAD.PuppetMaster {
                 "PuppetMasterService",
                 typeof(PuppetMasterService));
         }
-
         //<summary>
-        // Read configuration file
+        // Reads configuration file
         //</summary>
         public void ExecuteConfigurationFile(String configurationFileName) {
             String line, reply;
@@ -69,9 +75,8 @@ namespace SESDAD.PuppetMaster {
             }
             file.Close();
         }
-
         //<summary>
-        // Create CLI interface for user interaction with Puppet Master Service
+        // Creates CLI interface for user interaction with Puppet Master Service
         //</summary>
         public void StartCLI() {
             String command, reply;
@@ -88,9 +93,8 @@ namespace SESDAD.PuppetMaster {
                 throw new ArgumentNullException(process, "Process not found.");
             };
         }
-
         //<summary>
-        // Identify command
+        // Converts string input into command
         //</summary>
         private String parseLineToCommand(String line) {
             String[] fields = line.Split(' ');
@@ -261,10 +265,12 @@ namespace SESDAD.PuppetMaster {
             return "Done";
         }
     }
-
+    //<summary>
+    // Project entry point class
+    //</summary>
     public static class Program {
         //<summary>
-        // Entry Point
+        // Project entry point method
         //</summary>
         public static void Main(string[] args) {
             PuppetMaster puppetMaster = new PuppetMaster();
