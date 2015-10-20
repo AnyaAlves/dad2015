@@ -17,21 +17,24 @@ namespace SESDAD.PuppetMaster {
     ///<summary>
     /// Puppet Master Service
     ///</summary>
-    public class PuppetMasterService : MarshalByRefObject, IPuppetMasterService/*, IAdministrationService*/ {
+    public class PuppetMasterService : MarshalByRefObject, IPuppetMasterService, IAdministratorService {
+        // Log
         private String log;
+        // States
         private RoutingPolicyType routingPolicy;
         private OrderingType ordering;
         private LoggingLevelType loggingLevel;
-        private IDictionary<String, ISubscriberRemoteObject> subscriberToSubscriberRemoteObjectTable;
-        ///private IDictionary<String, IPublisherRemoteObject> publisherToPublisherRemoteObjectTable;
-        private IDictionary<String, IBrokerRemoteService> brokerToBrokerRemoteObjectTable;
+        // Constants
+        private readonly String BROKERFILE,
+                        PUBLISHERFILE,
+                        SUBSCRIBERFILE;
+        // Tables
+        private IDictionary<String, bool> activeProcessList;
         private IDictionary<String, String> siteNameToBrokerURITable;
         private IDictionary<String, Tuple<String, ProcessType>> waitingTable;
-        private readonly String REGEXURL,
-                                BROKERFILE,
-                                PUBLISHERFILE,
-                                SUBSCRIBERFILE;
-        private IDictionary<String, bool> frozenList;
+        private IDictionary<String, IBrokerRemoteService> brokerToBrokerRemoteObjectTable;
+        private IDictionary<String, IPublisherRemoteObject> publisherToPublisherRemoteObjectTable;
+        private IDictionary<String, ISubscriberRemoteObject> subscriberToSubscriberRemoteObjectTable;
         ///<summary>
         /// Puppet Master Service constructor
         ///</summary>
@@ -41,9 +44,11 @@ namespace SESDAD.PuppetMaster {
             ordering = OrderingType.FIFO;
             loggingLevel = LoggingLevelType.LIGHT;
             siteNameToBrokerURITable = new Dictionary<String, String>();
+            brokerToBrokerRemoteObjectTable = new Dictionary<String, IBrokerRemoteService>();
+            publisherToPublisherRemoteObjectTable = new Dictionary<String, IPublisherRemoteObject>();
+            subscriberToSubscriberRemoteObjectTable = new Dictionary<String, ISubscriberRemoteObject>();
             waitingTable = new Dictionary<String, Tuple<String, ProcessType>>();
-            frozenList = new Dictionary<String, bool>();
-            REGEXURL = @"^tcp:///([\w\.])+:\d{1,5}/\w+$";
+            activeProcessList = new Dictionary<String, bool>();
             BROKERFILE = "SESDAD.MessageBroker.exe";
             PUBLISHERFILE = "SESDAD.Publisher.exe";
             SUBSCRIBERFILE = "SESDAD.Subscriber.exe";
@@ -158,30 +163,74 @@ namespace SESDAD.PuppetMaster {
         /// Gets Puppet Master Service status
         ///</summary>
         public void ExecuteStatusCommand() {
+            String acc = "";
+            acc += " Sites:" + Environment.NewLine;
+            foreach (String siteName in siteNameToBrokerURITable.Keys.ToList()) {
+                acc += " -> " + siteName + Environment.NewLine;
+            }
+            acc += " Brokers:" + Environment.NewLine;
+            foreach (String processName in brokerToBrokerRemoteObjectTable.Keys.ToList()) {
+                acc += " -> " + processName + Environment.NewLine;
+            }
+            acc += " Publishers:" + Environment.NewLine;
+            foreach (String processName in publisherToPublisherRemoteObjectTable.Keys.ToList()) {
+                acc += " -> " + processName + Environment.NewLine;
+            }
+            acc += " Subscribers:" + Environment.NewLine;
+            foreach (String processName in subscriberToSubscriberRemoteObjectTable.Keys.ToList()) {
+                acc += " -> " + processName + Environment.NewLine;
+            }
+            acc += " Loading:" + Environment.NewLine;
+            //FIXME: ONLY BROKERS ARE DISPLAYED
+            foreach (String processName in waitingTable.Keys.ToList()) {
+                acc += " -> " + processName + Environment.NewLine;
+            }
             System.Console.WriteLine(
                 "------------------------------------------------------------------------------" + Environment.NewLine +
                 " Routing Policy : " + routingPolicy.ToString() + Environment.NewLine +
                 " Ordering :       " + ordering.ToString() + Environment.NewLine +
                 " Logging Level :  " + loggingLevel.ToString() + Environment.NewLine +
                 " Log :            " + log + Environment.NewLine +
+                acc +
                 "------------------------------------------------------------------------------");
         }
         ///<summary>
         /// Crashes a process
         ///</summary>
         public void ExecuteCrashCommand(String processName) {
-            ///Choose a process
-            ///Crash process
+            if (activeProcessList.ContainsKey(processName)) {
+                IProcessRemoteService remoteService;
+                if (brokerToBrokerRemoteObjectTable.ContainsKey(processName)) {
+                    remoteService = brokerToBrokerRemoteObjectTable[processName];
+                }
+                else if (publisherToPublisherRemoteObjectTable.ContainsKey(processName)) {
+                    remoteService = publisherToPublisherRemoteObjectTable[processName];
+                }
+                else if (subscriberToSubscriberRemoteObjectTable.ContainsKey(processName)) {
+                    remoteService = subscriberToSubscriberRemoteObjectTable[processName];
+                }
+                //Crash process
+            }
         }
         ///<summary>
         /// Freezes a process
         ///</summary>
         public void ExecuteFreezeCommand(String processName) {
-            ///Choose a process
+            //Choose a process
             bool isFrozen;
-            if (frozenList.TryGetValue(processName, out isFrozen) && !isFrozen) {
+            if (activeProcessList.TryGetValue(processName, out isFrozen) && !isFrozen) {
+                IProcessRemoteService remoteService;
+                if (brokerToBrokerRemoteObjectTable.ContainsKey(processName)) {
+                    remoteService = brokerToBrokerRemoteObjectTable[processName];
+                }
+                else if (publisherToPublisherRemoteObjectTable.ContainsKey(processName)) {
+                    remoteService = publisherToPublisherRemoteObjectTable[processName];
+                }
+                else if (subscriberToSubscriberRemoteObjectTable.ContainsKey(processName)) {
+                    remoteService = subscriberToSubscriberRemoteObjectTable[processName];
+                }
                 //Freeze process if Unfreeze
-                //isFrozen[processName] = true;
+                activeProcessList[processName] = true;
             }
         }
         ///<summary>
@@ -190,44 +239,45 @@ namespace SESDAD.PuppetMaster {
         public void ExecuteUnfreezeCommand(String processName) {
             //Choose a process
             bool isFrozen;
-            if (frozenList.TryGetValue(processName, out isFrozen) && isFrozen) {
+            if (activeProcessList.TryGetValue(processName, out isFrozen) && isFrozen) {
+                IProcessRemoteService remoteService;
+                if (brokerToBrokerRemoteObjectTable.ContainsKey(processName)) {
+                    remoteService = brokerToBrokerRemoteObjectTable[processName];
+                }
+                else if (publisherToPublisherRemoteObjectTable.ContainsKey(processName)) {
+                    remoteService = publisherToPublisherRemoteObjectTable[processName];
+                }
+                else if (subscriberToSubscriberRemoteObjectTable.ContainsKey(processName)) {
+                    remoteService = subscriberToSubscriberRemoteObjectTable[processName];
+                }
                 //Unfreeze process if Unfreeze
-                frozenList[processName] = false;
+                activeProcessList[processName] = false;
             }
-        }
-        ///<summary>
-        /// Waits for a determined time
-        ///</summary>
-        public void ExecuteWaitCommand(int waitingTime) {
         }
         ///<summary>
         /// Resumes a connection establishment
         ///</summary>
-        public void Continue(String processName) {
+        public void ConfirmConnection(String processName) {
             if (waitingTable.ContainsKey(processName)) {
                 switch (waitingTable[processName].Item2) {
                     case ProcessType.BROKER:
-                        IBrokerRemoteService remoteService = (IBrokerRemoteService)Activator.GetObject(
+                        brokerToBrokerRemoteObjectTable.Add(processName,  (IBrokerRemoteService)Activator.GetObject(
                             typeof(IBrokerRemoteService),
-                            waitingTable[processName].Item1);
-                        brokerToBrokerRemoteObjectTable.Add(processName, remoteService);
+                            waitingTable[processName].Item1));
                         break;
                     case ProcessType.PUBLISHER:
-                        //IPublisherRemoteObject remoteObject = (IPublisherRemoteObject)Activator.GetObject(
-                        //    typeof(IBrokerPublisherObject),
-                        //    waitingTable[processName].Item1);
-                        //brokerToBrokerRemoteObjectTable.Add(processName, remoteObject);
+                        publisherToPublisherRemoteObjectTable.Add(processName, (IPublisherRemoteObject)Activator.GetObject(
+                            typeof(IPublisherRemoteObject),
+                            waitingTable[processName].Item1));
                         break;
                     case ProcessType.SUBSCRIBER:
-                        ISubscriberRemoteObject remoteObject = (ISubscriberRemoteObject)Activator.GetObject(
+                        subscriberToSubscriberRemoteObjectTable.Add(processName,  (ISubscriberRemoteObject)Activator.GetObject(
                             typeof(ISubscriberRemoteObject),
-                            waitingTable[processName].Item1);
-                        subscriberToSubscriberRemoteObjectTable.Add(processName, remoteObject);
+                            waitingTable[processName].Item1));
                         break;
-                    default: break;
                 }
                 waitingTable.Remove(processName);
-                frozenList.Add(processName, false);
+                activeProcessList.Add(processName, false);
             }
         }
         ///<summary>

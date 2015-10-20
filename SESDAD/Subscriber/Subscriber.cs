@@ -21,6 +21,7 @@ namespace SESDAD.Subscriber {
 
         private String brokerURL;
         private IBrokerRemoteService brokerService;
+        private IAdministratorService administratorService;
 
         public Subscriber(String processName, String siteName, String processURL, String brokerURL)
                 : base(processName, siteName, processURL) {
@@ -37,6 +38,11 @@ namespace SESDAD.Subscriber {
                 new SubscriberRemoteObject(),
                 serviceName,
                 typeof(SubscriberRemoteObject));
+
+            administratorService = (IAdministratorService)Activator.GetObject(
+                typeof(IAdministratorService),
+                "tcp://localhost:1000/PuppetMasterService");
+            administratorService.ConfirmConnection(processName);
         }
 
         public void Subscribe(String topicName) {

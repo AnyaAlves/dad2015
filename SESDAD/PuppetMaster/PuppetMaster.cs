@@ -31,6 +31,7 @@ namespace SESDAD.PuppetMaster {
         private IDictionary<String, String> siteNameToBrokerURLTable,
                                             siteNameToParentSiteNameTable;
         private IDictionary<String, IPuppetMasterService> machineURLToServiceTable,
+                                                          brokerNameToServiceTable,
                                                           publisherNameToServiceTable,
                                                           subscriberNameToServiceTable;
         ///<summary>
@@ -47,6 +48,7 @@ namespace SESDAD.PuppetMaster {
             siteNameToParentSiteNameTable = new Dictionary<String, String>();
             siteNameToBrokerURLTable.Add("none", "none");
             machineURLToServiceTable = new Dictionary<String, IPuppetMasterService>();
+            brokerNameToServiceTable = new Dictionary<String, IPuppetMasterService>();
             publisherNameToServiceTable = new Dictionary<String, IPuppetMasterService>();
             subscriberNameToServiceTable = new Dictionary<String, IPuppetMasterService>();
         }
@@ -81,17 +83,17 @@ namespace SESDAD.PuppetMaster {
         internal void StartCLI() {
             String command, reply;
             while (true) {
+                System.Console.Write("PuppetMaster>");
                 command = System.Console.ReadLine();
                 reply = parseLineToCommand(command);
                 System.Console.WriteLine(reply);
             }
         }
 
-        private void TryGetService(String process, out IPuppetMasterService service) {
-            if (!(publisherNameToServiceTable.TryGetValue(process, out service) ||
-                  subscriberNameToServiceTable.TryGetValue(process, out service))) {
-                throw new ArgumentNullException(process, "Process not found.");
-            };
+        private bool TryGetService(String process, out IPuppetMasterService service) {
+            return (brokerNameToServiceTable.TryGetValue(process, out service) ||
+                  publisherNameToServiceTable.TryGetValue(process, out service) ||
+                  subscriberNameToServiceTable.TryGetValue(process, out service));
         }
         //<summary>
         // Converts string input into command
@@ -100,33 +102,33 @@ namespace SESDAD.PuppetMaster {
             String[] fields = line.Split(' ');
             String command = fields[0];
             IPuppetMasterService puppetMasterService;
+            int waitingTime;
 
             try {
                 if (fields.Length == 1 && command.Equals("Status")) {
-                    String status;
-                    foreach (KeyValuePair<String, IPuppetMasterService> puppetMasterKeyValuePair in machineURLToServiceTable.ToList()) {
-                        puppetMasterKeyValuePair.Value.ExecuteStatusCommand();
+                    foreach (IPuppetMasterService service in machineURLToServiceTable.Values.ToList()) {
+                        service.ExecuteStatusCommand();
                     }
                 }
-                else if (fields.Length == 2 && command.Equals("Crash")) {
-                    TryGetService(fields[1], out puppetMasterService);
+                else if (fields.Length == 2 &&
+                         command.Equals("Crash") &&
+                         TryGetService(fields[1], out puppetMasterService)) {
                     puppetMasterService.ExecuteCrashCommand(fields[1]);
                 }
-                else if (fields.Length == 2 && command.Equals("Freeze")) {
-                    TryGetService(fields[1], out puppetMasterService);
+                else if (fields.Length == 2 &&
+                         command.Equals("Freeze") &&
+                         TryGetService(fields[1], out puppetMasterService)) {
                     puppetMasterService.ExecuteFreezeCommand(fields[1]);
                 }
-                else if (fields.Length == 2 && command.Equals("Unfreeze")) {
-                    TryGetService(fields[1], out puppetMasterService);
+                else if (fields.Length == 2 &&
+                         command.Equals("Unfreeze") &&
+                         TryGetService(fields[1], out puppetMasterService)) {
                     puppetMasterService.ExecuteUnfreezeCommand(fields[1]);
                 }
-                else if (fields.Length == 2 && command.Equals("Wait")) {
-                    int integerTime;
-                    if (Int32.TryParse(fields[1], out integerTime)) {
-                        foreach (KeyValuePair<String, IPuppetMasterService> puppetMasterKeyValuePair in machineURLToServiceTable.ToList()) {
-                            puppetMasterKeyValuePair.Value.ExecuteWaitCommand(integerTime);
-                        }
-                    }
+                else if (fields.Length == 2 &&
+                         command.Equals("Wait") &&
+                         Int32.TryParse(fields[1], out waitingTime)) {
+                    Thread.Sleep(waitingTime);
                 }
                 else if (fields.Length == 2 && command.Equals("RoutingPolicy")) {
                     if (fields[1] == "flooding") {
@@ -135,8 +137,11 @@ namespace SESDAD.PuppetMaster {
                     else if (fields[1] == "filter") {
                         routingPolicy = RoutingPolicyType.filter;
                     }
-                    foreach (KeyValuePair<String, IPuppetMasterService> puppetMasterKeyValuePair in machineURLToServiceTable.ToList()) {
-                        puppetMasterKeyValuePair.Value.RoutingPolicy = routingPolicy;
+                    else {
+                        return "";
+                    }
+                    foreach (IPuppetMasterService service in machineURLToServiceTable.Values.ToList()) {
+                        service.RoutingPolicy = routingPolicy;
                     }
                 }
                 else if (fields.Length == 2 && command.Equals("Ordering")) {
@@ -149,8 +154,11 @@ namespace SESDAD.PuppetMaster {
                     else if (fields[1] == "TOTAL") {
                         ordering = OrderingType.TOTAL;
                     }
-                    foreach (KeyValuePair<String, IPuppetMasterService> puppetMasterKeyValuePair in machineURLToServiceTable.ToList()) {
-                        puppetMasterKeyValuePair.Value.Ordering = ordering;
+                    else {
+                        return "";
+                    }
+                    foreach (IPuppetMasterService service in machineURLToServiceTable.Values.ToList()) {
+                        service.Ordering = ordering;
                     }
                 }
                 else if (fields.Length == 2 && command.Equals("LoggingLevel")) {
@@ -160,15 +168,19 @@ namespace SESDAD.PuppetMaster {
                     else if (fields[1].Equals("light")) {
                         loggingLevel = LoggingLevelType.LIGHT;
                     }
-                    foreach (KeyValuePair<String, IPuppetMasterService> puppetMasterKeyValuePair in machineURLToServiceTable.ToList()) {
-                        puppetMasterKeyValuePair.Value.LoggingLevel = loggingLevel;
+                    else {
+                        return "";
+                    }
+                    foreach (IPuppetMasterService service in machineURLToServiceTable.Values.ToList()) {
+                        service.LoggingLevel = loggingLevel;
                     }
                 }
                 else if (fields.Length == 4 && command.Equals("Site") && fields[2].Equals("Parent")) {
                     siteNameToParentSiteNameTable.Add(fields[1], fields[3]);
                 }
-                else if (fields.Length == 4 && command.Equals("Subscriber")) {
-                    puppetMasterService = subscriberNameToServiceTable[fields[1]];
+                else if (fields.Length == 4 &&
+                         command.Equals("Subscriber") &&
+                         subscriberNameToServiceTable.TryGetValue(fields[1], out puppetMasterService)) {
                     if (fields[2].Equals("Subscribe")) {
                         puppetMasterService.ExecuteSubscribeCommand(fields[1], fields[3]);
                     }
@@ -183,8 +195,8 @@ namespace SESDAD.PuppetMaster {
                          fields[6].Equals("Interval")) {
                     int publishTimes, intervalTimes;
                     if (Int32.TryParse(fields[3], out publishTimes) &&
-                        Int32.TryParse(fields[7], out intervalTimes)) {
-                        puppetMasterService = publisherNameToServiceTable[fields[1]];
+                        Int32.TryParse(fields[7], out intervalTimes) &&
+                        publisherNameToServiceTable.TryGetValue(fields[1], out puppetMasterService)) {
                         puppetMasterService.ExecutePublishCommand(
                                 fields[1],
                                 publishTimes,
@@ -217,16 +229,24 @@ namespace SESDAD.PuppetMaster {
                     }
 
                     if (processType.Equals("broker")) {
-                        String parentSiteName = siteNameToParentSiteNameTable[siteName],
-                               parentBrokerURI = siteNameToBrokerURLTable[parentSiteName];
+                        String parentSiteName,
+                               parentBrokerURI;
 
-                        puppetMasterService.ExecuteBrokerCommand(
-                                processName,
-                                siteName,
-                                processURI,
-                                parentBrokerURI);
+                        if (siteNameToParentSiteNameTable.TryGetValue(siteName, out parentSiteName)) {
+                            siteNameToBrokerURLTable.TryGetValue(parentSiteName, out parentBrokerURI);
+                            if (parentBrokerURI == null) {
+                                parentBrokerURI = "none";
+                            }
 
-                        siteNameToBrokerURLTable.Add(siteName, processURI);
+                            puppetMasterService.ExecuteBrokerCommand(
+                                    processName,
+                                    siteName,
+                                    processURI,
+                                    parentBrokerURI);
+
+                            brokerNameToServiceTable.Add(processName, puppetMasterService);
+                            siteNameToBrokerURLTable.Add(siteName, processURI);
+                        }
                     }
                     else if (processType.Equals("publisher")) {
                         puppetMasterService.ExecutePublisherCommand(

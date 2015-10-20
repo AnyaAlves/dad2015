@@ -57,9 +57,5 @@ namespace SESDAD.PuppetMaster {
         /// Unfreezes a process
         ///</summary>
         void ExecuteUnfreezeCommand(String processName);
-        ///<summary>
-        /// Waits for a determined time
-        ///</summary>
-        void ExecuteWaitCommand(int waitingTime);
     }
 }

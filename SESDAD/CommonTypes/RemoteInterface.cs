@@ -5,7 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SESDAD.CommonTypes {
-    public interface IBrokerRemoteService {
+    public interface IProcessRemoteService {
+        void ConnectToPuppetMaster(String puppetMasterURL);
+    }
+
+    public interface IBrokerRemoteService : IProcessRemoteService {
         void Publish(String processName, String processURL, Entry entry);
 
         void Subscribe(String processName, String processURL, String topicName);
@@ -14,7 +18,16 @@ namespace SESDAD.CommonTypes {
         void RegisterBroker(String processName, String processURL);
     }
 
-    public interface ISubscriberRemoteObject {
+    public interface ISubscriberRemoteObject : IProcessRemoteService {
         void DeliverEntry(Entry entry);
+    }
+
+    public interface IPublisherRemoteObject : IProcessRemoteService {
+
+    }
+
+    public interface IAdministratorService {
+        void ConfirmConnection(String processName);
+        void WriteIntoLog(String logMessage);
     }
 }

@@ -16,18 +16,20 @@ using SESDAD.CommonTypes;
 
 namespace SESDAD.MessageBroker {
 
-    using SubscriberList = Dictionary<String,ISubscriberRemoteObject>; //typedef
+    using SubsciberTable = Dictionary<String,ISubscriberRemoteObject>; //typedef
 
     public class MessageBroker : Process {
 
         private String parentURL;
         EventRouter eventRouter;
-        private IDictionary<String,SubscriberList> subscriptions;
+        private IDictionary<String,SubsciberTable> subscriptions;
+        private IAdministratorService administratorService;
 
         public MessageBroker(String processName, String siteName, String processURL, String parentURL)
                 : base(processName, siteName, processURL) {
+            this.parentURL = parentURL;
             eventRouter = new EventRouter();
-            subscriptions = new Dictionary<String,SubscriberList>();
+            subscriptions = new Dictionary<String,SubsciberTable>();
         }
 
         public override void Connect() {
@@ -38,18 +40,23 @@ namespace SESDAD.MessageBroker {
                     typeof(IBrokerRemoteService),
                     parentURL);
                 parentBroker.RegisterBroker(processName, processURL);
-            }*/           
+            }*/
             
             //make remote service available
             RemotingServices.Marshal(
                 new BrokerRemoteService(this),
                 serviceName,
                 typeof(BrokerRemoteService));
+
+            administratorService = (IAdministratorService)Activator.GetObject(
+                typeof(IAdministratorService),
+                "tcp://localhost:1000/PuppetMasterService");
+            administratorService.ConfirmConnection(processName);
         }
 
 
         public void registerSubscription(String processName, String processURL, String topicName) {
-            SubscriberList subscriberList;
+            SubsciberTable subscriberList;
 
             //get subscriber remote object
             ISubscriberRemoteObject newSubscriber =
@@ -58,7 +65,7 @@ namespace SESDAD.MessageBroker {
                        processURL);
             //if there are no subs to that topic, create a new list of subscribers
             if (!subscriptions.TryGetValue(topicName, out subscriberList)) {
-                subscriberList = new SubscriberList();
+                subscriberList = new SubsciberTable();
                 subscriptions.Add(topicName, subscriberList);
             }
             //add the new subscriber
@@ -68,7 +75,7 @@ namespace SESDAD.MessageBroker {
         }
 
         public void removeSubscription(String processName, String processURL, String topicName) {
-            SubscriberList subscriberList;
+            SubsciberTable subscriberList;
             //get subscriber by name and remove it from the list
             if (subscriptions.TryGetValue(topicName, out subscriberList)) {
                 subscriberList.Remove(processName);
@@ -78,7 +85,7 @@ namespace SESDAD.MessageBroker {
         }
 
         public void ForwardEntry(String processName, String processURL, Entry entry) {
-            SubscriberList subscriberList;
+            SubsciberTable subscriberList;
             String topicName = entry.getTopicName();
 
             if (subscriptions.TryGetValue(topicName, out subscriberList)) {
