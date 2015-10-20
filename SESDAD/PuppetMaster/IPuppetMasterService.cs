@@ -4,7 +4,7 @@ namespace SESDAD.PuppetMaster {
     ///<summary>
     /// Puppet Master Service interface
     ///</summary>
-    public interface IPuppetMasterService {
+    internal interface IPuppetMasterService {
         ///<summary>
         /// Puppet Master Service interface routing policy
         ///</summary>
@@ -44,7 +44,7 @@ namespace SESDAD.PuppetMaster {
         ///<summary>
         /// Gets Puppet Master Service interface status
         ///</summary>
-        String ExecuteStatusCommand();
+        void ExecuteStatusCommand();
         ///<summary>
         /// Crashes a process
         ///</summary>

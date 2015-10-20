@@ -9,7 +9,7 @@ namespace SESDAD.PuppetMaster {
     // Type of Routing Policy
     //</summary>
     public enum RoutingPolicyType {
-        flooding,
+        FLOODING,
         filter
     };
 
@@ -27,6 +27,6 @@ namespace SESDAD.PuppetMaster {
     //</summary>
     public enum LoggingLevelType {
         full,
-        light
+        LIGHT
     };
 }
