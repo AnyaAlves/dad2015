@@ -6,17 +6,24 @@ using System.Threading.Tasks;
 
 using SESDAD.CommonTypes;
 
-namespace SESDAD.Subscriber {
+namespace SESDAD.Processes {
 
-    public class SubscriberRemoteObject : MarshalByRefObject, ISubscriberRemoteService {
-        IAdministratorService puppetMaster;
+    public class SubscriberService : MarshalByRefObject, ISubscriberRemoteService {
+        IPuppetMasterRemoteService puppetMaster;
+        IBrokerRemoteService brokerService;
 
-        public SubscriberRemoteObject() : base() {}
+        public SubscriberService() : base() {}
 
         public void ConnectToPuppetMaster(String puppetMasterURL) {
-            puppetMaster = (IAdministratorService)Activator.GetObject(
-                 typeof(IAdministratorService),
+            puppetMaster = (IPuppetMasterRemoteService)Activator.GetObject(
+                 typeof(IPuppetMasterRemoteService),
                  puppetMasterURL);
+        }
+
+        public void ConnectToBroker(String brokerURL) {
+            brokerService = (IBrokerRemoteService)Activator.GetObject(
+                typeof(IBrokerRemoteService),
+                brokerURL);
         }
 
         public void Freeze() { }
@@ -30,7 +37,7 @@ namespace SESDAD.Subscriber {
 
         public void DeliverEntry(Entry entry) {
             Console.WriteLine("New entry!");
-            Console.WriteLine(entry.getTopicName() + ": " + entry.getContent());
+            Console.WriteLine(entry.TopicName + ": " + entry.Content);
             //subscriber.receive
             //puppetMaster.WriteIntoLog
         }

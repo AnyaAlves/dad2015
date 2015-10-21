@@ -14,42 +14,46 @@ using System.Threading;
 using SESDAD.CommonTypes;
 
 
-namespace SESDAD.MessageBroker {
+namespace SESDAD.Processes {
 
-    using SubsciberTable = Dictionary<String,ISubscriberRemoteService>; //typedef
+    using SubsciberTable = Dictionary<String, ISubscriberRemoteService>; //typedef
 
     public class MessageBroker : Process {
 
         private String parentURL;
         EventRouter eventRouter;
-        private IDictionary<String,SubsciberTable> subscriptions;
-        private IAdministratorService administratorService;
+        private IDictionary<String, SubsciberTable> subscriptions;
+        private IPuppetMasterRemoteService administratorService;
 
-        public MessageBroker(String processName, String siteName, String processURL, String parentURL)
-                : base(processName, siteName, processURL) {
-            this.parentURL = parentURL;
+        public MessageBroker(
+            String newProcessName,
+            String newSiteName,
+            String newProcessURL,
+            String newParentURL = null) :
+            base(newProcessName, newSiteName, newProcessURL) {
+            parentURL = newParentURL;
             eventRouter = new EventRouter();
-            subscriptions = new Dictionary<String,SubsciberTable>();
+            subscriptions = new Dictionary<String, SubsciberTable>();
         }
 
         public override void Connect() {
             base.Connect();
-             //connect to parent broker
-           /* if (parentURL != null) {
-                IBrokerRemoteService parentBroker = (IBrokerRemoteService)Activator.GetObject(
-                    typeof(IBrokerRemoteService),
-                    parentURL);
-                parentBroker.RegisterBroker(processName, processURL);
-            }*/
-            
+            //connect to parent broker
+            /* if (parentURL != null) {
+                 IBrokerRemoteService parentBroker = (IBrokerRemoteService)Activator.GetObject(
+                     typeof(IBrokerRemoteService),
+                     parentURL);
+                 parentBroker.RegisterBroker(processName, processURL);
+             }*/
+
             //make remote service available
             RemotingServices.Marshal(
-                new BrokerRemoteService(this),
+                new BrokerRemoteService(this, processName),
                 serviceName,
                 typeof(BrokerRemoteService));
 
-            administratorService = (IAdministratorService)Activator.GetObject(
-                typeof(IAdministratorService),
+            administratorService = (IPuppetMasterRemoteService)Activator.GetObject(
+                typeof(IPuppetMasterRemoteService),
                 "tcp://localhost:1000/PuppetMasterService");
             administratorService.ConfirmBrokerConnection(processName, processURL);
         }
@@ -86,10 +90,10 @@ namespace SESDAD.MessageBroker {
 
         public void ForwardEntry(String processName, String processURL, Entry entry) {
             SubsciberTable subscriberList;
-            String topicName = entry.getTopicName();
+            String topicName = entry.TopicName;
 
             if (subscriptions.TryGetValue(topicName, out subscriberList)) {
-                foreach (KeyValuePair<String,ISubscriberRemoteService> subscriber in subscriberList.ToList()) {
+                foreach (KeyValuePair<String, ISubscriberRemoteService> subscriber in subscriberList.ToList()) {
                     subscriber.Value.DeliverEntry(entry);
                 }
             }
@@ -98,7 +102,7 @@ namespace SESDAD.MessageBroker {
         }
 
         public void AddChild(String processName, String processURL) {
-            
+
         }
 
         public void NotifyParent() { }
@@ -120,7 +124,8 @@ namespace SESDAD.MessageBroker {
 
     class Program {
         static void Main(string[] args) {
-            MessageBroker broker = new MessageBroker(args[0], args[1], args[2], args[3]);
+            MessageBroker broker;
+            broker = new MessageBroker(args[0], args[1], args[2]);
             broker.Debug();
             broker.Connect();
             Console.ReadLine();

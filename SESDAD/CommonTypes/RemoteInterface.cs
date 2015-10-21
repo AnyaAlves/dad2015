@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace SESDAD.CommonTypes {
     public interface IProcessRemoteService {
-        void ConnectToPuppetMaster(String puppetMasterURL);
+        void ConnectToPuppetMaster(String puppetMasterURL); 
+        void ConnectToBroker(String brokerURL);
+       
         void Freeze();
         void Unfreeze();
         void Crash();
@@ -39,7 +41,7 @@ namespace SESDAD.CommonTypes {
         void Publish(String topicName, String content);
     }
 
-    public interface IAdministratorService {
+    public interface IPuppetMasterRemoteService {
         void ConfirmBrokerConnection(String processName, String processURL);
         void ConfirmPublisherConnection(String processName, String processURL);
         void ConfirmSubscriberConnection(String processName, String processURL);

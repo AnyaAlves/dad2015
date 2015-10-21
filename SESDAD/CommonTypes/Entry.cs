@@ -18,7 +18,7 @@ namespace SESDAD.CommonTypes {
             this.content = content;
         }
 
-        public String getTopicName() { return topicName; }
-        public String getContent() { return content; }
+        public String TopicName { get { return topicName; } }
+        public String Content { get { return content; } }
     }
 }

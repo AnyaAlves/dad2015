@@ -15,34 +15,28 @@ using System.Threading;
 using SESDAD.CommonTypes;
 
 
-namespace SESDAD.Subscriber {
+namespace SESDAD.Processes {
 
     public class Subscriber : Process {
 
         private String brokerURL;
+        private ISubscriberRemoteService subscriberService;
         private IBrokerRemoteService brokerService;
-        private IAdministratorService administratorService;
 
-        public Subscriber(String processName, String siteName, String processURL, String brokerURL)
-                : base(processName, siteName, processURL) {
-            this.brokerURL = brokerURL;
+        public Subscriber(
+            String processName,
+            String siteName,
+            String processURL) :
+            base(processName, siteName, processURL) {
         }
 
         public override void Connect() {
             base.Connect();
-            brokerService = (IBrokerRemoteService)Activator.GetObject(
-                typeof(IBrokerRemoteService),
-                brokerURL);
-
+            SubscriberService subscriberService = new SubscriberService();
             RemotingServices.Marshal(
-                new SubscriberRemoteObject(),
+                subscriberService,
                 serviceName,
-                typeof(SubscriberRemoteObject));
-
-            administratorService = (IAdministratorService)Activator.GetObject(
-                typeof(IAdministratorService),
-                "tcp://localhost:1000/PuppetMasterService");
-            administratorService.ConfirmSubscriberConnection(processName, processURL);
+                typeof(SubscriberService));
         }
 
         public void Subscribe(String topicName) {
@@ -71,7 +65,8 @@ namespace SESDAD.Subscriber {
 
     class Program {
         static void Main(string[] args) {
-            Subscriber subscriber = new Subscriber(args[0], args[1], args[2], args[3]);
+            Subscriber subscriber;
+            subscriber = new Subscriber(args[0], args[1], args[2]);
             subscriber.Connect();
             subscriber.Debug();
             subscriber.Subscribe("Cenas Fixes");

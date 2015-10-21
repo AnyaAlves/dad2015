@@ -6,16 +6,14 @@ using System.Threading.Tasks;
 
 using SESDAD.CommonTypes;
 
-namespace SESDAD.MessageBroker {
-    public class BrokerRemoteService : MarshalByRefObject, IBrokerRemoteService {
+namespace SESDAD.Processes {
+    public class BrokerRemoteService : ProcessService, IBrokerRemoteService {
         MessageBroker broker;
-        public BrokerRemoteService(MessageBroker broker)
-            : base() {
+        public BrokerRemoteService(MessageBroker broker, String brokerName)
+            : base(brokerName) {
             this.broker = broker;
         }
 
-//----------------------------------------Proposal---------------------------------------//
-        IAdministratorService puppetMaster;
         // States
         private RoutingPolicyType routingPolicy;
         private OrderingType ordering;
@@ -24,49 +22,35 @@ namespace SESDAD.MessageBroker {
         /// Broker Remote Service routing policy
         ///</summary>
         public RoutingPolicyType RoutingPolicy {
-            set {
-                routingPolicy = value;
-            }
+            set { routingPolicy = value; }
         }
         ///<summary>
         /// Broker Remote Service ordering
         ///</summary>
         public OrderingType Ordering {
-            set {
-                ordering = value;
-            }
+            set { ordering = value; }
         }
 
         public void ConnectToPuppetMaster(String puppetMasterURL) {
-            puppetMaster = (IAdministratorService)Activator.GetObject(
-                 typeof(IAdministratorService),
-                 puppetMasterURL);
+            base.ConnectToPuppetMaster(puppetMasterURL);
+            PuppetMaster.ConfirmBrokerConnection(" ", " ");
         }
-
-        public void Freeze() { }
-        public void Unfreeze() { }
-        public void Crash() {
-            Environment.Exit(-1);
-        }
-//---------------------------------------------------------------------------------------//
 
         public void Publish(String processName, String processURL, Entry entry) {
-            broker.ForwardEntry(processName, processURL, entry);
-            //puppetMaster.WriteIntoFullLog("batata");
+            //broker.ForwardEntry(processName, processURL, entry);
+            PuppetMaster.WriteIntoFullLog("BroEvent " + BrokerName + ", " + processName + ", " + entry.TopicName + ", event-number");
         }
 
         public void Subscribe(String processName, String processURL, String topicName) {
-            broker.registerSubscription(processName, processURL, topicName);
-            //puppetMaster.WriteIntoFullLog("batata");
+            //broker.registerSubscription(processName, processURL, topicName);
         }
 
         public void Unsubscribe(String processName, String processURL, String topicName) {
-            broker.removeSubscription(processName, processURL, topicName);
-            //puppetMaster.WriteIntoFullLog("batata");
+            //broker.removeSubscription(processName, processURL, topicName);
         }
 
-        public void RegisterBroker(String procesName, String processURL) {
-            //broker.AddChild(String processName, String processURL);
+        public void RegisterBroker(String processName, String processURL) {
+            //broker.AddChild(processName, processURL);
         }
     }
 }

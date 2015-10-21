@@ -1,26 +1,30 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
+namespace SESDAD.Managing {
 
-namespace SESDAD.PuppetMaster {
-
-    public class Site : Node {
-        private String siteName;
+    internal class Site : Node<Site> {
+        private readonly String siteName;
         private String brokerURL;
 
-        public Site(String siteName, Site parent) :
-            base(parent) {
-            this.siteName = siteName;
+        internal Site(String newSiteName, Site newParent) :
+            base(newParent) {
+                siteName = newSiteName;
         }
 
-        public String getSiteName() { return siteName; }
+        internal String SiteName {
+            get { return siteName; }
+        }
 
-        public String getParentBrokerURL() { return ((Site)parent).BrokerURL; }
+        internal String ParentBrokerURL {
+            get {
+                if (Parent == null) {
+                    return null;
+                }
+                return Parent.BrokerURL;
+            }
+        }
 
-        public String BrokerURL {
+        internal String BrokerURL {
             get { return brokerURL; }
             set { brokerURL = value; }
         }

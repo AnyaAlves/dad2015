@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SESDAD.MessageBroker {
+namespace SESDAD.Processes {
     public class EventRouter {
    /*     private RoutingPolicyType policyType;
         private IList<String> topicList;

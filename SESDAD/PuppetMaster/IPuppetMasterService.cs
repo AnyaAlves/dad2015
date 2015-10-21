@@ -1,7 +1,7 @@
 ﻿using System;
 using SESDAD.CommonTypes;
 
-namespace SESDAD.PuppetMaster {
+namespace SESDAD.Managing {
     ///<summary>
     /// Puppet Master Service interface
     ///</summary>

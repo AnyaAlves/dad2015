@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 
 using SESDAD.CommonTypes;
 
-namespace SESDAD.PuppetMaster {
+namespace SESDAD.Managing {
     internal enum ProcessType {
         BROKER,
         PUBLISHER,
@@ -24,7 +24,7 @@ namespace SESDAD.PuppetMaster {
     ///<summary>
     /// Puppet Master Service
     ///</summary>
-    public class PuppetMasterService : MarshalByRefObject, IPuppetMasterService, IAdministratorService {
+    public class PuppetMasterService : MarshalByRefObject, IPuppetMasterService, IPuppetMasterRemoteService {
         // Log
         private String log;
         // States
@@ -52,9 +52,9 @@ namespace SESDAD.PuppetMaster {
             publisherTable = new Dictionary<String, IPublisherRemoteService>();
             subscriberTable = new Dictionary<String, ISubscriberRemoteService>();
             stateList = new Dictionary<String, ProcessState>();
-            BROKERFILE = "SESDAD.MessageBroker.exe";
-            PUBLISHERFILE = "SESDAD.Publisher.exe";
-            SUBSCRIBERFILE = "SESDAD.Subscriber.exe";
+            BROKERFILE = "MessageBroker.exe";
+            PUBLISHERFILE = "Publisher.exe";
+            SUBSCRIBERFILE = "Subscriber.exe";
         }
         ///<summary>
         /// Puppet Master Service routing policy

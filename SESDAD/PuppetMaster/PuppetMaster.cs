@@ -15,22 +15,23 @@ using System.Threading;
 using System.Diagnostics;
 using SESDAD.CommonTypes;
 
-namespace SESDAD.PuppetMaster {
+namespace SESDAD.Managing {
     ///<summary>
     /// Puppet Master CLI
     ///</summary>
     internal class PuppetMaster {
+        //martelos do pooky
+        private bool siteTreeIsDefined;
         //States
         private RoutingPolicyType routingPolicy;
         private OrderingType ordering;
         private LoggingLevelType loggingLevel;
-        private bool siteTreeIsDefined;
         //Constants
         private readonly int PORT;
         private readonly String REGEXURL;
         //Tables
-        private IDictionary<String, String> parentSiteTable,
-                                            siteResolutionCache,
+        private IDictionary<String, Site> siteTable;
+        private IDictionary<String, String> siteResolutionCache,
                                             brokerResolutionCache,
                                             publisherResolutionCache,
                                             subscriberResolutionCache;
@@ -39,15 +40,18 @@ namespace SESDAD.PuppetMaster {
         /// Puppet Master CLI constructor
         ///</summary>
         internal PuppetMaster() {
-            siteTreeIsDefined = false;
+            siteTreeIsDefined = false; //martelo aqui
             routingPolicy = RoutingPolicyType.FLOODING;
             ordering = OrderingType.FIFO;
             loggingLevel = LoggingLevelType.LIGHT;
             PORT = 1000;
             REGEXURL = @"^tcp://([\w\.]+):\d{1,5}/\w+$";
+            siteTable = new Dictionary<String, Site>();
+
             siteResolutionCache = new Dictionary<String, String>();
-            parentSiteTable = new Dictionary<String, String>();
+
             puppetMasterServiceTable = new Dictionary<String, IPuppetMasterService>();
+
             brokerResolutionCache = new Dictionary<String, String>();
             publisherResolutionCache = new Dictionary<String, String>();
             subscriberResolutionCache = new Dictionary<String, String>();
@@ -110,7 +114,9 @@ namespace SESDAD.PuppetMaster {
             command = fields[0];
 
             if (!siteTreeIsDefined && fields.Length == 4 && command.Equals("Site") && fields[2].Equals("Parent")) {
-                parentSiteTable.Add(fields[1], fields[3]);
+                Site parentSite;
+                siteTable.TryGetValue(fields[3], out parentSite);
+                siteTable.Add(fields[1], new Site(fields[1], parentSite));
             }
             else {
                 if (fields.Length == 1 && command.Equals("Status")) {
@@ -213,8 +219,8 @@ namespace SESDAD.PuppetMaster {
                     String processName = fields[1],
                            processType = fields[3],
                            siteName = fields[5],
-                           processURI = fields[7];
-                    serviceURL = Regex.Match(processURI, REGEXURL).Groups[1].Value;
+                           processURL = fields[7];
+                    serviceURL = Regex.Match(processURL, REGEXURL).Groups[1].Value;
 
                     IPuppetMasterService serviceProxy;
                     if (!puppetMasterServiceTable.TryGetValue(serviceURL, out serviceProxy)) {
@@ -230,24 +236,17 @@ namespace SESDAD.PuppetMaster {
                     }
 
                     if (processType.Equals("broker")) {
-                        String parentSiteName,
-                               parentBrokerURL;
+                        Site parentSite;
 
-                        if (parentSiteTable.TryGetValue(siteName, out parentSiteName)) {
-                            siteResolutionCache.TryGetValue(parentSiteName, out parentBrokerURL);
-                            if (parentBrokerURL == null) {
-                                parentBrokerURL = "none";
-                            }
+                        siteTable.TryGetValue(siteName, out parentSite);
+                        puppetMasterServiceTable[serviceURL].ExecuteBrokerCommand(
+                                processName,
+                                siteName,
+                                processURL,
+                                parentSite.ParentBrokerURL);
 
-                            puppetMasterServiceTable[serviceURL].ExecuteBrokerCommand(
-                                    processName,
-                                    siteName,
-                                    processURI,
-                                    parentBrokerURL);
-
-                            brokerResolutionCache.Add(processName, serviceURL);
-                            siteResolutionCache.Add(siteName, processURI);
-                        }
+                        brokerResolutionCache.Add(processName, serviceURL);
+                        siteTable[siteName].BrokerURL = processURL;
                     }
                     else if (processType.Equals("publisher")) {
                         String brokerURL;
@@ -256,7 +255,7 @@ namespace SESDAD.PuppetMaster {
                         puppetMasterServiceTable[serviceURL].ExecutePublisherCommand(
                                 processName,
                                 siteName,
-                                processURI,
+                                processURL,
                                 brokerURL);
                         publisherResolutionCache.Add(processName, serviceURL);
                     }
@@ -267,7 +266,7 @@ namespace SESDAD.PuppetMaster {
                         puppetMasterServiceTable[serviceURL].ExecuteSubscriberCommand(
                                 processName,
                                 siteName,
-                                processURI,
+                                processURL,
                                 brokerURL);
                         subscriberResolutionCache.Add(processName, serviceURL);
                     }

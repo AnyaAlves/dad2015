@@ -4,16 +4,15 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{88B08A28-E18C-4611-ABC4-C3286F20F519}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{90749E08-4A8A-474E-A821-ED5481A5609E}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SESDAD.PuppetMaster</RootNamespace>
-    <AssemblyName>SESDAD.PuppetMaster</AssemblyName>
+    <RootNamespace>SESDAD.Processes</RootNamespace>
+    <AssemblyName>Process</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -21,20 +20,14 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>
-    </DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject>SESDAD.PuppetMaster.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -47,36 +40,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IPuppetMasterService.cs" />
-    <Compile Include="Resources\Node.cs" />
-    <Compile Include="PuppetMaster.cs" />
+    <Compile Include="Process.cs" />
+    <Compile Include="ProcessService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="PuppetMasterService.cs" />
-    <Compile Include="Resources\Site.cs" />
-    <Compile Include="Resources\Types.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CommonTypes\SESDAD.CommonTypes.csproj">
+    <ProjectReference Include="..\CommonTypes\CommonTypes.csproj">
       <Project>{33bb861b-c2ea-4135-9a01-d3aac85d4443}</Project>
-      <Name>SESDAD.CommonTypes</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\MessageBroker\SESDAD.MessageBroker.csproj">
-      <Project>{fd782c32-d5b2-47b2-beb5-72b3ffeedf76}</Project>
-      <Name>SESDAD.MessageBroker</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Publisher\SESDAD.Publisher.csproj">
-      <Project>{6c590d7e-e05f-4d30-be64-ecfb50210bbb}</Project>
-      <Name>SESDAD.Publisher</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Subscriber\SESDAD.Subscriber.csproj">
-      <Project>{23dfb7b6-d6f5-4ac0-8b1b-5bd55f98a182}</Project>
-      <Name>SESDAD.Subscriber</Name>
+      <Name>CommonTypes</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

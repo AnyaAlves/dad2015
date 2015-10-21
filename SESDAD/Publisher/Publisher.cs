@@ -15,17 +15,19 @@ using System.Threading;
 using SESDAD.CommonTypes;
 
 
-namespace SESDAD.Publisher {
+namespace SESDAD.Processes {
 
     public class Publisher : Process {
 
         private String brokerURL;
         private IBrokerRemoteService brokerService;
-        private IAdministratorService administratorService;
+        private IPuppetMasterRemoteService administratorService;
 
-        public Publisher(String processName, String siteName, String processURL, String brokerURL)
-                : base(processName, siteName, processURL) {
-            this.brokerURL = brokerURL;
+        public Publisher(
+            String processName,
+            String siteName,
+            String processURL) :
+            base(processName, siteName, processURL) {
         }
 
         public override void Connect() {
@@ -34,8 +36,8 @@ namespace SESDAD.Publisher {
                 typeof(IBrokerRemoteService),
                 brokerURL);
 
-            administratorService = (IAdministratorService)Activator.GetObject(
-                typeof(IAdministratorService),
+            administratorService = (IPuppetMasterRemoteService)Activator.GetObject(
+                typeof(IPuppetMasterRemoteService),
                 "tcp://localhost:1000/PuppetMasterService");
             administratorService.ConfirmPublisherConnection(processName, processURL);
         }
@@ -62,7 +64,8 @@ namespace SESDAD.Publisher {
 
     class Program {
         static void Main(string[] args) {
-            Publisher publisher = new Publisher(args[0], args[1], args[2], args[3]);
+            Publisher publisher;
+            publisher = new Publisher(args[0], args[1], args[2]);
             publisher.Debug();
             publisher.Connect();
             publisher.Publish("Cenas Fixes", "Isto fala sobre cenas bueda fixes");
