@@ -16,7 +16,7 @@ using SESDAD.CommonTypes;
 
 namespace SESDAD.MessageBroker {
 
-    using SubsciberTable = Dictionary<String,ISubscriberRemoteObject>; //typedef
+    using SubsciberTable = Dictionary<String,ISubscriberRemoteService>; //typedef
 
     public class MessageBroker : Process {
 
@@ -51,7 +51,7 @@ namespace SESDAD.MessageBroker {
             administratorService = (IAdministratorService)Activator.GetObject(
                 typeof(IAdministratorService),
                 "tcp://localhost:1000/PuppetMasterService");
-            administratorService.ConfirmConnection(processName);
+            administratorService.ConfirmBrokerConnection(processName, processURL);
         }
 
 
@@ -59,9 +59,9 @@ namespace SESDAD.MessageBroker {
             SubsciberTable subscriberList;
 
             //get subscriber remote object
-            ISubscriberRemoteObject newSubscriber =
-                (ISubscriberRemoteObject)Activator.GetObject(
-                       typeof(ISubscriberRemoteObject),
+            ISubscriberRemoteService newSubscriber =
+                (ISubscriberRemoteService)Activator.GetObject(
+                       typeof(ISubscriberRemoteService),
                        processURL);
             //if there are no subs to that topic, create a new list of subscribers
             if (!subscriptions.TryGetValue(topicName, out subscriberList)) {
@@ -89,7 +89,7 @@ namespace SESDAD.MessageBroker {
             String topicName = entry.getTopicName();
 
             if (subscriptions.TryGetValue(topicName, out subscriberList)) {
-                foreach (KeyValuePair<String,ISubscriberRemoteObject> subscriber in subscriberList.ToList()) {
+                foreach (KeyValuePair<String,ISubscriberRemoteService> subscriber in subscriberList.ToList()) {
                     subscriber.Value.DeliverEntry(entry);
                 }
             }

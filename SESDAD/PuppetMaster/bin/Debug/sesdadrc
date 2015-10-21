@@ -1,6 +1,5 @@
-Status
-Site Site1 Parent none
-Site Site0 Parent Site1
+Site Site0 Parent none
+Site Site1 Parent Site0
 Status
 Process bro0 Is broker On Site0 URL tcp://localhost:8086/broker
 Status
@@ -20,6 +19,6 @@ Freeze pub0
 Status
 Unfreeze sub0
 Status
-Wait 2
+Wait 2000
 LoggingLevel light
 Status

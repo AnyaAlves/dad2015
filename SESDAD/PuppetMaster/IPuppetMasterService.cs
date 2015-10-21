@@ -1,4 +1,5 @@
 ﻿using System;
+using SESDAD.CommonTypes;
 
 namespace SESDAD.PuppetMaster {
     ///<summary>
@@ -24,11 +25,11 @@ namespace SESDAD.PuppetMaster {
         ///<summary>
         /// Creates a publisher process
         ///</summary>
-        void ExecutePublisherCommand(String publisherName, String SiteName, String urlName);
+        void ExecutePublisherCommand(String publisherName, String SiteName, String urlName, String brokerURL);
         ///<summary>
         /// Creates a subscriber process
         ///</summary>
-        void ExecuteSubscriberCommand(String subscriberName, String SiteName, String urlName);
+        void ExecuteSubscriberCommand(String subscriberName, String SiteName, String urlName, String brokerURL);
         ///<summary>
         /// Subscribes into a topic
         ///</summary>

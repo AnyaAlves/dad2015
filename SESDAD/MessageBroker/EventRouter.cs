@@ -5,11 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SESDAD.MessageBroker {
-    public enum RoutingPolicyType {
-        FLOODING,
-        FILTERING
-    };
-
     public class EventRouter {
    /*     private RoutingPolicyType policyType;
         private IList<String> topicList;

@@ -4,15 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SESDAD.PuppetMaster {
+namespace SESDAD.CommonTypes {
     //<summary>
     // Type of Routing Policy
     //</summary>
     public enum RoutingPolicyType {
         FLOODING,
-        filter
+        FILTER
     };
-
     //<summary>
     // Type of Ordering
     //</summary>
@@ -20,13 +19,5 @@ namespace SESDAD.PuppetMaster {
         NO,
         FIFO,
         TOTAL
-    };
-
-    //<summary>
-    // Type of Logging Level
-    //</summary>
-    public enum LoggingLevelType {
-        full,
-        LIGHT
     };
 }

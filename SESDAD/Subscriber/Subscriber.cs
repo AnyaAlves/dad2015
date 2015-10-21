@@ -42,7 +42,7 @@ namespace SESDAD.Subscriber {
             administratorService = (IAdministratorService)Activator.GetObject(
                 typeof(IAdministratorService),
                 "tcp://localhost:1000/PuppetMasterService");
-            administratorService.ConfirmConnection(processName);
+            administratorService.ConfirmSubscriberConnection(processName, processURL);
         }
 
         public void Subscribe(String topicName) {

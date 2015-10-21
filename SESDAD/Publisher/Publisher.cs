@@ -37,7 +37,7 @@ namespace SESDAD.Publisher {
             administratorService = (IAdministratorService)Activator.GetObject(
                 typeof(IAdministratorService),
                 "tcp://localhost:1000/PuppetMasterService");
-            administratorService.ConfirmConnection(processName);
+            administratorService.ConfirmPublisherConnection(processName, processURL);
         }
 
         public void Publish(String topicName, String content) {
