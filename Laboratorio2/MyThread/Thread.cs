@@ -11,68 +11,66 @@ namespace MyThread
     class ThrPool
     {
 
-        private Queue<ThrWork> request_queue;
-        private int bufSize, thrNum;
-        private static int mainThreadId = 0;
+        private Thread[] thread_list;
 
-        public static bool IsMainThread
-        {
-            get { return System.Threading.Thread.CurrentThread.ManagedThreadId == mainThreadId; }
-        }
+        private ThrWork[] request_queue;
+        private int write_index = 0, read_index = 0, bufSize = 0;
 
         public ThrPool(int thrNum, int bufSize)
         {
 
             this.bufSize = bufSize;
-            this.thrNum = thrNum;
-            this.request_queue = new Queue<ThrWork>(bufSize);
+            this.thread_list = new Thread[thrNum];
+            this.request_queue = new ThrWork[bufSize];
+            for (int i = 0; i < thrNum; i++)
+            {
+                ThreadStart tw = new ThreadStart(Worker);
+                this.thread_list[i] = new Thread(tw);
+                this.thread_list[i].Start();
+            }
 
         }
 
-        delegate void AssyncInvokeDelegate(ThrWork action);
+        public void Worker()
+        {
+
+            ThrWork action;
+
+            while (true)
+            {
+                int new_index = (this.read_index + 1) % this.bufSize;
+
+                Monitor.Enter(this.request_queue);
+                if (this.request_queue[new_index] == null)
+                {
+                    Monitor.Exit(this.request_queue);
+                    continue;
+                }
+                this.read_index = new_index;
+                action = this.request_queue[new_index];
+                this.request_queue[new_index] = null;
+                Monitor.Exit(this.request_queue);
+                action();
+            }
+
+        }
 
         public void AssyncInvoke(ThrWork action)
         {
 
-            if (!IsMainThread)
+            int new_index = (this.write_index + 1) % this.bufSize;
+
+            Monitor.Enter(this.request_queue);
+            Thread.Sleep(10);
+            if (this.request_queue[new_index] != null)
             {
-
-                while (true)
-                {
-                    action();
-                    try
-                    {
-                        action = this.request_queue.Dequeue();
-                    }
-                    catch (InvalidOperationException)
-                    {
-                        break;
-                    }
-                }
-
-                thrNum++;
+                Monitor.Exit(this.request_queue);
+                return;
             }
-            else
-            {
-                mainThreadId = System.Threading.Thread.CurrentThread.ManagedThreadId;
+            this.write_index = new_index;
+            this.request_queue[new_index] = action;
+            Monitor.Exit(this.request_queue);
 
-                if (thrNum > 0)
-                {
-                    thrNum--;
-                    AssyncInvokeDelegate thread = new AssyncInvokeDelegate(AssyncInvoke);
-                    thread.BeginInvoke(action, null, null);
-                }
-                else
-                {
-                    if (this.request_queue.Count >= bufSize)
-                    {
-                        return;
-                    }
-
-                    this.request_queue.Enqueue(action);
-
-                }
-            }
         }
     }
 
@@ -111,12 +109,11 @@ namespace MyThread
 
     public class Threads
     {
-        [STAThread]
-        public static void Main()
+        public void Original()
         {
             ThrPool tpool = new ThrPool(5, 10);
-
-            for (int i = 0; i < 5; i++)
+            //ThrWork work = null;
+            for (int i = 0; i < 50; i++)
             {
                 A a = new A(i);
                 tpool.AssyncInvoke(new ThrWork(a.DoWorkA));
