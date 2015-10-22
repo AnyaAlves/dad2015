@@ -7,38 +7,34 @@ using System.Threading.Tasks;
 using SESDAD.CommonTypes;
 
 namespace SESDAD.Processes {
-    public class BrokerRemoteService : ProcessService, IBrokerRemoteService {
-        MessageBroker broker;
-        public BrokerRemoteService(MessageBroker broker, String brokerName)
-            : base(brokerName) {
-            this.broker = broker;
+    public class BrokerRemoteService : MarshalByRefObject, IBrokerRemoteService {
+        IMessageBroker broker;
+
+        public BrokerRemoteService(IMessageBroker newBroker)
+            : base() {
+            broker = newBroker;
         }
-
-        // States
-        private RoutingPolicyType routingPolicy;
-        private OrderingType ordering;
-
+        ///<summary>
+        /// Broker Remote Service name
+        ///</summary>
+        public String ProcessName {
+            get { return broker.ProcessName; }
+        }
         ///<summary>
         /// Broker Remote Service routing policy
         ///</summary>
         public RoutingPolicyType RoutingPolicy {
-            set { routingPolicy = value; }
+            set { broker.RoutingPolicy = value; }
         }
         ///<summary>
         /// Broker Remote Service ordering
         ///</summary>
         public OrderingType Ordering {
-            set { ordering = value; }
-        }
-
-        public void ConnectToPuppetMaster(String puppetMasterURL) {
-            base.ConnectToPuppetMaster(puppetMasterURL);
-            PuppetMaster.ConfirmBrokerConnection(" ", " ");
+            set { broker.Ordering = value; }
         }
 
         public void Publish(String processName, String processURL, Entry entry) {
             //broker.ForwardEntry(processName, processURL, entry);
-            PuppetMaster.WriteIntoFullLog("BroEvent " + BrokerName + ", " + processName + ", " + entry.TopicName + ", event-number");
         }
 
         public void Subscribe(String processName, String processURL, String topicName) {
@@ -49,8 +45,20 @@ namespace SESDAD.Processes {
             //broker.removeSubscription(processName, processURL, topicName);
         }
 
-        public void RegisterBroker(String processName, String processURL) {
-            //broker.AddChild(processName, processURL);
+        public void RegisterBroker(String processURL) {
+            broker.ConnectToChildBroker(processURL);
         }
+
+        public void Freeze() {
+            broker.Freeze();
+        }
+        public void Unfreeze() {
+            broker.Unfreeze();
+        }
+        public void Crash() {
+            broker.Crash();
+        }
+
+        public void Ping() { }
     }
 }

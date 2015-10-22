@@ -10,10 +10,10 @@ namespace SESDAD.Managing {
 
         protected Node(T newParent) {
             parent = newParent;
+            children = new List<T>();
             if (parent != null) {
                 parent.AddChild((T)this);
             }
-            children = new List<T>();
         }
 
         internal void AddChild(T child) {

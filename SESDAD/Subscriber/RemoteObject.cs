@@ -7,39 +7,35 @@ using System.Threading.Tasks;
 using SESDAD.CommonTypes;
 
 namespace SESDAD.Processes {
-
     public class SubscriberService : MarshalByRefObject, ISubscriberRemoteService {
-        IPuppetMasterRemoteService puppetMaster;
-        IBrokerRemoteService brokerService;
+        ISubscriber subscriber;
 
-        public SubscriberService() : base() {}
-
-        public void ConnectToPuppetMaster(String puppetMasterURL) {
-            puppetMaster = (IPuppetMasterRemoteService)Activator.GetObject(
-                 typeof(IPuppetMasterRemoteService),
-                 puppetMasterURL);
+        public SubscriberService(ISubscriber newSubscriber) :
+            base() {
+            subscriber = newSubscriber;
         }
 
-        public void ConnectToBroker(String brokerURL) {
-            brokerService = (IBrokerRemoteService)Activator.GetObject(
-                typeof(IBrokerRemoteService),
-                brokerURL);
+        public void Subscribe(String topicName) {
+            subscriber.Subscribe(topicName);
         }
-
-        public void Freeze() { }
-        public void Unfreeze() { }
-        public void Crash() {
-            Environment.Exit(-1);
+        public void Unsubscribe(String topicName) {
+            subscriber.Unsubscribe(topicName);
         }
-
-        public void Subscribe(String topicName) { }
-        public void Unsubscribe(String topicName) { }
 
         public void DeliverEntry(Entry entry) {
-            Console.WriteLine("New entry!");
-            Console.WriteLine(entry.TopicName + ": " + entry.Content);
-            //subscriber.receive
-            //puppetMaster.WriteIntoLog
+            subscriber.DeliverEntry(entry);
         }
+
+        public void Freeze() {
+            subscriber.Freeze();
+        }
+        public void Unfreeze() {
+            subscriber.Unfreeze();
+        }
+        public void Crash() {
+            subscriber.Crash();
+        }
+
+        public void Ping() { }
     }
 }

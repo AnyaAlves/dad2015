@@ -18,46 +18,67 @@ namespace SESDAD.Processes {
 
     using SubsciberTable = Dictionary<String, ISubscriberRemoteService>; //typedef
 
-    public class MessageBroker : Process {
+    public class MessageBroker : Process, IMessageBroker {
 
-        private String parentURL;
         EventRouter eventRouter;
         private IDictionary<String, SubsciberTable> subscriptions;
-        private IPuppetMasterRemoteService administratorService;
+        private IDictionary<String, IBrokerRemoteService> childrenBrokerTable;
+
+        // States
+        private RoutingPolicyType routingPolicy;
+        private OrderingType ordering;
 
         public MessageBroker(
             String newProcessName,
             String newSiteName,
-            String newProcessURL,
-            String newParentURL = null) :
+            String newProcessURL) :
             base(newProcessName, newSiteName, newProcessURL) {
-            parentURL = newParentURL;
             eventRouter = new EventRouter();
             subscriptions = new Dictionary<String, SubsciberTable>();
+            childrenBrokerTable = new Dictionary<String, IBrokerRemoteService>();
+        }
+
+        ///<summary>
+        /// Broker Remote Service routing policy
+        ///</summary>
+        public RoutingPolicyType RoutingPolicy
+        {
+            set { routingPolicy = value; }
+        }
+        ///<summary>
+        /// Broker Remote Service ordering
+        ///</summary>
+        public OrderingType Ordering
+        {
+            set { ordering = value; }
         }
 
         public override void Connect() {
             base.Connect();
-            //connect to parent broker
-            /* if (parentURL != null) {
-                 IBrokerRemoteService parentBroker = (IBrokerRemoteService)Activator.GetObject(
-                     typeof(IBrokerRemoteService),
-                     parentURL);
-                 parentBroker.RegisterBroker(processName, processURL);
-             }*/
-
             //make remote service available
             RemotingServices.Marshal(
-                new BrokerRemoteService(this, processName),
+                new BrokerRemoteService((IMessageBroker)this),
                 serviceName,
                 typeof(BrokerRemoteService));
-
-            administratorService = (IPuppetMasterRemoteService)Activator.GetObject(
-                typeof(IPuppetMasterRemoteService),
-                "tcp://localhost:1000/PuppetMasterService");
-            administratorService.ConfirmBrokerConnection(processName, processURL);
         }
 
+        public override void ConnectToPuppetMaster(String newPuppetMasterURL) {
+            base.ConnectToPuppetMaster(newPuppetMasterURL);
+            PuppetMaster.RegisterBroker(processName, processURL);
+            Console.WriteLine("Connected to " + newPuppetMasterURL);
+        }
+        public override void ConnectToParentBroker(String newParentURL) {
+            base.ConnectToParentBroker(newParentURL);
+            ParentBroker.RegisterBroker(processURL);
+            Console.WriteLine("Connected to " + newParentURL);
+        }
+        public void ConnectToChildBroker(String newProcessURL) {
+            IBrokerRemoteService child = (IBrokerRemoteService)Activator.GetObject(
+                typeof(IBrokerRemoteService),
+                newProcessURL);
+            childrenBrokerTable.Add(child.ProcessName, child);
+            Console.WriteLine("Connected to " + newProcessURL);
+        }
 
         public void registerSubscription(String processName, String processURL, String topicName) {
             SubsciberTable subscriberList;
@@ -77,7 +98,6 @@ namespace SESDAD.Processes {
             //notify parent to update
             Console.WriteLine("New subcriber: " + processName);
         }
-
         public void removeSubscription(String processName, String processURL, String topicName) {
             SubsciberTable subscriberList;
             //get subscriber by name and remove it from the list
@@ -87,7 +107,6 @@ namespace SESDAD.Processes {
             //notify parent to update
             Console.WriteLine("Removed subcriber: " + processName);
         }
-
         public void ForwardEntry(String processName, String processURL, Entry entry) {
             SubsciberTable subscriberList;
             String topicName = entry.TopicName;
@@ -99,35 +118,53 @@ namespace SESDAD.Processes {
             }
             //eventrouter.broadcast
             Console.WriteLine("Forwarding entry to all subscribers");
-        }
 
-        public void AddChild(String processName, String processURL) {
 
+
+            PuppetMaster.WriteIntoFullLog("BroEvent " + ProcessName + ", " + processName + ", " + entry.TopicName + ", event-number");
         }
 
         public void NotifyParent() { }
 
         public void Debug() {
             String debugMessage =
-                "**********************************************" + "\n" +
-                "* Hello, I'm a MessageBroker. Here's my info:" + "\n" +
-                "* Process Name: " + processName + "\n" +
-                "* Site Name: " + siteName + "\n" +
-                "* Process URL: " + processURL + "\n" +
-                "* Port Number: " + portNumber + "\n" +
-                "* Service Name: " + serviceName + "\n" +
-                "* Parent URL: " + parentURL + "\n" +
-                "**********************************************" + "\n";
+                "**********************************************" + Environment.NewLine +
+                "* Hello, I'm a MessageBroker. Here's my info:" + Environment.NewLine +
+                "*" + Environment.NewLine +
+                "* Site Name:    " + siteName + Environment.NewLine +
+                "* Process Name: " + processName + Environment.NewLine +
+                "* Process URL:  " + processURL + Environment.NewLine +
+                "*" + Environment.NewLine +
+                "* Service Name: " + serviceName + Environment.NewLine +
+                "* Service Port: " + portNumber + Environment.NewLine +
+                "*" + Environment.NewLine +
+                "* Parent Name:  " + ParentBrokerName + Environment.NewLine +
+                "* Parent URL:   " + ParentBrokerURL + Environment.NewLine +
+                "**********************************************" + Environment.NewLine;
             Console.Write(debugMessage);
         }
     }
 
     class Program {
         static void Main(string[] args) {
-            MessageBroker broker;
-            broker = new MessageBroker(args[0], args[1], args[2]);
-            broker.Debug();
+            MessageBroker broker = new MessageBroker(args[0], args[1], args[2]);
+            String[] flags = String.Join(" ", args).Split('-'),
+                     parent = flags[1].Split(' '),
+                     children = flags[2].Split(' ');
+
             broker.Connect();
+            Console.WriteLine(args[3]);
+            broker.ConnectToPuppetMaster(args[3]);
+            if (parent.Length > 1) {
+                broker.ConnectToParentBroker(parent[1]);
+            }
+            if (children.Length > 1) {
+                for(int index = 2; index < children.Length; index++) {
+                    broker.ConnectToChildBroker(children[index]);
+                }
+            }
+            broker.Debug();
+
             Console.ReadLine();
         }
     }

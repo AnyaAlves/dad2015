@@ -26,7 +26,11 @@ namespace SESDAD.Managing {
     ///</summary>
     public class PuppetMasterService : MarshalByRefObject, IPuppetMasterService, IPuppetMasterRemoteService {
         // Log
-        private String log;
+        private String log,
+        // ID
+                       serviceName,
+                       serviceURL;
+        private int port;
         // States
         private RoutingPolicyType routingPolicy;
         private OrderingType ordering;
@@ -43,8 +47,11 @@ namespace SESDAD.Managing {
         ///<summary>
         /// Puppet Master Service constructor
         ///</summary>
-        public PuppetMasterService() {
+        public PuppetMasterService(String newServiceName, int newPort) {
             log = "";
+            serviceName = newServiceName;
+            serviceURL = "tcp://localhost:" + newPort.ToString() + "/" + newServiceName;
+            port = newPort;
             routingPolicy = RoutingPolicyType.FLOODING;
             ordering = OrderingType.FIFO;
             loggingLevel = LoggingLevelType.LIGHT;
@@ -93,9 +100,11 @@ namespace SESDAD.Managing {
             String processName,
             String siteName,
             String processURL,
-            String parentBrokerURI) {
-            System.Diagnostics.Process.Start(BROKERFILE, processName + " " + siteName + " " + processURL + " " + parentBrokerURI);
+            String parentBrokerURL,
+            IList<String> childrenBrokerURL) {
             stateList.Add(processName, ProcessState.OFFLINE);
+            String arguments = processName + " " + siteName + " " + processURL + " " + serviceURL + " " + " -p " + parentBrokerURL + " -c" + String.Join(" ", childrenBrokerURL);
+            System.Diagnostics.Process.Start(BROKERFILE, arguments);
         }
         ///<summary>
         /// Creates a publisher process
@@ -105,8 +114,9 @@ namespace SESDAD.Managing {
             String siteName,
             String processURL,
             String brokerURL) {
-            System.Diagnostics.Process.Start(PUBLISHERFILE, processName + " " + siteName + " " + processURL + " " + brokerURL);
             stateList.Add(processName, ProcessState.OFFLINE);
+            String arguments = processName + " " + siteName + " " + processURL + " " + serviceURL + " " + " -p " + brokerURL;
+            System.Diagnostics.Process.Start(PUBLISHERFILE, arguments);
         }
         ///<summary>
         /// Creates a subscriber process
@@ -116,8 +126,9 @@ namespace SESDAD.Managing {
             String siteName,
             String processURL,
             String brokerURL) {
-            System.Diagnostics.Process.Start(SUBSCRIBERFILE, processName + " " + siteName + " " + processURL + " " + brokerURL);
             stateList.Add(processName, ProcessState.OFFLINE);
+            String arguments = processName + " " + siteName + " " + processURL + " " + serviceURL + " " + " -p " + brokerURL;
+            System.Diagnostics.Process.Start(SUBSCRIBERFILE, arguments);
         }
         ///<summary>
         /// Subscribes into a topic
@@ -242,7 +253,7 @@ namespace SESDAD.Managing {
         ///<summary>
         /// Resumes a connection establishment with a broker
         ///</summary>
-        public void ConfirmBrokerConnection(String processName, String processURL) {
+        public void RegisterBroker(String processName, String processURL) {
             brokerTable.Add(processName, (IBrokerRemoteService)Activator.GetObject(
                 typeof(IBrokerRemoteService),
                 processURL));
@@ -251,7 +262,7 @@ namespace SESDAD.Managing {
         ///<summary>
         /// Resumes a connection establishment with a publisher
         ///</summary>
-        public void ConfirmPublisherConnection(String processName, String processURL) {
+        public void RegisterPublisher(String processName, String processURL) {
             publisherTable.Add(processName, (IPublisherRemoteService)Activator.GetObject(
                 typeof(IPublisherRemoteService),
                 processURL));
@@ -260,7 +271,7 @@ namespace SESDAD.Managing {
         ///<summary>
         /// Resumes a connection establishment with a subscriber
         ///</summary>
-        public void ConfirmSubscriberConnection(String processName, String processURL) {
+        public void RegisterSubscriber(String processName, String processURL) {
             subscriberTable.Add(processName, (ISubscriberRemoteService)Activator.GetObject(
                 typeof(ISubscriberRemoteService),
                 processURL));

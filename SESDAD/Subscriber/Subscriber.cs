@@ -17,12 +17,7 @@ using SESDAD.CommonTypes;
 
 namespace SESDAD.Processes {
 
-    public class Subscriber : Process {
-
-        private String brokerURL;
-        private ISubscriberRemoteService subscriberService;
-        private IBrokerRemoteService brokerService;
-
+    public class Subscriber : Process, ISubscriber {
         public Subscriber(
             String processName,
             String siteName,
@@ -32,44 +27,68 @@ namespace SESDAD.Processes {
 
         public override void Connect() {
             base.Connect();
-            SubscriberService subscriberService = new SubscriberService();
             RemotingServices.Marshal(
-                subscriberService,
+                new SubscriberService((ISubscriber)this),
                 serviceName,
                 typeof(SubscriberService));
         }
 
+        public override void ConnectToPuppetMaster(String newPuppetMasterURL) {
+            base.ConnectToPuppetMaster(newPuppetMasterURL);
+            PuppetMaster.RegisterSubscriber(processName, processURL);
+            Console.WriteLine("Connected to " + newPuppetMasterURL);
+        }
+        public override void ConnectToParentBroker(String newParentURL) {
+            base.ConnectToParentBroker(newParentURL);
+            //ParentBroker.RegisterBroker(processURL);
+            Console.WriteLine("Connected to " + newParentURL);
+        }
+
         public void Subscribe(String topicName) {
-            brokerService.Subscribe(processName, processURL, topicName);
+            ParentBroker.Subscribe(processName, processURL, topicName);
             Console.WriteLine("Subscribed to <" + topicName + ">");
         }
 
         public void Unsubscribe(String topicName) {
-            brokerService.Unsubscribe(processName, processURL, topicName);
+            ParentBroker.Unsubscribe(processName, processURL, topicName);
             Console.WriteLine("Unsubscribed to <" + topicName + ">");
         }
 
+        public void DeliverEntry(Entry entry) { }
+
         public void Debug() {
             String debugMessage =
-                "**********************************************" + "\n" +
-                "* Hello, I'm a Subscriber. Here's my info:" + "\n" +
-                "* Process Name: " + processName + "\n" +
-                "* Site Name: " + siteName + "\n" +
-                "* Process URL: " + processURL + "\n" +
-                "* Port Number: " + portNumber + "\n" +
-                "* Parent URL: " + brokerURL + "\n" +
-                "**********************************************" + "\n";
+                "**********************************************" + Environment.NewLine +
+                "* Hello, I'm a Subscriber. Here's my info:" + Environment.NewLine +
+                "*" + Environment.NewLine +
+                "* Site Name:    " + siteName + Environment.NewLine +
+                "* Process Name: " + processName + Environment.NewLine +
+                "* Process URL:  " + processURL + Environment.NewLine +
+                "*" + Environment.NewLine +
+                "* Service Name: " + serviceName + Environment.NewLine +
+                "* Service Port: " + portNumber + Environment.NewLine +
+                "*" + Environment.NewLine +
+                "* Parent Name:  " + ParentBrokerName + Environment.NewLine +
+                "* Parent URL:   " + ParentBrokerURL + Environment.NewLine +
+                "**********************************************" + Environment.NewLine;
             Console.Write(debugMessage);
         }
     }
 
     class Program {
         static void Main(string[] args) {
-            Subscriber subscriber;
-            subscriber = new Subscriber(args[0], args[1], args[2]);
+            Subscriber subscriber = new Subscriber(args[0], args[1], args[2]);
+            String[] flags = String.Join(" ", args).Split('-'),
+                     parent = flags[1].Split(' ');
+
             subscriber.Connect();
+            subscriber.ConnectToPuppetMaster(args[3]);
+            if (parent.Length > 1) {
+                subscriber.ConnectToParentBroker(parent[1]);
+            }
             subscriber.Debug();
-            subscriber.Subscribe("Cenas Fixes");
+            //subscriber.Subscribe("Cenas Fixes");
+
             Console.ReadLine();
         }
     }

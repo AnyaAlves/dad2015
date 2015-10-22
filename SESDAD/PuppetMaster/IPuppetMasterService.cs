@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using SESDAD.CommonTypes;
 
 namespace SESDAD.Managing {
@@ -21,7 +22,7 @@ namespace SESDAD.Managing {
         ///<summary>
         /// Creates a broker process
         ///</summary>
-        void ExecuteBrokerCommand(String brokerName, String SiteName, String urlName, String parentBrokerURI);
+        void ExecuteBrokerCommand(String brokerName, String SiteName, String urlName, String parentBrokerURL, IList<String> childrenBrokerURL);
         ///<summary>
         /// Creates a publisher process
         ///</summary>

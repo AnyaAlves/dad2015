@@ -5,16 +5,19 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SESDAD.CommonTypes {
-    public interface IProcessRemoteService {
-        void ConnectToPuppetMaster(String puppetMasterURL); 
-        void ConnectToBroker(String brokerURL);
-       
+    public interface IProcessRemoteService {       
         void Freeze();
         void Unfreeze();
         void Crash();
+
+        void Ping();
     }
 
     public interface IBrokerRemoteService : IProcessRemoteService {
+        ///<summary>
+        /// Broker Remote Service Interface name
+        ///</summary>
+        String ProcessName { get; }
         ///<summary>
         /// Broker Remote Service interface routing policy
         ///</summary>
@@ -28,7 +31,7 @@ namespace SESDAD.CommonTypes {
         void Subscribe(String processName, String processURL, String topicName);
         void Unsubscribe(String processName, String processURL, String topicName);
 
-        void RegisterBroker(String processName, String processURL);
+        void RegisterBroker(String processURL);
     }
 
     public interface ISubscriberRemoteService : IProcessRemoteService {
@@ -42,9 +45,9 @@ namespace SESDAD.CommonTypes {
     }
 
     public interface IPuppetMasterRemoteService {
-        void ConfirmBrokerConnection(String processName, String processURL);
-        void ConfirmPublisherConnection(String processName, String processURL);
-        void ConfirmSubscriberConnection(String processName, String processURL);
+        void RegisterBroker(String processName, String processURL);
+        void RegisterPublisher(String processName, String processURL);
+        void RegisterSubscriber(String processName, String processURL);
         void WriteIntoLog(String logMessage);
         void WriteIntoFullLog(String logMessage);
     }

@@ -48,6 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EventRouter.cs" />
+    <Compile Include="IMessageBroker.cs" />
     <Compile Include="MessageBroker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RemoteService.cs" />

@@ -28,11 +28,11 @@ namespace SESDAD.Managing {
         private LoggingLevelType loggingLevel;
         //Constants
         private readonly int PORT;
-        private readonly String REGEXURL;
+        private readonly String REGEXURL,
+                             SERVICENAME;
         //Tables
         private IDictionary<String, Site> siteTable;
-        private IDictionary<String, String> siteResolutionCache,
-                                            brokerResolutionCache,
+        private IDictionary<String, String> brokerResolutionCache,
                                             publisherResolutionCache,
                                             subscriberResolutionCache;
         private IDictionary<String, IPuppetMasterService> puppetMasterServiceTable;
@@ -46,9 +46,8 @@ namespace SESDAD.Managing {
             loggingLevel = LoggingLevelType.LIGHT;
             PORT = 1000;
             REGEXURL = @"^tcp://([\w\.]+):\d{1,5}/\w+$";
+            SERVICENAME = "PuppetMasterService";
             siteTable = new Dictionary<String, Site>();
-
-            siteResolutionCache = new Dictionary<String, String>();
 
             puppetMasterServiceTable = new Dictionary<String, IPuppetMasterService>();
 
@@ -62,7 +61,7 @@ namespace SESDAD.Managing {
         internal void Connect() {
             TcpChannel channel = new TcpChannel(PORT);
             ChannelServices.RegisterChannel(channel, true);
-            PuppetMasterService puppetMasterService = new PuppetMasterService();
+            PuppetMasterService puppetMasterService = new PuppetMasterService(SERVICENAME, PORT);
             RemotingServices.Marshal(
                 puppetMasterService,
                 "PuppetMasterService",
@@ -92,7 +91,7 @@ namespace SESDAD.Managing {
         // Creates CLI interface for user interaction with Puppet Master Service
         //</summary>
         internal void StartCLI() {
-            String command, reply;
+            String command;
             while (true) {
                 System.Console.Write("PuppetMaster> ");
                 command = System.Console.ReadLine();
@@ -236,38 +235,45 @@ namespace SESDAD.Managing {
                     }
 
                     if (processType.Equals("broker")) {
-                        Site parentSite;
+                        Site site = siteTable[siteName],
+                             parentSite;
 
                         siteTable.TryGetValue(siteName, out parentSite);
                         puppetMasterServiceTable[serviceURL].ExecuteBrokerCommand(
                                 processName,
                                 siteName,
                                 processURL,
-                                parentSite.ParentBrokerURL);
+                                parentSite.ParentBrokerURL,
+                                site.ChildrenBrokerURL);
 
                         brokerResolutionCache.Add(processName, serviceURL);
-                        siteTable[siteName].BrokerURL = processURL;
+                        site.BrokerURL = processURL;
                     }
                     else if (processType.Equals("publisher")) {
-                        String brokerURL;
+                        Site site;
 
-                        siteResolutionCache.TryGetValue(siteName, out brokerURL);
+                        siteTable.TryGetValue(siteName, out site);
                         puppetMasterServiceTable[serviceURL].ExecutePublisherCommand(
                                 processName,
                                 siteName,
                                 processURL,
-                                brokerURL);
+                                site.BrokerURL);
                         publisherResolutionCache.Add(processName, serviceURL);
+                        //if (siteTable[siteName].IsCreated) {
+                        //    puppetMasterServiceTable[serviceURL].
+                        //} else {
+                        //    siteTable[siteName].SaveURL(processURL);
+                        //}
                     }
                     else if (processType.Equals("subscriber")) {
-                        String brokerURL;
+                        Site site;
 
-                        siteResolutionCache.TryGetValue(siteName, out brokerURL);
+                        siteTable.TryGetValue(siteName, out site);
                         puppetMasterServiceTable[serviceURL].ExecuteSubscriberCommand(
                                 processName,
                                 siteName,
                                 processURL,
-                                brokerURL);
+                                site.BrokerURL);
                         subscriberResolutionCache.Add(processName, serviceURL);
                     }
                 }
