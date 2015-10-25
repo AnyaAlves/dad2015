@@ -22,7 +22,7 @@ namespace SESDAD.Managing {
         ///<summary>
         /// Creates a broker process
         ///</summary>
-        void ExecuteBrokerCommand(String brokerName, String SiteName, String urlName, String parentBrokerURL, IList<String> childrenBrokerURL);
+        void ExecuteBrokerCommand(String brokerName, String SiteName, String urlName, String parentBrokerURL);
         ///<summary>
         /// Creates a publisher process
         ///</summary>

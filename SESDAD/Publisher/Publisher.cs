@@ -24,6 +24,14 @@ namespace SESDAD.Processes {
             base(processName, siteName, processURL) {
         }
 
+        public override void ServiceInit() {
+            base.ServiceInit();
+            RemotingServices.Marshal(
+                new PublisherService((IPublisher)this),
+                serviceName,
+                typeof(PublisherService));
+        }
+
         public override void ConnectToPuppetMaster(String newPuppetMasterURL) {
             base.ConnectToPuppetMaster(newPuppetMasterURL);
             PuppetMaster.RegisterPublisher(processName, processURL);
@@ -31,7 +39,7 @@ namespace SESDAD.Processes {
         }
         public override void ConnectToParentBroker(String newParentURL) {
             base.ConnectToParentBroker(newParentURL);
-            //ParentBroker.RegisterBroker(processURL);
+            ParentBroker.RegisterPublisher(processName ,processURL);
             Console.WriteLine("Connected to " + newParentURL);
         }
 
@@ -63,16 +71,10 @@ namespace SESDAD.Processes {
     class Program {
         static void Main(string[] args) {
             Publisher publisher = new Publisher(args[0], args[1], args[2]);
-            String[] flags = String.Join(" ", args).Split('-'),
-                     parent = flags[1].Split(' ');
 
-            publisher.Connect();
+            publisher.ServiceInit();
             publisher.ConnectToPuppetMaster(args[3]);
-            Console.WriteLine(String.Join(" ", parent));
-            if (parent.Length > 1) {
-                Console.WriteLine("Ok");
-                publisher.ConnectToParentBroker(parent[1]);
-            }
+            publisher.ConnectToParentBroker(args[4]);
             publisher.Debug();
             //publisher.Publish("Cenas Fixes", "Isto fala sobre cenas bueda fixes");
 

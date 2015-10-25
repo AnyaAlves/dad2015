@@ -61,7 +61,7 @@ namespace SESDAD.Processes {
             get { return parentBroker; }
         }
 
-        public virtual void Connect() {
+        public virtual void ServiceInit() {
             channel = new TcpChannel(portNumber);
             ChannelServices.RegisterChannel(channel, true);
         }

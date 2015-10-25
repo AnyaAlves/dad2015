@@ -28,31 +28,9 @@ namespace SESDAD.Managing {
             }
         }
 
-        internal IList<String> ChildrenBrokerURL {
-            get {
-                IList<String> childrenList = new List<String>();
-                foreach (Site child in children) {
-                    if (child.BrokerURL != null) {
-                        childrenList.Add(child.BrokerURL);
-                    }
-                }
-                return childrenList;
-            }
-        }
-
         internal String BrokerURL {
             get { return brokerURL; }
-            set {
-                brokerURL = value;
-            }
-        }
-
-        internal void SaveURL(String savedURL) {
-            pendingURL.Add(savedURL);
-        }
-
-        internal String GetPendingURL() {
-            return String.Join(" ", pendingURL);
+            set { brokerURL = value; }
         }
     }
 }

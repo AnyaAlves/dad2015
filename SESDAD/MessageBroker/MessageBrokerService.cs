@@ -34,19 +34,27 @@ namespace SESDAD.Processes {
         }
 
         public void Publish(String processName, String processURL, Entry entry) {
-            //broker.ForwardEntry(processName, processURL, entry);
+            broker.ForwardEntry(processName, processURL, entry);
         }
 
         public void Subscribe(String processName, String processURL, String topicName) {
-            //broker.registerSubscription(processName, processURL, topicName);
+            broker.registerSubscription(processName, processURL, topicName);
         }
 
         public void Unsubscribe(String processName, String processURL, String topicName) {
-            //broker.removeSubscription(processName, processURL, topicName);
+            broker.removeSubscription(processName, processURL, topicName);
         }
 
-        public void RegisterBroker(String processURL) {
-            broker.ConnectToChildBroker(processURL);
+        public void RegisterBroker(String processName, String processURL) {
+            broker.RegisterBroker(processName, processURL);
+        }
+
+        public void RegisterSubscriber(String processName, String processURL) {
+            broker.RegisterSubscriber(processName, processURL);
+        }
+
+        public void RegisterPublisher(String processName, String processURL) {
+            broker.RegisterPublisher(processName, processURL);
         }
 
         public void Freeze() {

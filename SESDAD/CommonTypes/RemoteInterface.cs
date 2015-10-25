@@ -31,7 +31,9 @@ namespace SESDAD.CommonTypes {
         void Subscribe(String processName, String processURL, String topicName);
         void Unsubscribe(String processName, String processURL, String topicName);
 
-        void RegisterBroker(String processURL);
+        void RegisterBroker(String processName, String processURL);
+        void RegisterPublisher(String processName, String processURL);
+        void RegisterSubscriber(String processName, String processURL);
     }
 
     public interface ISubscriberRemoteService : IProcessRemoteService {

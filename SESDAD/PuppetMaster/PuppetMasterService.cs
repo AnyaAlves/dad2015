@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 using System.Runtime.Remoting;
 using System.Text.RegularExpressions;
 
@@ -100,11 +100,13 @@ namespace SESDAD.Managing {
             String processName,
             String siteName,
             String processURL,
-            String parentBrokerURL,
-            IList<String> childrenBrokerURL) {
+            String parentBrokerURL) {
+            Monitor.Enter(stateList);
             stateList.Add(processName, ProcessState.OFFLINE);
-            String arguments = processName + " " + siteName + " " + processURL + " " + serviceURL + " " + " -p " + parentBrokerURL + " -c" + String.Join(" ", childrenBrokerURL);
+            String arguments = processName + " " + siteName + " " + processURL + " " + serviceURL + " " + parentBrokerURL;
             System.Diagnostics.Process.Start(BROKERFILE, arguments);
+            Monitor.Wait(stateList);
+            Monitor.Exit(stateList);
         }
         ///<summary>
         /// Creates a publisher process
@@ -114,9 +116,12 @@ namespace SESDAD.Managing {
             String siteName,
             String processURL,
             String brokerURL) {
+            Monitor.Enter(stateList);
             stateList.Add(processName, ProcessState.OFFLINE);
-            String arguments = processName + " " + siteName + " " + processURL + " " + serviceURL + " " + " -p " + brokerURL;
+            String arguments = processName + " " + siteName + " " + processURL + " " + serviceURL + " " + brokerURL;
             System.Diagnostics.Process.Start(PUBLISHERFILE, arguments);
+            Monitor.Wait(stateList);
+            Monitor.Exit(stateList);
         }
         ///<summary>
         /// Creates a subscriber process
@@ -126,9 +131,12 @@ namespace SESDAD.Managing {
             String siteName,
             String processURL,
             String brokerURL) {
+            Monitor.Enter(stateList);
             stateList.Add(processName, ProcessState.OFFLINE);
-            String arguments = processName + " " + siteName + " " + processURL + " " + serviceURL + " " + " -p " + brokerURL;
+            String arguments = processName + " " + siteName + " " + processURL + " " + serviceURL + " " + brokerURL;
             System.Diagnostics.Process.Start(SUBSCRIBERFILE, arguments);
+            Monitor.Wait(stateList);
+            Monitor.Exit(stateList);
         }
         ///<summary>
         /// Subscribes into a topic
@@ -171,7 +179,8 @@ namespace SESDAD.Managing {
                 IPublisherRemoteService remoteService;
                 if (publisherTable.TryGetValue(processName, out remoteService)) {
                     for (int times = 0; times < publishTimes; times++) {
-                        remoteService.Publish(topicName, "batata");
+                        remoteService.Publish(topicName, "Message");
+                        Thread.Sleep(intervalTime);
                     }
                 }
             }
@@ -257,7 +266,11 @@ namespace SESDAD.Managing {
             brokerTable.Add(processName, (IBrokerRemoteService)Activator.GetObject(
                 typeof(IBrokerRemoteService),
                 processURL));
+            Monitor.Enter(stateList);
             stateList[processName] = ProcessState.UNFROZEN;
+            Monitor.Pulse(stateList);
+            Monitor.Exit(stateList);
+            
         }
         ///<summary>
         /// Resumes a connection establishment with a publisher
@@ -266,7 +279,10 @@ namespace SESDAD.Managing {
             publisherTable.Add(processName, (IPublisherRemoteService)Activator.GetObject(
                 typeof(IPublisherRemoteService),
                 processURL));
+            Monitor.Enter(stateList);
             stateList[processName] = ProcessState.UNFROZEN;
+            Monitor.Pulse(stateList);
+            Monitor.Exit(stateList);
         }
         ///<summary>
         /// Resumes a connection establishment with a subscriber
@@ -275,7 +291,10 @@ namespace SESDAD.Managing {
             subscriberTable.Add(processName, (ISubscriberRemoteService)Activator.GetObject(
                 typeof(ISubscriberRemoteService),
                 processURL));
+            Monitor.Enter(stateList);
             stateList[processName] = ProcessState.UNFROZEN;
+            Monitor.Pulse(stateList);
+            Monitor.Exit(stateList);
         }
         ///<summary>
         /// Writes into the Puppet Master Service Log while in full log

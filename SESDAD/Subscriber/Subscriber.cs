@@ -25,8 +25,8 @@ namespace SESDAD.Processes {
             base(processName, siteName, processURL) {
         }
 
-        public override void Connect() {
-            base.Connect();
+        public override void ServiceInit() {
+            base.ServiceInit();
             RemotingServices.Marshal(
                 new SubscriberService((ISubscriber)this),
                 serviceName,
@@ -40,7 +40,7 @@ namespace SESDAD.Processes {
         }
         public override void ConnectToParentBroker(String newParentURL) {
             base.ConnectToParentBroker(newParentURL);
-            //ParentBroker.RegisterBroker(processURL);
+            ParentBroker.RegisterSubscriber(processName, processURL);
             Console.WriteLine("Connected to " + newParentURL);
         }
 
@@ -78,14 +78,10 @@ namespace SESDAD.Processes {
     class Program {
         static void Main(string[] args) {
             Subscriber subscriber = new Subscriber(args[0], args[1], args[2]);
-            String[] flags = String.Join(" ", args).Split('-'),
-                     parent = flags[1].Split(' ');
 
-            subscriber.Connect();
+            subscriber.ServiceInit();
             subscriber.ConnectToPuppetMaster(args[3]);
-            if (parent.Length > 1) {
-                subscriber.ConnectToParentBroker(parent[1]);
-            }
+            subscriber.ConnectToParentBroker(args[4]);
             subscriber.Debug();
             //subscriber.Subscribe("Cenas Fixes");
 

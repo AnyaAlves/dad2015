@@ -22,7 +22,9 @@ namespace SESDAD.Processes {
 
         EventRouter eventRouter;
         private IDictionary<String, SubsciberTable> subscriptions;
-        private IDictionary<String, IBrokerRemoteService> childrenBrokerTable;
+        private IDictionary<String, IBrokerRemoteService> brokerTable;
+        private IDictionary<String, IPublisherRemoteService> publisherTable;
+        private IDictionary<String, ISubscriberRemoteService> subscriberTable;
 
         // States
         private RoutingPolicyType routingPolicy;
@@ -35,26 +37,26 @@ namespace SESDAD.Processes {
             base(newProcessName, newSiteName, newProcessURL) {
             eventRouter = new EventRouter();
             subscriptions = new Dictionary<String, SubsciberTable>();
-            childrenBrokerTable = new Dictionary<String, IBrokerRemoteService>();
+            brokerTable = new Dictionary<String, IBrokerRemoteService>();
+            publisherTable = new Dictionary<String, IPublisherRemoteService>();
+            subscriberTable = new Dictionary<String, ISubscriberRemoteService>();
         }
 
         ///<summary>
         /// Broker Remote Service routing policy
         ///</summary>
-        public RoutingPolicyType RoutingPolicy
-        {
+        public RoutingPolicyType RoutingPolicy {
             set { routingPolicy = value; }
         }
         ///<summary>
         /// Broker Remote Service ordering
         ///</summary>
-        public OrderingType Ordering
-        {
+        public OrderingType Ordering {
             set { ordering = value; }
         }
 
-        public override void Connect() {
-            base.Connect();
+        public override void ServiceInit() {
+            base.ServiceInit();
             //make remote service available
             RemotingServices.Marshal(
                 new BrokerRemoteService((IMessageBroker)this),
@@ -69,14 +71,35 @@ namespace SESDAD.Processes {
         }
         public override void ConnectToParentBroker(String newParentURL) {
             base.ConnectToParentBroker(newParentURL);
-            ParentBroker.RegisterBroker(processURL);
+            ParentBroker.RegisterBroker(processName, processURL);
             Console.WriteLine("Connected to " + newParentURL);
         }
-        public void ConnectToChildBroker(String newProcessURL) {
+        public void RegisterBroker(String newProcessURL) {
             IBrokerRemoteService child = (IBrokerRemoteService)Activator.GetObject(
                 typeof(IBrokerRemoteService),
                 newProcessURL);
-            childrenBrokerTable.Add(child.ProcessName, child);
+            brokerTable.Add(child.ProcessName, child);
+            Console.WriteLine("Connected to " + newProcessURL);
+        }
+        public void RegisterBroker(String newProcessName, String newProcessURL) {
+            IBrokerRemoteService child = (IBrokerRemoteService)Activator.GetObject(
+                typeof(IBrokerRemoteService),
+                newProcessURL);
+            brokerTable.Add(newProcessName, child);
+            Console.WriteLine("Connected to " + newProcessURL);
+        }
+        public void RegisterPublisher(String newProcessName, String newProcessURL) {
+            IPublisherRemoteService child = (IPublisherRemoteService)Activator.GetObject(
+                typeof(IPublisherRemoteService),
+                newProcessURL);
+            publisherTable.Add(newProcessName, child);
+            Console.WriteLine("Connected to " + newProcessURL);
+        }
+        public void RegisterSubscriber(String newProcessName, String newProcessURL) {
+            ISubscriberRemoteService child = (ISubscriberRemoteService)Activator.GetObject(
+                typeof(ISubscriberRemoteService),
+                newProcessURL);
+            subscriberTable.Add(newProcessName, child);
             Console.WriteLine("Connected to " + newProcessURL);
         }
 
@@ -148,20 +171,11 @@ namespace SESDAD.Processes {
     class Program {
         static void Main(string[] args) {
             MessageBroker broker = new MessageBroker(args[0], args[1], args[2]);
-            String[] flags = String.Join(" ", args).Split('-'),
-                     parent = flags[1].Split(' '),
-                     children = flags[2].Split(' ');
 
-            broker.Connect();
-            Console.WriteLine(args[3]);
+            broker.ServiceInit();
             broker.ConnectToPuppetMaster(args[3]);
-            if (parent.Length > 1) {
-                broker.ConnectToParentBroker(parent[1]);
-            }
-            if (children.Length > 1) {
-                for(int index = 2; index < children.Length; index++) {
-                    broker.ConnectToChildBroker(children[index]);
-                }
+            if (args.Length == 5) {
+                broker.ConnectToParentBroker(args[4]);
             }
             broker.Debug();
 

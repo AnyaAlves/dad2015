@@ -5,11 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 
 using SESDAD.CommonTypes;
+using SESDAD.Processes;
 
-namespace SESDAD.Processes
-{
-    public interface IMessageBroker
-    {
+namespace SESDAD.Processes {
+    public interface IMessageBroker : IProcess {
         ///<summary>
         /// Broker Interface name
         ///</summary>
@@ -21,15 +20,13 @@ namespace SESDAD.Processes
         ///<summary>
         /// Broker Interface ordering
         ///</summary>
-        OrderingType Ordering{ set; }
+        OrderingType Ordering { set; }
         void ForwardEntry(String processName, String processURL, Entry entry);
         void registerSubscription(String processName, String processURL, String topicName);
         void removeSubscription(String processName, String processURL, String topicName);
 
-        void ConnectToChildBroker(String processURL);
-
-        void Freeze();
-        void Unfreeze();
-        void Crash();
+        void RegisterBroker(String processName, String processURL);
+        void RegisterSubscriber(String processName, String processURL);
+        void RegisterPublisher(String processName, String processURL);
     }
 }

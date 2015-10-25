@@ -49,7 +49,7 @@
   <ItemGroup>
     <Compile Include="ISubscriber.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RemoteObject.cs" />
+    <Compile Include="SubscriberService.cs" />
     <Compile Include="Subscriber.cs" />
   </ItemGroup>
   <ItemGroup>

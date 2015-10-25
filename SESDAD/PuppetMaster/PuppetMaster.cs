@@ -58,7 +58,7 @@ namespace SESDAD.Managing {
         //<summary>
         // Starts connection with Puppet Master Service
         //</summary>
-        internal void Connect() {
+        internal void ServiceInit() {
             TcpChannel channel = new TcpChannel(PORT);
             ChannelServices.RegisterChannel(channel, true);
             PuppetMasterService puppetMasterService = new PuppetMasterService(SERVICENAME, PORT);
@@ -243,8 +243,7 @@ namespace SESDAD.Managing {
                                 processName,
                                 siteName,
                                 processURL,
-                                parentSite.ParentBrokerURL,
-                                site.ChildrenBrokerURL);
+                                parentSite.ParentBrokerURL);
 
                         brokerResolutionCache.Add(processName, serviceURL);
                         site.BrokerURL = processURL;
@@ -259,11 +258,6 @@ namespace SESDAD.Managing {
                                 processURL,
                                 site.BrokerURL);
                         publisherResolutionCache.Add(processName, serviceURL);
-                        //if (siteTable[siteName].IsCreated) {
-                        //    puppetMasterServiceTable[serviceURL].
-                        //} else {
-                        //    siteTable[siteName].SaveURL(processURL);
-                        //}
                     }
                     else if (processType.Equals("subscriber")) {
                         Site site;
@@ -293,7 +287,7 @@ namespace SESDAD.Managing {
         //</summary>
         public static void Main(string[] args) {
             PuppetMaster puppetMaster = new PuppetMaster();
-            puppetMaster.Connect();
+            puppetMaster.ServiceInit();
             System.Console.WriteLine("Connected to SESDAD.");
             if (args.Length == 1 && File.Exists(args[0])) {
                 System.Console.WriteLine("Accessing to configuration file...");

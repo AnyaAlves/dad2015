@@ -5,16 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 
 using SESDAD.CommonTypes;
+using SESDAD.Processes;
 
 namespace SESDAD.Processes {
-    public interface ISubscriber {
+    public interface ISubscriber : IProcess {
         void Subscribe(String topicName);
         void Unsubscribe(String topicName);
 
         void DeliverEntry(Entry entry);
-
-        void Freeze();
-        void Unfreeze();
-        void Crash();
     }
 }
