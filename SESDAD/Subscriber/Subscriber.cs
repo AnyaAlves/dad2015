@@ -18,11 +18,8 @@ using SESDAD.CommonTypes;
 namespace SESDAD.Processes {
 
     public class Subscriber : Process, ISubscriber {
-        public Subscriber(
-            String processName,
-            String siteName,
-            String processURL) :
-            base(processName, siteName, processURL) {
+        public Subscriber(ProcessHeader newProcessHeader) :
+            base(newProcessHeader) {
         }
 
         public override void ServiceInit() {
@@ -35,22 +32,22 @@ namespace SESDAD.Processes {
 
         public override void ConnectToPuppetMaster(String newPuppetMasterURL) {
             base.ConnectToPuppetMaster(newPuppetMasterURL);
-            PuppetMaster.RegisterSubscriber(processName, processURL);
+            PuppetMaster.RegisterSubscriber(ProcessHeader);
             Console.WriteLine("Connected to " + newPuppetMasterURL);
         }
         public override void ConnectToParentBroker(String newParentURL) {
             base.ConnectToParentBroker(newParentURL);
-            ParentBroker.RegisterSubscriber(processName, processURL);
+            ParentBroker.RegisterSubscriber(ProcessHeader);
             Console.WriteLine("Connected to " + newParentURL);
         }
 
         public void Subscribe(String topicName) {
-            ParentBroker.Subscribe(processName, processURL, topicName);
+            ParentBroker.Subscribe(ProcessHeader, topicName);
             Console.WriteLine("Subscribed to <" + topicName + ">");
         }
 
         public void Unsubscribe(String topicName) {
-            ParentBroker.Unsubscribe(processName, processURL, topicName);
+            ParentBroker.Unsubscribe(ProcessHeader, topicName);
             Console.WriteLine("Unsubscribed to <" + topicName + ">");
         }
 
@@ -61,9 +58,9 @@ namespace SESDAD.Processes {
                 "**********************************************" + Environment.NewLine +
                 "* Hello, I'm a Subscriber. Here's my info:" + Environment.NewLine +
                 "*" + Environment.NewLine +
-                "* Site Name:    " + siteName + Environment.NewLine +
-                "* Process Name: " + processName + Environment.NewLine +
-                "* Process URL:  " + processURL + Environment.NewLine +
+                "* Site Name:    " + SiteName + Environment.NewLine +
+                "* Process Name: " + ProcessName + Environment.NewLine +
+                "* Process URL:  " + ProcessURL + Environment.NewLine +
                 "*" + Environment.NewLine +
                 "* Service Name: " + serviceName + Environment.NewLine +
                 "* Service Port: " + portNumber + Environment.NewLine +
@@ -77,13 +74,13 @@ namespace SESDAD.Processes {
 
     class Program {
         static void Main(string[] args) {
-            Subscriber subscriber = new Subscriber(args[0], args[1], args[2]);
+            ProcessHeader processHeader = new ProcessHeader(args[0], ProcessType.SUBSCRIBER, args[1], args[2]);
+            Subscriber subscriber = new Subscriber(processHeader);
 
             subscriber.ServiceInit();
             subscriber.ConnectToPuppetMaster(args[3]);
             subscriber.ConnectToParentBroker(args[4]);
             subscriber.Debug();
-            //subscriber.Subscribe("Cenas Fixes");
 
             Console.ReadLine();
         }

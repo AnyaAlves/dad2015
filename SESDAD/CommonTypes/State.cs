@@ -20,4 +20,9 @@ namespace SESDAD.CommonTypes {
         FIFO,
         TOTAL
     };
+    public enum ProcessType {
+        BROKER,
+        PUBLISHER,
+        SUBSCRIBER
+    }
 }

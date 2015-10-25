@@ -17,11 +17,15 @@ using SESDAD.CommonTypes;
 namespace SESDAD.Processes {
 
     public class Publisher : Process, IPublisher {
-        public Publisher(
-            String processName,
-            String siteName,
-            String processURL) :
-            base(processName, siteName, processURL) {
+        private int seqNumber;
+
+        public Publisher(ProcessHeader newProcessHeader) :
+            base(newProcessHeader) {
+                seqNumber = 1;
+        }
+
+        public int SegNumber {
+            get { return seqNumber++; }
         }
 
         public override void ServiceInit() {
@@ -34,18 +38,18 @@ namespace SESDAD.Processes {
 
         public override void ConnectToPuppetMaster(String newPuppetMasterURL) {
             base.ConnectToPuppetMaster(newPuppetMasterURL);
-            PuppetMaster.RegisterPublisher(processName, processURL);
+            PuppetMaster.RegisterPublisher(ProcessHeader);
             Console.WriteLine("Connected to " + newPuppetMasterURL);
         }
         public override void ConnectToParentBroker(String newParentURL) {
             base.ConnectToParentBroker(newParentURL);
-            ParentBroker.RegisterPublisher(processName ,processURL);
+            ParentBroker.RegisterPublisher(ProcessHeader);
             Console.WriteLine("Connected to " + newParentURL);
         }
 
         public void Publish(String topicName, String content) {
-            Entry entry = new Entry(topicName, content);
-            ParentBroker.Publish(processName, processURL, entry);
+            Entry entry = new Entry(topicName, content, ProcessHeader, seqNumber);
+            ParentBroker.Publish(ProcessHeader, entry);
             Console.WriteLine("I published a new entry about <" + topicName + ">");
         }
 
@@ -54,9 +58,9 @@ namespace SESDAD.Processes {
                 "**********************************************" + Environment.NewLine +
                 "* Hello, I'm a Publisher. Here's my info:" + Environment.NewLine +
                 "*" + Environment.NewLine +
-                "* Site Name:    " + siteName + Environment.NewLine +
-                "* Process Name: " + processName + Environment.NewLine +
-                "* Process URL:  " + processURL + Environment.NewLine +
+                "* Site Name:    " + SiteName + Environment.NewLine +
+                "* Process Name: " + ProcessName + Environment.NewLine +
+                "* Process URL:  " + ProcessURL + Environment.NewLine +
                 "*" + Environment.NewLine +
                 "* Service Name: " + serviceName + Environment.NewLine +
                 "* Service Port: " + portNumber + Environment.NewLine +
@@ -70,13 +74,13 @@ namespace SESDAD.Processes {
 
     class Program {
         static void Main(string[] args) {
-            Publisher publisher = new Publisher(args[0], args[1], args[2]);
+            ProcessHeader processHeader = new ProcessHeader(args[0], ProcessType.PUBLISHER, args[1], args[2]);
+            Publisher publisher = new Publisher(processHeader);
 
             publisher.ServiceInit();
             publisher.ConnectToPuppetMaster(args[3]);
             publisher.ConnectToParentBroker(args[4]);
             publisher.Debug();
-            //publisher.Publish("Cenas Fixes", "Isto fala sobre cenas bueda fixes");
 
             Console.ReadLine();
         }

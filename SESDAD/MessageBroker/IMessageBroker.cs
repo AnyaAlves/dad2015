@@ -21,12 +21,12 @@ namespace SESDAD.Processes {
         /// Broker Interface ordering
         ///</summary>
         OrderingType Ordering { set; }
-        void ForwardEntry(String processName, String processURL, Entry entry);
-        void registerSubscription(String processName, String processURL, String topicName);
-        void removeSubscription(String processName, String processURL, String topicName);
+        void ForwardEntry(ProcessHeader processHeader, Entry entry);
+        void registerSubscription(ProcessHeader processHeader, String topicName);
+        void removeSubscription(ProcessHeader processHeader, String topicName);
 
-        void RegisterBroker(String processName, String processURL);
-        void RegisterSubscriber(String processName, String processURL);
-        void RegisterPublisher(String processName, String processURL);
+        void RegisterBroker(ProcessHeader processHeader);
+        void RegisterSubscriber(ProcessHeader processHeader);
+        void RegisterPublisher(ProcessHeader processHeader);
     }
 }

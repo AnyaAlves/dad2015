@@ -26,14 +26,14 @@ namespace SESDAD.CommonTypes {
         /// Broker Remote Service interface ordering
         ///</summary>
         OrderingType Ordering { set; }
-        void Publish(String processName, String processURL, Entry entry);
+        void Publish(ProcessHeader processHeader, Entry entry);
 
-        void Subscribe(String processName, String processURL, String topicName);
-        void Unsubscribe(String processName, String processURL, String topicName);
+        void Subscribe(ProcessHeader processHeader, String topicName);
+        void Unsubscribe(ProcessHeader processHeader, String topicName);
 
-        void RegisterBroker(String processName, String processURL);
-        void RegisterPublisher(String processName, String processURL);
-        void RegisterSubscriber(String processName, String processURL);
+        void RegisterBroker(ProcessHeader processHeader);
+        void RegisterPublisher(ProcessHeader processHeader);
+        void RegisterSubscriber(ProcessHeader processHeader);
     }
 
     public interface ISubscriberRemoteService : IProcessRemoteService {
@@ -47,9 +47,9 @@ namespace SESDAD.CommonTypes {
     }
 
     public interface IPuppetMasterRemoteService {
-        void RegisterBroker(String processName, String processURL);
-        void RegisterPublisher(String processName, String processURL);
-        void RegisterSubscriber(String processName, String processURL);
+        void RegisterBroker(ProcessHeader processHeader);
+        void RegisterPublisher(ProcessHeader processHeader);
+        void RegisterSubscriber(ProcessHeader processHeader);
         void WriteIntoLog(String logMessage);
         void WriteIntoFullLog(String logMessage);
     }

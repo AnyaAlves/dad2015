@@ -23,7 +23,7 @@ namespace SESDAD.Processes {
             policyType = RoutingPolicyType.FILTERING;
         }
 
-        public void BroadcastEntry(String processName, String processURL, String entry) {
+        public void BroadcastEntry(ProcessHeader processHeader, String entry) {
             if (policyType == RoutingPolicyType.FLOODING) { BroadcastByFlooding(); }
             else if (policyType == RoutingPolicyType.FILTERING) { BroadcastByFiltering(); }
         }

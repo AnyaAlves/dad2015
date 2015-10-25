@@ -262,12 +262,12 @@ namespace SESDAD.Managing {
         ///<summary>
         /// Resumes a connection establishment with a broker
         ///</summary>
-        public void RegisterBroker(String processName, String processURL) {
-            brokerTable.Add(processName, (IBrokerRemoteService)Activator.GetObject(
+        public void RegisterBroker(ProcessHeader processHeader) {
+            brokerTable.Add(processHeader.ProcessName, (IBrokerRemoteService)Activator.GetObject(
                 typeof(IBrokerRemoteService),
-                processURL));
+                processHeader.ProcessURL));
             Monitor.Enter(stateList);
-            stateList[processName] = ProcessState.UNFROZEN;
+            stateList[processHeader.ProcessName] = ProcessState.UNFROZEN;
             Monitor.Pulse(stateList);
             Monitor.Exit(stateList);
             
@@ -275,24 +275,24 @@ namespace SESDAD.Managing {
         ///<summary>
         /// Resumes a connection establishment with a publisher
         ///</summary>
-        public void RegisterPublisher(String processName, String processURL) {
-            publisherTable.Add(processName, (IPublisherRemoteService)Activator.GetObject(
+        public void RegisterPublisher(ProcessHeader processHeader) {
+            publisherTable.Add(processHeader.ProcessName, (IPublisherRemoteService)Activator.GetObject(
                 typeof(IPublisherRemoteService),
-                processURL));
+                processHeader.ProcessURL));
             Monitor.Enter(stateList);
-            stateList[processName] = ProcessState.UNFROZEN;
+            stateList[processHeader.ProcessName] = ProcessState.UNFROZEN;
             Monitor.Pulse(stateList);
             Monitor.Exit(stateList);
         }
         ///<summary>
         /// Resumes a connection establishment with a subscriber
         ///</summary>
-        public void RegisterSubscriber(String processName, String processURL) {
-            subscriberTable.Add(processName, (ISubscriberRemoteService)Activator.GetObject(
+        public void RegisterSubscriber(ProcessHeader processHeader) {
+            subscriberTable.Add(processHeader.ProcessName, (ISubscriberRemoteService)Activator.GetObject(
                 typeof(ISubscriberRemoteService),
-                processURL));
+                processHeader.ProcessURL));
             Monitor.Enter(stateList);
-            stateList[processName] = ProcessState.UNFROZEN;
+            stateList[processHeader.ProcessName] = ProcessState.UNFROZEN;
             Monitor.Pulse(stateList);
             Monitor.Exit(stateList);
         }

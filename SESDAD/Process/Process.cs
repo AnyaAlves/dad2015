@@ -18,10 +18,8 @@ namespace SESDAD.Processes {
 
     public abstract class Process {
 
-        protected String processName,
-                         parentBrokerName,
-                         siteName,
-                         processURL,
+        private ProcessHeader processHeader;
+        protected String parentBrokerName,
                          parentBrokerURL,
                          puppetMasterURL;
 
@@ -33,30 +31,47 @@ namespace SESDAD.Processes {
         private IPuppetMasterRemoteService puppetMaster;
         private IBrokerRemoteService parentBroker;
 
-        public Process(String newProcessName, String newSiteName, String newProcessURL) {
-            processName = newProcessName;
-            siteName = newSiteName;
-            processURL = newProcessURL;
+        public Process(ProcessHeader newProcessHeader) {
+            processHeader = newProcessHeader;
 
             //extracting the port number and service name
             String URLpattern = @"^tcp://[\w\.]+:(\d{1,5})/(\w+)$";
-            Match match = Regex.Match(processURL, URLpattern);
+            Match match = Regex.Match(processHeader.ProcessURL, URLpattern);
             Int32.TryParse(match.Groups[1].Value, out portNumber);
             serviceName = match.Groups[2].Value;
         }
 
-        public String ProcessName {
-            get { return processName; }
+        public ProcessHeader ProcessHeader {
+            get { return processHeader; }
         }
+
+        public String ProcessName {
+            get { return processHeader.ProcessName; }
+        }
+        public ProcessType ProcessType {
+            get { return processHeader.ProcessType; }
+        }
+
+        public String SiteName {
+            get { return processHeader.SiteName; }
+        }
+
+        public String ProcessURL {
+            get { return processHeader.ProcessURL; }
+        }
+
         public String ParentBrokerName {
             get { return parentBrokerName; }
         }
+
         public String ParentBrokerURL {
             get { return parentBrokerURL; }
         }
+
         protected IPuppetMasterRemoteService PuppetMaster {
             get { return puppetMaster; }
         }
+
         protected IBrokerRemoteService ParentBroker {
             get { return parentBroker; }
         }
