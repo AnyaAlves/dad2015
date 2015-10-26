@@ -51,9 +51,6 @@ namespace SESDAD.CommonTypes {
     }
 
     public interface IPuppetMasterService {
-        void RegisterBroker(ProcessHeader processHeader);
-        void RegisterPublisher(ProcessHeader processHeader);
-        void RegisterSubscriber(ProcessHeader processHeader);
         void WriteIntoLog(String logMessage);
         void WriteIntoFullLog(String logMessage);
     }

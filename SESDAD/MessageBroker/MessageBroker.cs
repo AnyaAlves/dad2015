@@ -126,7 +126,6 @@ namespace SESDAD.Processes {
                 }
             }
             //eventrouter.broadcast
-            Console.WriteLine("Forwarding entry to all subscribers");
         }
 
         public void NotifyParent() { }

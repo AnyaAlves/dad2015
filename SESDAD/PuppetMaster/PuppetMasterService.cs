@@ -24,7 +24,7 @@ namespace SESDAD.Managing {
     ///<summary>
     /// Puppet Master Service
     ///</summary>
-    public class PuppetMasterService : MarshalByRefObject, IPuppetMasterService {
+    public class PuppetMasterService : MarshalByRefObject, SESDAD.Managing.IPuppetMasterService, SESDAD.CommonTypes.IPuppetMasterService {
         // Log
         private String log,
         // ID
@@ -275,6 +275,7 @@ namespace SESDAD.Managing {
         ///</summary>
         public void WriteIntoFullLog(String logMessage) {
             if (loggingLevel == LoggingLevelType.FULL) {
+                Console.WriteLine(logMessage);
                 log += logMessage + Environment.NewLine;
             }
         }
@@ -282,6 +283,7 @@ namespace SESDAD.Managing {
         /// Writes into the Puppet Master Service Log
         ///</summary>
         public void WriteIntoLog(String logMessage) {
+            Console.WriteLine(logMessage);
             log += logMessage + Environment.NewLine;
         }
     }
