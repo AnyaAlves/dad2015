@@ -16,7 +16,7 @@ using SESDAD.CommonTypes;
 
 namespace SESDAD.Processes {
 
-    public class Publisher : Process, IPublisher {
+    public class Publisher : GenericProcess, IPublisher {
         private int seqNumber;
 
         public Publisher(ProcessHeader newProcessHeader) :
@@ -25,17 +25,15 @@ namespace SESDAD.Processes {
         }
 
         public int SeqNumber {
-            get { return seqNumber++; }
+            get { return seqNumber; }
         }
 
         public Entry Publish(String topicName, String content) {
-            Entry entry = new Entry(topicName, content, ProcessHeader, seqNumber);
+            Entry entry = new Entry(topicName, content, ProcessHeader, seqNumber++);
             ParentBroker.Publish(ProcessHeader, entry);
             return entry;
         }
-        public void Ack(int seqNumber) {
-        
-        }
+        //public void Ack(int seqNumber) {}
     }
 
     class Program {

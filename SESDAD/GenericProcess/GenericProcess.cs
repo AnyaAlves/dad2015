@@ -16,12 +16,12 @@ using SESDAD.CommonTypes;
 
 namespace SESDAD.Processes {
 
-    public abstract class Process {
+    public abstract class GenericProcess {
 
         private ProcessHeader processHeader;
         private IMessageBrokerService parentBroker;
 
-        public Process(ProcessHeader newProcessHeader) {
+        public GenericProcess(ProcessHeader newProcessHeader) {
             processHeader = newProcessHeader;
         }
 
@@ -37,8 +37,8 @@ namespace SESDAD.Processes {
             ChannelServices.RegisterChannel(channel, true);
         }
         public void LaunchService<Service, Interface>(Interface iProcess)
-            where Service : ProcessService<Interface>, new()
-            where Interface : IProcess {
+            where Service : GenericProcessService<Interface>, new()
+            where Interface : IGenericProcess {
             Match match = Regex.Match(ProcessHeader.ProcessURL, @"^tcp://[\w\.]+:(\d{1,5})/(\w+)$");
             int portNumber;
             String serviceName = match.Groups[2].Value;

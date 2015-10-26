@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MessageBroker", "MessageBro
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PuppetMaster", "PuppetMaster\PuppetMaster.csproj", "{88B08A28-E18C-4611-ABC4-C3286F20F519}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Process", "Process\Process.csproj", "{90749E08-4A8A-474E-A821-ED5481A5609E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GenericProcess", "GenericProcess\GenericProcess.csproj", "{90749E08-4A8A-474E-A821-ED5481A5609E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

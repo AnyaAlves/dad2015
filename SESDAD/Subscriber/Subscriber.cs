@@ -17,7 +17,7 @@ using SESDAD.CommonTypes;
 
 namespace SESDAD.Processes {
 
-    public class Subscriber : Process, ISubscriber {
+    public class Subscriber : GenericProcess, ISubscriber {
         public Subscriber(ProcessHeader newProcessHeader) :
             base(newProcessHeader) {
         }

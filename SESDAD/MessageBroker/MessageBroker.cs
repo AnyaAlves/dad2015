@@ -16,7 +16,7 @@ namespace SESDAD.Processes {
     using ChildBrokerTable = Dictionary<ProcessHeader, IMessageBrokerService>;
     using IChildBrokerTable = IDictionary<ProcessHeader, IMessageBrokerService>;
 
-    public class MessageBroker : Process, IMessageBroker {
+    public class MessageBroker : GenericProcess, IMessageBroker {
         // States
         private RoutingPolicyType routingPolicy;
         private OrderingType ordering;
@@ -69,7 +69,7 @@ namespace SESDAD.Processes {
             //notify parent to update
             Console.WriteLine("Removed subcriber: " + processHeader.ProcessName);
         }
-        public void Ack(ProcessHeader processHeader) { }
+        //public void Ack(ProcessHeader processHeader) { }
 
         public void ForwardEntry(ProcessHeader processHeader, Entry entry) {
             SubsciberTable subscriberList;

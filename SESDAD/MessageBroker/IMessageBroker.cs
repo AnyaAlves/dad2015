@@ -8,7 +8,7 @@ using SESDAD.CommonTypes;
 using SESDAD.Processes;
 
 namespace SESDAD.Processes {
-    public interface IMessageBroker : IProcess {
+    public interface IMessageBroker : IGenericProcess {
         ///<summary>
         /// Broker Interface routing policy
         ///</summary>
@@ -20,7 +20,7 @@ namespace SESDAD.Processes {
         void AddSubscription(ProcessHeader processHeader);
         void AddSubscription(ProcessHeader processHeader, String topicName);
         void RemoveSubscription(ProcessHeader processHeader, String topicName);
-        void Ack(ProcessHeader processHeader);
+        //void Ack(ProcessHeader processHeader);
 
         void ForwardEntry(ProcessHeader processHeader, Entry entry);
 

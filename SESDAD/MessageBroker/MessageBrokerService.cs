@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using SESDAD.CommonTypes;
 
 namespace SESDAD.Processes {
-    public class MessageBrokerService : ProcessService<IMessageBroker>, IMessageBrokerService {
+    public class MessageBrokerService : GenericProcessService<IMessageBroker>, IMessageBrokerService {
         public RoutingPolicyType RoutingPolicy {
             set { Process.RoutingPolicy = value; }
         }

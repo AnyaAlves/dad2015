@@ -4,7 +4,6 @@ namespace SESDAD.CommonTypes {
 
     [Serializable]
     public class Entry {
-
         private String topicName,
                        content;
         private ProcessHeader publisherHeader;

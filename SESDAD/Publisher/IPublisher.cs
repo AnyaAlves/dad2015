@@ -4,7 +4,7 @@ using SESDAD.Processes;
 using SESDAD.CommonTypes;
 
 namespace SESDAD.Processes {
-    public interface IPublisher : IProcess {
+    public interface IPublisher : IGenericProcess {
         /// <summary>
         ///  Creates a new entry and sends it to parent broker
         /// </summary>
@@ -16,6 +16,6 @@ namespace SESDAD.Processes {
         /// 
         /// </summary>
         /// <param name="seqNumber"></param>
-        void Ack(int seqNumber);
+        //void Ack(int seqNumber);
     }
 }

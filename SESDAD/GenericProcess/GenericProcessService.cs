@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 using SESDAD.CommonTypes;
 
 namespace SESDAD.Processes {
-    public class ProcessService<I> : MarshalByRefObject
-        where I : IProcess {
+    public abstract class GenericProcessService<I> : MarshalByRefObject
+        where I : IGenericProcess {
         private I process;
         private IPuppetMasterService puppetMaster;
 

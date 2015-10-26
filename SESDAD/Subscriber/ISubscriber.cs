@@ -8,7 +8,7 @@ using SESDAD.CommonTypes;
 using SESDAD.Processes;
 
 namespace SESDAD.Processes {
-    public interface ISubscriber : IProcess {
+    public interface ISubscriber : IGenericProcess {
         void Subscribe(String topicName);
         void Unsubscribe(String topicName);
 

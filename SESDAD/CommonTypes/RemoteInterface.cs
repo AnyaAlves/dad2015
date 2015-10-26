@@ -43,6 +43,8 @@ namespace SESDAD.CommonTypes {
     }
 
     public interface IPublisherService : IGenericProcessService {
+        //void Ack();
+
         void ForcePublish(String topicName, String content);
     }
 

@@ -40,9 +40,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IProcess.cs" />
-    <Compile Include="Process.cs" />
-    <Compile Include="ProcessService.cs" />
+    <Compile Include="IGenericProcess.cs" />
+    <Compile Include="GenericProcess.cs" />
+    <Compile Include="GenericProcessService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
