@@ -17,12 +17,14 @@ namespace SESDAD.Processes {
         /// Broker Interface ordering
         ///</summary>
         OrderingType Ordering { set; }
-        void ForwardEntry(ProcessHeader processHeader, Entry entry);
-        void registerSubscription(ProcessHeader processHeader, String topicName);
-        void removeSubscription(ProcessHeader processHeader, String topicName);
+        void AddSubscription(ProcessHeader processHeader);
+        void AddSubscription(ProcessHeader processHeader, String topicName);
+        void RemoveSubscription(ProcessHeader processHeader, String topicName);
+        void Ack(ProcessHeader processHeader);
 
-        void RegisterBroker(ProcessHeader processHeader);
-        void RegisterSubscriber(ProcessHeader processHeader);
-        void RegisterPublisher(ProcessHeader processHeader);
+        void ForwardEntry(ProcessHeader processHeader, Entry entry);
+
+        void AddChildBroker(String newProcessURL);
+        void AddChildBroker(ProcessHeader processHeader);
     }
 }

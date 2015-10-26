@@ -41,7 +41,7 @@ namespace SESDAD.Managing {
                                 SUBSCRIBERFILE;
         // Tables
         private IDictionary<String, ProcessState> stateList;
-        private IDictionary<String, IBrokerService> brokerTable;
+        private IDictionary<String, IMessageBrokerService> brokerTable;
         private IDictionary<String, IPublisherService> publisherTable;
         private IDictionary<String, ISubscriberService> subscriberTable;
         ///<summary>
@@ -55,7 +55,7 @@ namespace SESDAD.Managing {
             routingPolicy = RoutingPolicyType.FLOODING;
             ordering = OrderingType.FIFO;
             loggingLevel = LoggingLevelType.LIGHT;
-            brokerTable = new Dictionary<String, IBrokerService>();
+            brokerTable = new Dictionary<String, IMessageBrokerService>();
             publisherTable = new Dictionary<String, IPublisherService>();
             subscriberTable = new Dictionary<String, ISubscriberService>();
             stateList = new Dictionary<String, ProcessState>();
@@ -69,7 +69,7 @@ namespace SESDAD.Managing {
         public RoutingPolicyType RoutingPolicy {
             set {
                 routingPolicy = value;
-                foreach (IBrokerService brokerService in brokerTable.Values.ToList()) {
+                foreach (IMessageBrokerService brokerService in brokerTable.Values.ToList()) {
                     brokerService.RoutingPolicy = value;
                 }
             }
@@ -80,7 +80,7 @@ namespace SESDAD.Managing {
         public OrderingType Ordering {
             set {
                 ordering = value;
-                foreach (IBrokerService brokerService in brokerTable.Values.ToList()) {
+                foreach (IMessageBrokerService brokerService in brokerTable.Values.ToList()) {
                     brokerService.Ordering = value;
                 }
             }
@@ -105,8 +105,8 @@ namespace SESDAD.Managing {
             String arguments = processName + " " + siteName + " " + processURL + " " + parentBrokerURL;
             System.Diagnostics.Process.Start(BROKERFILE, arguments);
             Thread.Sleep(1000);
-            IBrokerService processService = (IBrokerService)Activator.GetObject(
-                typeof(IBrokerService),
+            IMessageBrokerService processService = (IMessageBrokerService)Activator.GetObject(
+                typeof(IMessageBrokerService),
                 processURL);
             processService.ConnectToPuppetMaster(serviceURL);
             brokerTable.Add(processName, processService);

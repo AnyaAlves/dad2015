@@ -19,65 +19,47 @@ namespace SESDAD.Processes {
     public abstract class Process {
 
         private ProcessHeader processHeader;
-        private String parentURL;
-
-        protected int portNumber;
-        protected String serviceName;
-        protected ObjRef serviceReference;
-        protected TcpChannel channel;
-
-        private IBrokerService parentBroker;
+        private IMessageBrokerService parentBroker;
 
         public Process(ProcessHeader newProcessHeader) {
             processHeader = newProcessHeader;
-
-            //extracting the port number and service name
-            String URLpattern = @"^tcp://[\w\.]+:(\d{1,5})/(\w+)$";
-            Match match = Regex.Match(processHeader.ProcessURL, URLpattern);
-            Int32.TryParse(match.Groups[1].Value, out portNumber);
-            serviceName = match.Groups[2].Value;
         }
 
         public ProcessHeader ProcessHeader {
             get { return processHeader; }
         }
-
-        public String ProcessName {
-            get { return processHeader.ProcessName; }
-        }
-        public ProcessType ProcessType {
-            get { return processHeader.ProcessType; }
-        }
-
-        public String SiteName {
-            get { return processHeader.SiteName; }
-        }
-
-        public String ProcessURL {
-            get { return processHeader.ProcessURL; }
-        }
-
-        public String ParentURL {
-            get { return parentURL; }
-        }
-
-        protected IBrokerService ParentBroker {
+        protected IMessageBrokerService ParentBroker {
             get { return parentBroker; }
         }
 
-        public void TcpConnect() {
-            channel = new TcpChannel(portNumber);
+        public void TcpConnect(int portNumber) {
+            TcpChannel channel = new TcpChannel(portNumber);
             ChannelServices.RegisterChannel(channel, true);
         }
+        public void LaunchService<Service, Interface>(Interface iProcess)
+            where Service : ProcessService<Interface>, new()
+            where Interface : IProcess {
+            Match match = Regex.Match(ProcessHeader.ProcessURL, @"^tcp://[\w\.]+:(\d{1,5})/(\w+)$");
+            int portNumber;
+            String serviceName = match.Groups[2].Value;
+            Service service = new Service();
 
-        public abstract void LaunchService();
+            service.Process = iProcess;
+
+            Int32.TryParse(match.Groups[1].Value, out portNumber);
+
+            TcpConnect(portNumber);
+
+            RemotingServices.Marshal(
+                service,
+                serviceName,
+                typeof(Service));
+        }
 
         public void ConnectToParentBroker(String parentBrokerURL) {
-            parentBroker = (IBrokerService)Activator.GetObject(
-                typeof(IBrokerService),
+            parentBroker = (IMessageBrokerService)Activator.GetObject(
+                typeof(IMessageBrokerService),
                 parentBrokerURL);
-            parentURL = parentBrokerURL;
-            Console.WriteLine("Connected to " + parentURL);
         }
 
         public void Freeze() { }
@@ -89,17 +71,21 @@ namespace SESDAD.Processes {
         public void Debug() {
             String debugMessage =
                 "**********************************************" + Environment.NewLine +
-                "* Hello, I'm a " + ProcessType.ToString() + ". Here's my info:" + Environment.NewLine +
+                "* Hello, I'm a " + processHeader.ProcessType.ToString() + ". Here's my info:" + Environment.NewLine +
                 "*" + Environment.NewLine +
-                "* Site Name:    " + SiteName + Environment.NewLine +
-                "* Process Name: " + ProcessName + Environment.NewLine +
-                "* Process URL:  " + ProcessURL + Environment.NewLine +
-                "*" + Environment.NewLine +
-                "* Service Name: " + serviceName + Environment.NewLine +
-                "* Service Port: " + portNumber + Environment.NewLine +
-                "*" + Environment.NewLine +
-                "* Parent URL:   " + ParentURL + Environment.NewLine +
-                "**********************************************" + Environment.NewLine;
+                "* Site Name:    " + processHeader.SiteName + Environment.NewLine +
+                "* Process Name: " + processHeader.ProcessName + Environment.NewLine +
+                "* Process URL:  " + processHeader.ProcessURL + Environment.NewLine;
+            if (parentBroker != null) {
+                debugMessage +=
+                    "*" + Environment.NewLine +
+                    "* Parent URL:   " + parentBroker.ProcessHeader.ProcessURL + Environment.NewLine +
+                    "**********************************************" + Environment.NewLine;
+            }
+            else {
+                debugMessage +=
+                    "**********************************************" + Environment.NewLine;
+            }
             Console.Write(debugMessage);
         }
     }

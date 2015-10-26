@@ -7,48 +7,17 @@ using System.Threading.Tasks;
 using SESDAD.CommonTypes;
 
 namespace SESDAD.Processes {
-    public class SubscriberService : MarshalByRefObject, ISubscriberService {
-        private IPuppetMasterService puppetMaster;
-        private ISubscriber process;
-
-        public SubscriberService(ISubscriber newSubscriber) :
-            base() {
-            process = newSubscriber;
-        }
-
+    public class SubscriberService : ProcessService<ISubscriber>, ISubscriberService {
         public void DeliverEntry(Entry entry) {
-            process.DeliverEntry(entry);
-            puppetMaster.WriteIntoFullLog("SubEvent " + process.ProcessName + ", " + entry.PublisherHeader.ProcessName + ", " + entry.TopicName + ", " + entry.SeqNumber);
+            Process.ReceiveEntry(entry);
+            PuppetMaster.WriteIntoLog("SubEvent " + ProcessHeader.ProcessName + ", " + entry.PublisherHeader.ProcessName + ", " + entry.TopicName + ", " + entry.SeqNumber);
         }
 
         public void ForceSubscribe(String topicName) {
-            process.Subscribe(topicName);
+            Process.Subscribe(topicName);
         }
         public void ForceUnsubscribe(String topicName) {
-            process.Unsubscribe(topicName);
+            Process.Unsubscribe(topicName);
         }
-
-        public void ConnectToPuppetMaster(String puppetMasterURL) {
-            puppetMaster = (IPuppetMasterService)Activator.GetObject(
-                 typeof(IPuppetMasterService),
-                 puppetMasterURL);
-            Console.WriteLine("Connected to PuppetMaster.");
-        }
-
-        public void ConnectToParentBroker(String parentbrokerURL) {
-            process.ConnectToParentBroker(parentbrokerURL);
-        }
-
-        public void ForceFreeze() {
-            process.Freeze();
-        }
-        public void ForceUnfreeze() {
-            process.Unfreeze();
-        }
-        public void ForceCrash() {
-            process.Crash();
-        }
-
-        public void TryPing() { }
     }
 }

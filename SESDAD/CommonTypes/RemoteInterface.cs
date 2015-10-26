@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 
 namespace SESDAD.CommonTypes {
     public interface IGenericProcessService {
+        ProcessHeader ProcessHeader { get; }
+
         void ConnectToPuppetMaster(String puppetMasterURL);
         void ConnectToParentBroker(String parentbrokerURL);
 
@@ -16,11 +18,7 @@ namespace SESDAD.CommonTypes {
         void TryPing();
     }
 
-    public interface IBrokerService : IGenericProcessService {
-        ///<summary>
-        /// Broker Remote Service Interface name
-        ///</summary>
-        String ProcessName { get; }
+    public interface IMessageBrokerService : IGenericProcessService {
         ///<summary>
         /// Broker Remote Service interface routing policy
         ///</summary>
@@ -34,9 +32,7 @@ namespace SESDAD.CommonTypes {
         void Subscribe(ProcessHeader processHeader, String topicName);
         void Unsubscribe(ProcessHeader processHeader, String topicName);
 
-        void RegisterBroker(ProcessHeader processHeader);
-        void RegisterPublisher(ProcessHeader processHeader);
-        void RegisterSubscriber(ProcessHeader processHeader);
+        void RegisterChildBroker(ProcessHeader processHeader);
     }
 
     public interface ISubscriberService : IGenericProcessService {

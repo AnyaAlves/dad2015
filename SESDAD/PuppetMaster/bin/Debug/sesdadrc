@@ -1,19 +1,22 @@
 Site Site0 Parent none
 Site Site1 Parent Site0
 Status
+
 Process bro0 Is broker On Site0 URL tcp://localhost:8086/broker
 Process bro1 Is broker On Site1 URL tcp://localhost:8089/broker
 Process pub0 Is publisher On Site0 URL tcp://localhost:8087/pub
 Process sub0 Is subscriber On Site0 URL tcp://localhost:8088/sub
-RoutingPolicy flooding
 Subscriber sub0 Subscribe test
+Status
+
 Ordering NO
+RoutingPolicy flooding
+LoggingLevel full
+Status
+
+Publisher pub0 Publish 5 Ontopic test Interval 500
+
 -Crash bro0
-Freeze pub0
-Wait 2000
-Status
-Unfreeze sub0
-Wait 2000
-LoggingLevel light
-Status
-Publisher pub0 Publish 20 Ontopic test Interval 2000
+-Freeze pub0
+-Unfreeze sub0
+-Wait 2000

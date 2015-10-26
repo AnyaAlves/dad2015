@@ -22,25 +22,14 @@ namespace SESDAD.Processes {
             base(newProcessHeader) {
         }
 
-        public override void LaunchService() {
-            TcpConnect();
-            RemotingServices.Marshal(
-                new SubscriberService((ISubscriber)this),
-                serviceName,
-                typeof(SubscriberService));
-        }
-
         public void Subscribe(String topicName) {
             ParentBroker.Subscribe(ProcessHeader, topicName);
-            Console.WriteLine("Subscribed to <" + topicName + ">");
         }
-
         public void Unsubscribe(String topicName) {
             ParentBroker.Unsubscribe(ProcessHeader, topicName);
-            Console.WriteLine("Unsubscribed to <" + topicName + ">");
         }
 
-        public void DeliverEntry(Entry entry) { }
+        public void ReceiveEntry(Entry entry) { }
     }
 
     class Program {
@@ -48,7 +37,7 @@ namespace SESDAD.Processes {
             ProcessHeader processHeader = new ProcessHeader(args[0], ProcessType.SUBSCRIBER, args[1], args[2]);
             Subscriber process = new Subscriber(processHeader);
 
-            process.LaunchService();
+            process.LaunchService<SubscriberService, ISubscriber>(((ISubscriber)process));
             process.ConnectToParentBroker(args[3]);
             process.Debug();
 

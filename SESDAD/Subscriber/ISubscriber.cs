@@ -12,6 +12,6 @@ namespace SESDAD.Processes {
         void Subscribe(String topicName);
         void Unsubscribe(String topicName);
 
-        void DeliverEntry(Entry entry);
+        void ReceiveEntry(Entry entry);
     }
 }
