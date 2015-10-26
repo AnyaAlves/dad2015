@@ -55,12 +55,16 @@ namespace SESDAD.Managing {
             publisherResolutionCache = new Dictionary<String, String>();
             subscriberResolutionCache = new Dictionary<String, String>();
         }
+        internal void TcpConnect() {
+            TcpChannel channel = new TcpChannel(PORT);
+            ChannelServices.RegisterChannel(channel, true);
+        }
+
         //<summary>
         // Starts connection with Puppet Master Service
         //</summary>
-        internal void ServiceInit() {
-            TcpChannel channel = new TcpChannel(PORT);
-            ChannelServices.RegisterChannel(channel, true);
+        internal void LaunchService() {
+            TcpConnect();
             PuppetMasterService puppetMasterService = new PuppetMasterService(SERVICENAME, PORT);
             RemotingServices.Marshal(
                 puppetMasterService,
@@ -287,7 +291,7 @@ namespace SESDAD.Managing {
         //</summary>
         public static void Main(string[] args) {
             PuppetMaster puppetMaster = new PuppetMaster();
-            puppetMaster.ServiceInit();
+            puppetMaster.LaunchService();
             System.Console.WriteLine("Connected to SESDAD.");
             if (args.Length == 1 && File.Exists(args[0])) {
                 System.Console.WriteLine("Accessing to configuration file...");

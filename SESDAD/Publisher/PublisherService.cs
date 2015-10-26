@@ -7,28 +7,45 @@ using System.Threading.Tasks;
 using SESDAD.CommonTypes;
 
 namespace SESDAD.Processes {
-    public class PublisherService : MarshalByRefObject, IPublisherRemoteService {
-        IPublisher publisher;
+    public class PublisherService : MarshalByRefObject, IPublisherService {
+        private IPuppetMasterService puppetMaster;
+        private IPublisher process;
 
         public PublisherService(IPublisher newPublisher) :
             base() {
-            publisher = newPublisher;
+            process = newPublisher;
         }
 
-        public void Publish(String topicName, String content) {
-            publisher.Publish(topicName, content);
+        public void ForcePublish(String topicName, String content) {
+            Entry entry = process.Publish(topicName, content);
+            PuppetMaster.WriteIntoLog("PubEvent " + process.ProcessName + ", " + process.ProcessName + ", " + entry.TopicName + ", " + entry.SeqNumber);
         }
 
-        public void Freeze() {
-            publisher.Freeze();
-        }
-        public void Unfreeze() {
-            publisher.Unfreeze();
-        }
-        public void Crash() {
-            publisher.Crash();
+        public IPuppetMasterService PuppetMaster {
+            get { return puppetMaster; }
         }
 
-        public void Ping() { }
+        public void ConnectToPuppetMaster(String puppetMasterURL) {
+            puppetMaster = (IPuppetMasterService)Activator.GetObject(
+                 typeof(IPuppetMasterService),
+                 puppetMasterURL);
+            Console.WriteLine("Connected to PuppetMaster.");
+        }
+
+        public void ConnectToParentBroker(String parentbrokerURL) {
+            process.ConnectToParentBroker(parentbrokerURL);
+        }
+
+        public void ForceFreeze() {
+            process.Freeze();
+        }
+        public void ForceUnfreeze() {
+            process.Unfreeze();
+        }
+        public void ForceCrash() {
+            process.Crash();
+        }
+
+        public void TryPing() { }
     }
 }

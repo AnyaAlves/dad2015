@@ -16,15 +16,15 @@ using SESDAD.CommonTypes;
 
 namespace SESDAD.Processes {
 
-    using SubsciberTable = Dictionary<String, ISubscriberRemoteService>; //typedef
+    using SubsciberTable = Dictionary<String, ISubscriberService>; //typedef
 
     public class MessageBroker : Process, IMessageBroker {
 
         EventRouter eventRouter;
         private IDictionary<String, SubsciberTable> subscriptions;
-        private IDictionary<String, IBrokerRemoteService> brokerTable;
-        private IDictionary<String, IPublisherRemoteService> publisherTable;
-        private IDictionary<String, ISubscriberRemoteService> subscriberTable;
+        private IDictionary<String, IBrokerService> brokerTable;
+        private IDictionary<String, IPublisherService> publisherTable;
+        private IDictionary<String, ISubscriberService> subscriberTable;
 
         // States
         private RoutingPolicyType routingPolicy;
@@ -34,9 +34,9 @@ namespace SESDAD.Processes {
             base(newProcessHeader) {
             eventRouter = new EventRouter();
             subscriptions = new Dictionary<String, SubsciberTable>();
-            brokerTable = new Dictionary<String, IBrokerRemoteService>();
-            publisherTable = new Dictionary<String, IPublisherRemoteService>();
-            subscriberTable = new Dictionary<String, ISubscriberRemoteService>();
+            brokerTable = new Dictionary<String, IBrokerService>();
+            publisherTable = new Dictionary<String, IPublisherService>();
+            subscriberTable = new Dictionary<String, ISubscriberService>();
         }
 
         ///<summary>
@@ -52,49 +52,38 @@ namespace SESDAD.Processes {
             set { ordering = value; }
         }
 
-        public override void ServiceInit() {
-            base.ServiceInit();
-            //make remote service available
+        public override void LaunchService() {
+            TcpConnect();
             RemotingServices.Marshal(
-                new BrokerRemoteService((IMessageBroker)this),
+                new MessageBrokerService((IMessageBroker)this),
                 serviceName,
-                typeof(BrokerRemoteService));
+                typeof(MessageBrokerService));
         }
 
-        public override void ConnectToPuppetMaster(String newPuppetMasterURL) {
-            base.ConnectToPuppetMaster(newPuppetMasterURL);
-            PuppetMaster.RegisterBroker(ProcessHeader);
-            Console.WriteLine("Connected to " + newPuppetMasterURL);
-        }
-        public override void ConnectToParentBroker(String newParentURL) {
-            base.ConnectToParentBroker(newParentURL);
-            ParentBroker.RegisterBroker(ProcessHeader);
-            Console.WriteLine("Connected to " + newParentURL);
-        }
         public void RegisterBroker(String newProcessURL) {
-            IBrokerRemoteService child = (IBrokerRemoteService)Activator.GetObject(
-                typeof(IBrokerRemoteService),
+            IBrokerService child = (IBrokerService)Activator.GetObject(
+                typeof(IBrokerService),
                 newProcessURL);
             brokerTable.Add(child.ProcessName, child);
             Console.WriteLine("Connected to " + newProcessURL);
         }
         public void RegisterBroker(ProcessHeader processHeader) {
-            IBrokerRemoteService child = (IBrokerRemoteService)Activator.GetObject(
-                typeof(IBrokerRemoteService),
+            IBrokerService child = (IBrokerService)Activator.GetObject(
+                typeof(IBrokerService),
                 processHeader.ProcessURL);
             brokerTable.Add(processHeader.ProcessName, child);
             Console.WriteLine("Connected to " + processHeader.ProcessURL);
         }
         public void RegisterPublisher(ProcessHeader processHeader) {
-            IPublisherRemoteService child = (IPublisherRemoteService)Activator.GetObject(
-                typeof(IPublisherRemoteService),
+            IPublisherService child = (IPublisherService)Activator.GetObject(
+                typeof(IPublisherService),
                 processHeader.ProcessURL);
             publisherTable.Add(processHeader.ProcessName, child);
             Console.WriteLine("Connected to " + processHeader.ProcessURL);
         }
         public void RegisterSubscriber(ProcessHeader processHeader) {
-            ISubscriberRemoteService child = (ISubscriberRemoteService)Activator.GetObject(
-                typeof(ISubscriberRemoteService),
+            ISubscriberService child = (ISubscriberService)Activator.GetObject(
+                typeof(ISubscriberService),
                 processHeader.ProcessURL);
             subscriberTable.Add(processHeader.ProcessName, child);
             Console.WriteLine("Connected to " + processHeader.ProcessURL);
@@ -104,9 +93,9 @@ namespace SESDAD.Processes {
             SubsciberTable subscriberList;
 
             //get subscriber remote object
-            ISubscriberRemoteService newSubscriber =
-                (ISubscriberRemoteService)Activator.GetObject(
-                       typeof(ISubscriberRemoteService),
+            ISubscriberService newSubscriber =
+                (ISubscriberService)Activator.GetObject(
+                       typeof(ISubscriberService),
                        processHeader.ProcessURL);
             //if there are no subs to that topic, create a new list of subscribers
             if (!subscriptions.TryGetValue(topicName, out subscriberList)) {
@@ -132,50 +121,27 @@ namespace SESDAD.Processes {
             String topicName = entry.TopicName;
 
             if (subscriptions.TryGetValue(topicName, out subscriberList)) {
-                foreach (KeyValuePair<String, ISubscriberRemoteService> subscriber in subscriberList.ToList()) {
+                foreach (KeyValuePair<String, ISubscriberService> subscriber in subscriberList.ToList()) {
                     subscriber.Value.DeliverEntry(entry);
                 }
             }
             //eventrouter.broadcast
             Console.WriteLine("Forwarding entry to all subscribers");
-
-
-
-            PuppetMaster.WriteIntoFullLog("BroEvent " + ProcessName + ", " + processHeader.ProcessName + ", " + entry.TopicName + ", event-number");
         }
 
         public void NotifyParent() { }
-
-        public void Debug() {
-            String debugMessage =
-                "**********************************************" + Environment.NewLine +
-                "* Hello, I'm a MessageBroker. Here's my info:" + Environment.NewLine +
-                "*" + Environment.NewLine +
-                "* Site Name:    " + SiteName + Environment.NewLine +
-                "* Process Name: " + ProcessName + Environment.NewLine +
-                "* Process URL:  " + ProcessURL + Environment.NewLine +
-                "*" + Environment.NewLine +
-                "* Service Name: " + serviceName + Environment.NewLine +
-                "* Service Port: " + portNumber + Environment.NewLine +
-                "*" + Environment.NewLine +
-                "* Parent Name:  " + ParentBrokerName + Environment.NewLine +
-                "* Parent URL:   " + ParentBrokerURL + Environment.NewLine +
-                "**********************************************" + Environment.NewLine;
-            Console.Write(debugMessage);
-        }
     }
 
     class Program {
         static void Main(string[] args) {
-            ProcessHeader processHeader = new ProcessHeader(args[0], ProcessType.SUBSCRIBER, args[1], args[2]);
-            MessageBroker broker = new MessageBroker(processHeader);
+            ProcessHeader processHeader = new ProcessHeader(args[0], ProcessType.BROKER, args[1], args[2]);
+            MessageBroker process = new MessageBroker(processHeader);
 
-            broker.ServiceInit();
-            broker.ConnectToPuppetMaster(args[3]);
-            if (args.Length == 5) {
-                broker.ConnectToParentBroker(args[4]);
+            process.LaunchService();
+            if (args.Length == 4) {
+                process.ConnectToParentBroker(args[3]);
             }
-            broker.Debug();
+            process.Debug();
 
             Console.ReadLine();
         }

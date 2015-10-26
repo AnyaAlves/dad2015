@@ -22,23 +22,12 @@ namespace SESDAD.Processes {
             base(newProcessHeader) {
         }
 
-        public override void ServiceInit() {
-            base.ServiceInit();
+        public override void LaunchService() {
+            TcpConnect();
             RemotingServices.Marshal(
                 new SubscriberService((ISubscriber)this),
                 serviceName,
                 typeof(SubscriberService));
-        }
-
-        public override void ConnectToPuppetMaster(String newPuppetMasterURL) {
-            base.ConnectToPuppetMaster(newPuppetMasterURL);
-            PuppetMaster.RegisterSubscriber(ProcessHeader);
-            Console.WriteLine("Connected to " + newPuppetMasterURL);
-        }
-        public override void ConnectToParentBroker(String newParentURL) {
-            base.ConnectToParentBroker(newParentURL);
-            ParentBroker.RegisterSubscriber(ProcessHeader);
-            Console.WriteLine("Connected to " + newParentURL);
         }
 
         public void Subscribe(String topicName) {
@@ -52,35 +41,16 @@ namespace SESDAD.Processes {
         }
 
         public void DeliverEntry(Entry entry) { }
-
-        public void Debug() {
-            String debugMessage =
-                "**********************************************" + Environment.NewLine +
-                "* Hello, I'm a Subscriber. Here's my info:" + Environment.NewLine +
-                "*" + Environment.NewLine +
-                "* Site Name:    " + SiteName + Environment.NewLine +
-                "* Process Name: " + ProcessName + Environment.NewLine +
-                "* Process URL:  " + ProcessURL + Environment.NewLine +
-                "*" + Environment.NewLine +
-                "* Service Name: " + serviceName + Environment.NewLine +
-                "* Service Port: " + portNumber + Environment.NewLine +
-                "*" + Environment.NewLine +
-                "* Parent Name:  " + ParentBrokerName + Environment.NewLine +
-                "* Parent URL:   " + ParentBrokerURL + Environment.NewLine +
-                "**********************************************" + Environment.NewLine;
-            Console.Write(debugMessage);
-        }
     }
 
     class Program {
         static void Main(string[] args) {
             ProcessHeader processHeader = new ProcessHeader(args[0], ProcessType.SUBSCRIBER, args[1], args[2]);
-            Subscriber subscriber = new Subscriber(processHeader);
+            Subscriber process = new Subscriber(processHeader);
 
-            subscriber.ServiceInit();
-            subscriber.ConnectToPuppetMaster(args[3]);
-            subscriber.ConnectToParentBroker(args[4]);
-            subscriber.Debug();
+            process.LaunchService();
+            process.ConnectToParentBroker(args[3]);
+            process.Debug();
 
             Console.ReadLine();
         }

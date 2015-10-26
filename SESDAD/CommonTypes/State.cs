@@ -21,6 +21,7 @@ namespace SESDAD.CommonTypes {
         TOTAL
     };
     public enum ProcessType {
+        PUPPETMASTER,
         BROKER,
         PUBLISHER,
         SUBSCRIBER

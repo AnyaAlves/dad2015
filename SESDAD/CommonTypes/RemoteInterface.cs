@@ -5,15 +5,18 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace SESDAD.CommonTypes {
-    public interface IProcessRemoteService {       
-        void Freeze();
-        void Unfreeze();
-        void Crash();
+    public interface IGenericProcessService {
+        void ConnectToPuppetMaster(String puppetMasterURL);
+        void ConnectToParentBroker(String parentbrokerURL);
 
-        void Ping();
+        void ForceFreeze();
+        void ForceUnfreeze();
+        void ForceCrash();
+
+        void TryPing();
     }
 
-    public interface IBrokerRemoteService : IProcessRemoteService {
+    public interface IBrokerService : IGenericProcessService {
         ///<summary>
         /// Broker Remote Service Interface name
         ///</summary>
@@ -36,17 +39,18 @@ namespace SESDAD.CommonTypes {
         void RegisterSubscriber(ProcessHeader processHeader);
     }
 
-    public interface ISubscriberRemoteService : IProcessRemoteService {
+    public interface ISubscriberService : IGenericProcessService {
         void DeliverEntry(Entry entry);
-        void Subscribe(String topicName);
-        void Unsubscribe(String topicName);
+
+        void ForceSubscribe(String topicName);
+        void ForceUnsubscribe(String topicName);
     }
 
-    public interface IPublisherRemoteService : IProcessRemoteService {
-        void Publish(String topicName, String content);
+    public interface IPublisherService : IGenericProcessService {
+        void ForcePublish(String topicName, String content);
     }
 
-    public interface IPuppetMasterRemoteService {
+    public interface IPuppetMasterService {
         void RegisterBroker(ProcessHeader processHeader);
         void RegisterPublisher(ProcessHeader processHeader);
         void RegisterSubscriber(ProcessHeader processHeader);

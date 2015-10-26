@@ -19,17 +19,14 @@ namespace SESDAD.Processes {
     public abstract class Process {
 
         private ProcessHeader processHeader;
-        protected String parentBrokerName,
-                         parentBrokerURL,
-                         puppetMasterURL;
+        private String parentURL;
 
         protected int portNumber;
         protected String serviceName;
         protected ObjRef serviceReference;
         protected TcpChannel channel;
 
-        private IPuppetMasterRemoteService puppetMaster;
-        private IBrokerRemoteService parentBroker;
+        private IBrokerService parentBroker;
 
         public Process(ProcessHeader newProcessHeader) {
             processHeader = newProcessHeader;
@@ -60,38 +57,27 @@ namespace SESDAD.Processes {
             get { return processHeader.ProcessURL; }
         }
 
-        public String ParentBrokerName {
-            get { return parentBrokerName; }
+        public String ParentURL {
+            get { return parentURL; }
         }
 
-        public String ParentBrokerURL {
-            get { return parentBrokerURL; }
-        }
-
-        protected IPuppetMasterRemoteService PuppetMaster {
-            get { return puppetMaster; }
-        }
-
-        protected IBrokerRemoteService ParentBroker {
+        protected IBrokerService ParentBroker {
             get { return parentBroker; }
         }
 
-        public virtual void ServiceInit() {
+        public void TcpConnect() {
             channel = new TcpChannel(portNumber);
             ChannelServices.RegisterChannel(channel, true);
         }
-        public virtual void ConnectToPuppetMaster(String newPuppetMasterURL) {
-            puppetMaster = (IPuppetMasterRemoteService)Activator.GetObject(
-                 typeof(IPuppetMasterRemoteService),
-                 newPuppetMasterURL);
-            puppetMasterURL = newPuppetMasterURL;
-        }
-        public virtual void ConnectToParentBroker(String newParentBrokerURL) {
-            parentBroker = (IBrokerRemoteService)Activator.GetObject(
-                typeof(IBrokerRemoteService),
-                newParentBrokerURL);
-            parentBrokerName = parentBroker.ProcessName;
-            parentBrokerURL = newParentBrokerURL;
+
+        public abstract void LaunchService();
+
+        public void ConnectToParentBroker(String parentBrokerURL) {
+            parentBroker = (IBrokerService)Activator.GetObject(
+                typeof(IBrokerService),
+                parentBrokerURL);
+            parentURL = parentBrokerURL;
+            Console.WriteLine("Connected to " + parentURL);
         }
 
         public void Freeze() { }
@@ -100,6 +86,21 @@ namespace SESDAD.Processes {
             Environment.Exit(-1);
         }
 
-        //public abstract void Disconnect();
+        public void Debug() {
+            String debugMessage =
+                "**********************************************" + Environment.NewLine +
+                "* Hello, I'm a " + ProcessType.ToString() + ". Here's my info:" + Environment.NewLine +
+                "*" + Environment.NewLine +
+                "* Site Name:    " + SiteName + Environment.NewLine +
+                "* Process Name: " + ProcessName + Environment.NewLine +
+                "* Process URL:  " + ProcessURL + Environment.NewLine +
+                "*" + Environment.NewLine +
+                "* Service Name: " + serviceName + Environment.NewLine +
+                "* Service Port: " + portNumber + Environment.NewLine +
+                "*" + Environment.NewLine +
+                "* Parent URL:   " + ParentURL + Environment.NewLine +
+                "**********************************************" + Environment.NewLine;
+            Console.Write(debugMessage);
+        }
     }
 }

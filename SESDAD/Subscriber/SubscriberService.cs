@@ -7,35 +7,48 @@ using System.Threading.Tasks;
 using SESDAD.CommonTypes;
 
 namespace SESDAD.Processes {
-    public class SubscriberService : MarshalByRefObject, ISubscriberRemoteService {
-        ISubscriber subscriber;
+    public class SubscriberService : MarshalByRefObject, ISubscriberService {
+        private IPuppetMasterService puppetMaster;
+        private ISubscriber process;
 
         public SubscriberService(ISubscriber newSubscriber) :
             base() {
-            subscriber = newSubscriber;
-        }
-
-        public void Subscribe(String topicName) {
-            subscriber.Subscribe(topicName);
-        }
-        public void Unsubscribe(String topicName) {
-            subscriber.Unsubscribe(topicName);
+            process = newSubscriber;
         }
 
         public void DeliverEntry(Entry entry) {
-            subscriber.DeliverEntry(entry);
+            process.DeliverEntry(entry);
+            puppetMaster.WriteIntoFullLog("SubEvent " + process.ProcessName + ", " + entry.PublisherHeader.ProcessName + ", " + entry.TopicName + ", " + entry.SeqNumber);
         }
 
-        public void Freeze() {
-            subscriber.Freeze();
+        public void ForceSubscribe(String topicName) {
+            process.Subscribe(topicName);
         }
-        public void Unfreeze() {
-            subscriber.Unfreeze();
-        }
-        public void Crash() {
-            subscriber.Crash();
+        public void ForceUnsubscribe(String topicName) {
+            process.Unsubscribe(topicName);
         }
 
-        public void Ping() { }
+        public void ConnectToPuppetMaster(String puppetMasterURL) {
+            puppetMaster = (IPuppetMasterService)Activator.GetObject(
+                 typeof(IPuppetMasterService),
+                 puppetMasterURL);
+            Console.WriteLine("Connected to PuppetMaster.");
+        }
+
+        public void ConnectToParentBroker(String parentbrokerURL) {
+            process.ConnectToParentBroker(parentbrokerURL);
+        }
+
+        public void ForceFreeze() {
+            process.Freeze();
+        }
+        public void ForceUnfreeze() {
+            process.Unfreeze();
+        }
+        public void ForceCrash() {
+            process.Crash();
+        }
+
+        public void TryPing() { }
     }
 }

@@ -7,66 +7,79 @@ using System.Threading.Tasks;
 using SESDAD.CommonTypes;
 
 namespace SESDAD.Processes {
-    public class BrokerRemoteService : MarshalByRefObject, IBrokerRemoteService {
-        IMessageBroker broker;
+    public class MessageBrokerService : MarshalByRefObject, IBrokerService {
+        private IPuppetMasterService puppetMaster;
+        private IMessageBroker process;
 
-        public BrokerRemoteService(IMessageBroker newBroker)
+        public MessageBrokerService(IMessageBroker newBroker)
             : base() {
-            broker = newBroker;
+            process = newBroker;
         }
         ///<summary>
         /// Broker Remote Service name
         ///</summary>
         public String ProcessName {
-            get { return broker.ProcessName; }
+            get { return process.ProcessName; }
         }
         ///<summary>
         /// Broker Remote Service routing policy
         ///</summary>
         public RoutingPolicyType RoutingPolicy {
-            set { broker.RoutingPolicy = value; }
+            set { process.RoutingPolicy = value; }
         }
         ///<summary>
         /// Broker Remote Service ordering
         ///</summary>
         public OrderingType Ordering {
-            set { broker.Ordering = value; }
+            set { process.Ordering = value; }
         }
 
         public void Publish(ProcessHeader processHeader, Entry entry) {
-            broker.ForwardEntry(processHeader, entry);
+            process.ForwardEntry(processHeader, entry);
+            puppetMaster.WriteIntoFullLog("BroEvent " + process.ProcessName + ", " + processHeader.ProcessName + ", " + entry.TopicName + ", " + entry.SeqNumber);
         }
 
         public void Subscribe(ProcessHeader processHeader, String topicName) {
-            broker.registerSubscription(processHeader, topicName);
+            process.registerSubscription(processHeader, topicName);
         }
 
         public void Unsubscribe(ProcessHeader processHeader, String topicName) {
-            broker.removeSubscription(processHeader, topicName);
+            process.removeSubscription(processHeader, topicName);
         }
 
         public void RegisterBroker(ProcessHeader processHeader) {
-            broker.RegisterBroker(processHeader);
+            process.RegisterBroker(processHeader);
         }
 
         public void RegisterSubscriber(ProcessHeader processHeader) {
-            broker.RegisterSubscriber(processHeader);
+            process.RegisterSubscriber(processHeader);
         }
 
         public void RegisterPublisher(ProcessHeader processHeader) {
-            broker.RegisterPublisher(processHeader);
+            process.RegisterPublisher(processHeader);
         }
 
-        public void Freeze() {
-            broker.Freeze();
-        }
-        public void Unfreeze() {
-            broker.Unfreeze();
-        }
-        public void Crash() {
-            broker.Crash();
+        public void ConnectToPuppetMaster(String puppetMasterURL) {
+            puppetMaster = (IPuppetMasterService)Activator.GetObject(
+                 typeof(IPuppetMasterService),
+                 puppetMasterURL);
+            Console.WriteLine("Connected to PuppetMaster.");
         }
 
-        public void Ping() { }
+        public void ConnectToParentBroker(String parentbrokerURL) {
+            process.ConnectToParentBroker(parentbrokerURL);
+        }
+
+        public void ForceFreeze() {
+            process.Freeze();
+        }
+        public void ForceUnfreeze() {
+            process.Unfreeze();
+        }
+        public void ForceCrash() {
+            process.Crash();
+        }
+
+        public void TryPing() { }
     }
 }

@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using SESDAD.Processes;
+using SESDAD.CommonTypes;
 
 namespace SESDAD.Processes {
     public interface IPublisher : IProcess {
-        void Publish(String topicName, String content);
+        Entry Publish(String topicName, String content);
     }
 }

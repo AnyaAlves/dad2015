@@ -18,69 +18,41 @@ namespace SESDAD.Processes {
 
     public class Publisher : Process, IPublisher {
         private int seqNumber;
+        private PublisherService service;
 
         public Publisher(ProcessHeader newProcessHeader) :
             base(newProcessHeader) {
                 seqNumber = 1;
         }
 
-        public int SegNumber {
+        public int SeqNumber {
             get { return seqNumber++; }
         }
 
-        public override void ServiceInit() {
-            base.ServiceInit();
+        public override void LaunchService() {
+            TcpConnect();
+            service = new PublisherService((IPublisher)this);
             RemotingServices.Marshal(
-                new PublisherService((IPublisher)this),
+                service,
                 serviceName,
                 typeof(PublisherService));
         }
 
-        public override void ConnectToPuppetMaster(String newPuppetMasterURL) {
-            base.ConnectToPuppetMaster(newPuppetMasterURL);
-            PuppetMaster.RegisterPublisher(ProcessHeader);
-            Console.WriteLine("Connected to " + newPuppetMasterURL);
-        }
-        public override void ConnectToParentBroker(String newParentURL) {
-            base.ConnectToParentBroker(newParentURL);
-            ParentBroker.RegisterPublisher(ProcessHeader);
-            Console.WriteLine("Connected to " + newParentURL);
-        }
-
-        public void Publish(String topicName, String content) {
+        public Entry Publish(String topicName, String content) {
             Entry entry = new Entry(topicName, content, ProcessHeader, seqNumber);
             ParentBroker.Publish(ProcessHeader, entry);
-            Console.WriteLine("I published a new entry about <" + topicName + ">");
-        }
-
-        public void Debug() {
-            String debugMessage =
-                "**********************************************" + Environment.NewLine +
-                "* Hello, I'm a Publisher. Here's my info:" + Environment.NewLine +
-                "*" + Environment.NewLine +
-                "* Site Name:    " + SiteName + Environment.NewLine +
-                "* Process Name: " + ProcessName + Environment.NewLine +
-                "* Process URL:  " + ProcessURL + Environment.NewLine +
-                "*" + Environment.NewLine +
-                "* Service Name: " + serviceName + Environment.NewLine +
-                "* Service Port: " + portNumber + Environment.NewLine +
-                "*" + Environment.NewLine +
-                "* Parent Name:  " + ParentBrokerName + Environment.NewLine +
-                "* Parent URL:   " + ParentBrokerURL + Environment.NewLine +
-                "**********************************************" + Environment.NewLine;
-            Console.Write(debugMessage);
+            return entry;
         }
     }
 
     class Program {
         static void Main(string[] args) {
             ProcessHeader processHeader = new ProcessHeader(args[0], ProcessType.PUBLISHER, args[1], args[2]);
-            Publisher publisher = new Publisher(processHeader);
+            Publisher process = new Publisher(processHeader);
 
-            publisher.ServiceInit();
-            publisher.ConnectToPuppetMaster(args[3]);
-            publisher.ConnectToParentBroker(args[4]);
-            publisher.Debug();
+            process.LaunchService();
+            process.ConnectToParentBroker(args[3]);
+            process.Debug();
 
             Console.ReadLine();
         }

@@ -10,10 +10,6 @@ using SESDAD.Processes;
 namespace SESDAD.Processes {
     public interface IMessageBroker : IProcess {
         ///<summary>
-        /// Broker Interface name
-        ///</summary>
-        String ProcessName { get; }
-        ///<summary>
         /// Broker Interface routing policy
         ///</summary>
         RoutingPolicyType RoutingPolicy { set; }
