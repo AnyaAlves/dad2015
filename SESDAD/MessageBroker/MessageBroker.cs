@@ -16,6 +16,7 @@ namespace SESDAD.Processes {
     using ChildBrokerTable = Dictionary<ProcessHeader, IMessageBrokerService>;
     using IChildBrokerTable = IDictionary<ProcessHeader, IMessageBrokerService>;
 
+
     public class MessageBroker : GenericProcess, IMessageBroker {
         // States
         private RoutingPolicyType routingPolicy;
@@ -41,18 +42,24 @@ namespace SESDAD.Processes {
             set { ordering = value; }
         }
 
-        public void AddSubscription(ProcessHeader processHeader) {
+        public void AddSubscriber(ProcessHeader processHeader) {
             //get subscriber remote object
             ISubscriberService newSubscriber =
                 (ISubscriberService)Activator.GetObject(
                        typeof(ISubscriberService),
                        processHeader.ProcessURL);
+
             //add the new subscriber
             subscriberTable.Add(processHeader.ProcessName, newSubscriber);
             Console.WriteLine(String.Join(" " ,subscriberTable.Keys));
         }
         public void AddSubscription(ProcessHeader processHeader, String topicName) {
-            AddSubscription(processHeader);
+            //  fullPath-> /a/aa/aaa
+            // nodes = split(/)
+            // for int i=0;i<nodes.length-1;i++
+            //node[i].Add(node[i+1])
+
+
             //if there are no subs to that topic, create a new list of subscribers
             SubsciberTable subscription;
             if (!subscriptions.TryGetValue(topicName, out subscription)) {

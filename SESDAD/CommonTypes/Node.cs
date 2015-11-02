@@ -1,32 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SESDAD.CommonTypes {
 
-    public class Node {
-        private Node parent;
-        private IList<Node> children;
+    public abstract class Node<T> where T : Node<T> {
 
-        public Node(Node parent) {
-            this.parent = parent;
-            if (parent != null)
-                parent.AddChild(this);
-            children = new List<Node>();
+        private T parent;
+        protected IList<T> children;
+
+        protected Node(T newParent) {
+            parent = newParent;
+            children = new List<T>();
+            if (parent != null) {
+                parent.AddChild(this as T);
+            }
         }
 
-        public void AddChild(Node child) {
+        internal void AddChild(T child) {
             children.Add(child);
         }
 
-        public void RemoveChild(Node child) {
+        internal void RemoveChild(T child) {
             children.Remove(child);
         }
 
-        public void replaceParent(Node parent) {
-            this.parent = parent;
+        internal T Parent {
+            set { parent = value; }
+            get { return parent; }
         }
     }
 }
