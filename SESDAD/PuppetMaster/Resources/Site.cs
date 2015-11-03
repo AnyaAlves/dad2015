@@ -6,25 +6,16 @@ using SESDAD.CommonTypes;
 namespace SESDAD.Managing {
 
     internal class Site : Node<Site> {
-        private readonly String siteName;
         private String brokerURL;
 
-        internal Site(String newSiteName, Site newParent) :
-            base(newParent) {
-            siteName = newSiteName;
+        internal Site(String siteName, Site parent) :
+            base(siteName, parent) {
             brokerURL = null;
-        }
-
-        internal String SiteName {
-            get { return siteName; }
         }
 
         internal String ParentBrokerURL {
             get {
-                if (Parent == null) {
-                    return null;
-                }
-                return Parent.BrokerURL;
+                return (Parent == null ? null : Parent.BrokerURL);
             }
         }
 

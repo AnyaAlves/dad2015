@@ -15,7 +15,7 @@ namespace SESDAD.CommonTypes {
         void ForceUnfreeze();
         void ForceCrash();
 
-        void TryPing();
+        String GetStatus();
     }
 
     public interface IMessageBrokerService : IGenericProcessService {
@@ -33,6 +33,7 @@ namespace SESDAD.CommonTypes {
         void Unsubscribe(ProcessHeader processHeader, String topicName);
 
         void RegisterChildBroker(ProcessHeader processHeader);
+        void RegisterSubscriber(ProcessHeader processHeader);
     }
 
     public interface ISubscriberService : IGenericProcessService {

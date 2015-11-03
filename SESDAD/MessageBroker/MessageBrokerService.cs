@@ -29,5 +29,9 @@ namespace SESDAD.Processes {
         public void RegisterChildBroker(ProcessHeader processHeader) {
             Process.AddChildBroker(processHeader);
         }
+
+        public void RegisterSubscriber(ProcessHeader processHeader) {
+            Process.AddSubscriber(processHeader);
+        }
     }
 }

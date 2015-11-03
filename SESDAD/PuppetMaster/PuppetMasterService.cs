@@ -27,7 +27,7 @@ namespace SESDAD.Managing {
     public class PuppetMasterService : MarshalByRefObject, SESDAD.Managing.IPuppetMasterService, SESDAD.CommonTypes.IPuppetMasterService {
         // Log
         private String log,
-        // ID
+            // ID
                        serviceName,
                        serviceURL;
         private int port;
@@ -101,16 +101,19 @@ namespace SESDAD.Managing {
             String siteName,
             String processURL,
             String parentBrokerURL) {
+            Monitor.Enter(stateList);
             stateList.Add(processName, ProcessState.OFFLINE);
             String arguments = processName + " " + siteName + " " + processURL + " " + parentBrokerURL;
             System.Diagnostics.Process.Start(BROKERFILE, arguments);
-            Thread.Sleep(1000);
+            Thread.Sleep(1);
             IMessageBrokerService processService = (IMessageBrokerService)Activator.GetObject(
                 typeof(IMessageBrokerService),
                 processURL);
             processService.ConnectToPuppetMaster(serviceURL);
             brokerTable.Add(processName, processService);
             stateList[processName] = ProcessState.UNFROZEN;
+            Monitor.Pulse(stateList);
+            Monitor.Exit(stateList);
         }
         ///<summary>
         /// Creates a publisher process
@@ -124,13 +127,15 @@ namespace SESDAD.Managing {
             stateList.Add(processName, ProcessState.OFFLINE);
             String arguments = processName + " " + siteName + " " + processURL + " " + brokerURL;
             System.Diagnostics.Process.Start(PUBLISHERFILE, arguments);
-            Thread.Sleep(1000);
+            Thread.Sleep(1);
             IPublisherService processService = (IPublisherService)Activator.GetObject(
                 typeof(IPublisherService),
                 processURL);
             processService.ConnectToPuppetMaster(serviceURL);
             publisherTable.Add(processName, processService);
             stateList[processName] = ProcessState.UNFROZEN;
+            Monitor.Pulse(stateList);
+            Monitor.Exit(stateList);
         }
         ///<summary>
         /// Creates a subscriber process
@@ -144,13 +149,15 @@ namespace SESDAD.Managing {
             stateList.Add(processName, ProcessState.OFFLINE);
             String arguments = processName + " " + siteName + " " + processURL + " " + brokerURL;
             System.Diagnostics.Process.Start(SUBSCRIBERFILE, arguments);
-            Thread.Sleep(1000);
+            Thread.Sleep(1);
             ISubscriberService processService = (ISubscriberService)Activator.GetObject(
                 typeof(ISubscriberService),
                 processURL);
             processService.ConnectToPuppetMaster(serviceURL);
             subscriberTable.Add(processName, processService);
             stateList[processName] = ProcessState.UNFROZEN;
+            Monitor.Pulse(stateList);
+            Monitor.Exit(stateList);
         }
         ///<summary>
         /// Subscribes into a topic
@@ -158,6 +165,7 @@ namespace SESDAD.Managing {
         public void ExecuteSubscribeCommand(
             String processName,
             String topicName) {
+                WriteIntoLog("Subscriber " + processName + " Subscribe " + topicName);
             if (stateList[processName].Equals(ProcessState.FROZEN) ||
                 stateList[processName].Equals(ProcessState.UNFROZEN)) {
                 ISubscriberService remoteService;
@@ -172,6 +180,7 @@ namespace SESDAD.Managing {
         public void ExecuteUnsubscribeCommand(
             String processName,
             String topicName) {
+                WriteIntoLog("Subscriber " + processName + " Unsubscribe " + topicName);
             if (stateList[processName].Equals(ProcessState.FROZEN) ||
                 stateList[processName].Equals(ProcessState.UNFROZEN)) {
                 ISubscriberService remoteService;
@@ -188,6 +197,7 @@ namespace SESDAD.Managing {
             int publishTimes,
             String topicName,
             int intervalTime) {
+                WriteIntoLog("Publisher " + processName + " Publish " + publishTimes.ToString() + " Ontopic " + topicName + " Interval " + intervalTime.ToString());
             if (stateList[processName].Equals(ProcessState.FROZEN) ||
                 stateList[processName].Equals(ProcessState.UNFROZEN)) {
                 IPublisherService remoteService;
@@ -203,19 +213,35 @@ namespace SESDAD.Managing {
         /// Gets Puppet Master Service status
         ///</summary>
         public void ExecuteStatusCommand() {
-            String acc = "";
-            acc += " Processes:" + Environment.NewLine;
-            foreach (KeyValuePair<String, ProcessState> process in stateList.ToList()) {
-                acc += " -> " + process.Key + " is " + process.Value.ToString() + Environment.NewLine;
-            }
-            System.Console.WriteLine(
-                "------------------------------------------------------------------------------" + Environment.NewLine +
+            Console.WriteLine("------------------------------------------------------------------------------");
+            Console.WriteLine(
                 " Routing Policy : " + routingPolicy.ToString() + Environment.NewLine +
                 " Ordering :       " + ordering.ToString() + Environment.NewLine +
-                " Logging Level :  " + loggingLevel.ToString() + Environment.NewLine +
-                " Log :            " + log + Environment.NewLine +
-                acc +
-                "------------------------------------------------------------------------------");
+                " Logging Level :  " + loggingLevel.ToString());
+            Console.WriteLine("------------------------------------------------------------------------------");
+            Console.WriteLine(" Predicted states :" + Environment.NewLine);
+            foreach (KeyValuePair<String, ProcessState> process in stateList.ToList()) {
+                Console.WriteLine(" -> " + process.Key + " is " + process.Value.ToString());
+            }
+            Console.WriteLine("------------------------------------------------------------------------------");
+            Console.WriteLine(" Brokers :" + Environment.NewLine);
+            foreach (IMessageBrokerService process in brokerTable.Values.ToList()) {
+                Console.WriteLine(process.GetStatus());
+            }
+            Console.WriteLine("------------------------------------------------------------------------------");
+            Console.WriteLine(" Publishers :" + Environment.NewLine);
+            foreach (IPublisherService process in publisherTable.Values.ToList()) {
+                Console.WriteLine(process.GetStatus());
+            }
+            Console.WriteLine("------------------------------------------------------------------------------");
+            Console.WriteLine(" Subscribers :" + Environment.NewLine);
+            foreach (ISubscriberService process in subscriberTable.Values.ToList()) {
+                Console.WriteLine(process.GetStatus());
+            }
+            Console.WriteLine("------------------------------------------------------------------------------");
+            Console.WriteLine(" Log :" + Environment.NewLine);
+            Console.WriteLine(log);
+            Console.WriteLine("------------------------------------------------------------------------------");
         }
         private bool TryGetService(String processName, out IGenericProcessService remoteService) {
             if (brokerTable.ContainsKey(processName)) {
@@ -237,6 +263,7 @@ namespace SESDAD.Managing {
         /// Crashes a process
         ///</summary>
         public void ExecuteCrashCommand(String processName) {
+            WriteIntoLog("Crash " + processName);
             if (stateList[processName].Equals(ProcessState.FROZEN) ||
                 stateList[processName].Equals(ProcessState.UNFROZEN)) {
                 IGenericProcessService remoteService;
@@ -250,6 +277,7 @@ namespace SESDAD.Managing {
         /// Freezes a process
         ///</summary>
         public void ExecuteFreezeCommand(String processName) {
+            WriteIntoLog("Freeze " + processName);
             if (stateList[processName].Equals(ProcessState.UNFROZEN)) {
                 IGenericProcessService remoteService;
                 if (TryGetService(processName, out remoteService)) {
@@ -262,6 +290,7 @@ namespace SESDAD.Managing {
         /// Unfreezes a process
         ///</summary>
         public void ExecuteUnfreezeCommand(String processName) {
+            WriteIntoLog("Unfreeze " + processName);
             if (stateList[processName].Equals(ProcessState.FROZEN)) {
                 IGenericProcessService remoteService;
                 if (TryGetService(processName, out remoteService)) {
@@ -275,16 +304,14 @@ namespace SESDAD.Managing {
         ///</summary>
         public void WriteIntoFullLog(String logMessage) {
             if (loggingLevel == LoggingLevelType.FULL) {
-                Console.WriteLine(logMessage);
-                log += logMessage + Environment.NewLine;
+                WriteIntoLog(logMessage);
             }
         }
         ///<summary>
         /// Writes into the Puppet Master Service Log
         ///</summary>
         public void WriteIntoLog(String logMessage) {
-            Console.WriteLine(logMessage);
-            log += logMessage + Environment.NewLine;
+            log += "[" + DateTime.Now.ToString("HH:mm:ss") + "] " + logMessage + Environment.NewLine;
         }
     }
 }

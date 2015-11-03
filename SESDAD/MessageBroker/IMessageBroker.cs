@@ -17,14 +17,13 @@ namespace SESDAD.Processes {
         /// Broker Interface ordering
         ///</summary>
         OrderingType Ordering { set; }
-        void AddSubscription(ProcessHeader processHeader);
+        void AddSubscriber(ProcessHeader processHeader);
         void AddSubscription(ProcessHeader processHeader, String topicName);
         void RemoveSubscription(ProcessHeader processHeader, String topicName);
         //void Ack(ProcessHeader processHeader);
 
         void ForwardEntry(ProcessHeader processHeader, Entry entry);
 
-        void AddChildBroker(String newProcessURL);
         void AddChildBroker(ProcessHeader processHeader);
     }
 }

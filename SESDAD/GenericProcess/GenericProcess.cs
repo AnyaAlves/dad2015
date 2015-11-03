@@ -16,7 +16,7 @@ using SESDAD.CommonTypes;
 
 namespace SESDAD.Processes {
 
-    public abstract class GenericProcess {
+    public abstract class GenericProcess : IGenericProcess {
 
         private ProcessHeader processHeader;
         private IMessageBrokerService parentBroker;
@@ -39,14 +39,14 @@ namespace SESDAD.Processes {
         public void LaunchService<Service, Interface>(Interface iProcess)
             where Service : GenericProcessService<Interface>, new()
             where Interface : IGenericProcess {
-            Match match = Regex.Match(ProcessHeader.ProcessURL, @"^tcp://[\w\.]+:(\d{1,5})/(\w+)$");
+
+            Service service = new Service();
+            service.Process = iProcess;
+            
+            Match match = Regex.Match(ProcessHeader.ProcessURL, @"^tcp://[\w\.]+:(\d{4,5})/(\w+)$");
             int portNumber;
             String serviceName = match.Groups[2].Value;
-            Service service = new Service();
-
-            service.Process = iProcess;
-
-            Int32.TryParse(match.Groups[1].Value, out portNumber);
+            portNumber = Int32.Parse(match.Groups[1].Value);
 
             TcpConnect(portNumber);
 
@@ -56,7 +56,7 @@ namespace SESDAD.Processes {
                 typeof(Service));
         }
 
-        public void ConnectToParentBroker(String parentBrokerURL) {
+        public virtual void ConnectToParentBroker(String parentBrokerURL) {
             parentBroker = (IMessageBrokerService)Activator.GetObject(
                 typeof(IMessageBrokerService),
                 parentBrokerURL);
@@ -68,25 +68,17 @@ namespace SESDAD.Processes {
             Environment.Exit(-1);
         }
 
-        public void Debug() {
-            String debugMessage =
-                "**********************************************" + Environment.NewLine +
-                "* Hello, I'm a " + processHeader.ProcessType.ToString() + ". Here's my info:" + Environment.NewLine +
-                "*" + Environment.NewLine +
-                "* Site Name:    " + processHeader.SiteName + Environment.NewLine +
-                "* Process Name: " + processHeader.ProcessName + Environment.NewLine +
-                "* Process URL:  " + processHeader.ProcessURL + Environment.NewLine;
-            if (parentBroker != null) {
-                debugMessage +=
+        public String Status {
+            get {
+                return
+                    "**********************************************" + Environment.NewLine +
+                    "* Hello, I'm a " + processHeader.ProcessType.ToString() + ". Here's my info:" + Environment.NewLine +
                     "*" + Environment.NewLine +
-                    "* Parent URL:   " + parentBroker.ProcessHeader.ProcessURL + Environment.NewLine +
+                    "* Site Name:    " + processHeader.SiteName + Environment.NewLine +
+                    "* Process Name: " + processHeader.ProcessName + Environment.NewLine +
+                    "* Process URL:  " + processHeader.ProcessURL + Environment.NewLine +
                     "**********************************************" + Environment.NewLine;
             }
-            else {
-                debugMessage +=
-                    "**********************************************" + Environment.NewLine;
-            }
-            Console.Write(debugMessage);
         }
     }
 }

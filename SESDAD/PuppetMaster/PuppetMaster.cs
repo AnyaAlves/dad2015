@@ -80,7 +80,6 @@ namespace SESDAD.Managing {
             int waitingTime;
             StreamReader file = new StreamReader(configurationFileName);
             while ((line = file.ReadLine()) != null) {
-                System.Console.WriteLine(line);
                 fields = line.Split(' ');
                 if (fields.Length == 2 &&
                     fields[0].Equals("Wait") &&
@@ -292,14 +291,14 @@ namespace SESDAD.Managing {
         public static void Main(string[] args) {
             PuppetMaster puppetMaster = new PuppetMaster();
             puppetMaster.LaunchService();
-            System.Console.WriteLine("Connected to SESDAD.");
+            Console.WriteLine("Connected to SESDAD.");
             if (args.Length == 1 && File.Exists(args[0])) {
-                System.Console.WriteLine("Accessing to configuration file...");
+                Console.WriteLine("Accessing to configuration file...");
                 puppetMaster.ExecuteConfigurationFile(args[0]);
-                System.Console.WriteLine("Implemented configuration file");
+                Console.WriteLine("Implemented configuration file");
             }
             else {
-                System.Console.WriteLine("Awaiting for instructions...");
+                Console.WriteLine("Awaiting for instructions...");
             }
             puppetMaster.StartCLI();
         }

@@ -21,7 +21,7 @@ namespace SESDAD.Processes {
 
         public Publisher(ProcessHeader newProcessHeader) :
             base(newProcessHeader) {
-                seqNumber = 1;
+                seqNumber = 0;
         }
 
         public int SeqNumber {
@@ -43,7 +43,6 @@ namespace SESDAD.Processes {
 
             process.LaunchService<PublisherService, IPublisher>(((IPublisher)process));
             process.ConnectToParentBroker(args[3]);
-            process.Debug();
 
             Console.ReadLine();
         }

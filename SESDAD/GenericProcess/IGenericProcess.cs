@@ -11,5 +11,7 @@ namespace SESDAD.Processes {
         void Freeze();
         void Unfreeze();
         void Crash();
+
+        String Status { get; }
     }
 }

@@ -42,6 +42,8 @@ namespace SESDAD.Processes {
             process.Crash();
         }
 
-        public void TryPing() { }
+        public String GetStatus() {
+            return process.Status;
+        }
     }
 }

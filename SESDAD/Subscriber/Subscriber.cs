@@ -29,7 +29,14 @@ namespace SESDAD.Processes {
             ParentBroker.Unsubscribe(ProcessHeader, topicName);
         }
 
-        public void ReceiveEntry(Entry entry) { }
+        public void ReceiveEntry(Entry entry) {
+            Console.WriteLine("New event about: " + entry.TopicName + "\n" + "Content: " + entry.Content);
+        }
+
+        public override void ConnectToParentBroker(String parentBrokerURL) {
+            base.ConnectToParentBroker(parentBrokerURL);
+            ParentBroker.RegisterSubscriber(ProcessHeader);
+        }
     }
 
     class Program {
@@ -39,7 +46,6 @@ namespace SESDAD.Processes {
 
             process.LaunchService<SubscriberService, ISubscriber>(((ISubscriber)process));
             process.ConnectToParentBroker(args[3]);
-            process.Debug();
 
             Console.ReadLine();
         }
