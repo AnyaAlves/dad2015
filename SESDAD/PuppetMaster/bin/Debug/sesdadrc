@@ -1,14 +1,18 @@
 Site Site0 Parent none
 Site Site1 Parent Site0
+Site Site2 Parent Site0
+Site Site3 Parent Site1
 Status
 
 Process bro0 Is broker On Site0 URL tcp://localhost:8086/broker
 Process bro1 Is broker On Site1 URL tcp://localhost:8087/broker
+Process bro2 Is broker On Site2 URL tcp://localhost:8092/broker
+Process bro3 Is broker On Site3 URL tcp://localhost:8093/broker
 Status
 
-Process pub0 Is publisher On Site0 URL tcp://localhost:8088/pub
+Process pub0 Is publisher On Site2 URL tcp://localhost:8088/pub
 Process sub0 Is subscriber On Site0 URL tcp://localhost:8089/sub
-Process sub1 Is subscriber On Site0 URL tcp://localhost:8090/sub
+Process sub1 Is subscriber On Site3 URL tcp://localhost:8090/sub
 Process sub2 Is subscriber On Site1 URL tcp://localhost:8091/sub
 Status
 
@@ -20,11 +24,11 @@ Subscriber sub2 Subscribe /*
 Status
 
 Ordering NO
-RoutingPolicy flooding
+RoutingPolicy filtering
 LoggingLevel full
 Status
 
-Publisher pub0 Publish 1 Ontopic /a/aa/b Interval 500
+Publisher pub0 Publish 5 Ontopic /a/aa/b Interval 1
 Status
 
 -Crash bro0

@@ -19,8 +19,8 @@ namespace SESDAD.Processes {
         public IPuppetMasterService PuppetMaster {
             get { return puppetMaster; }
         }
-        public ProcessHeader ProcessHeader {
-            get { return process.ProcessHeader; }
+        public ProcessHeader Header {
+            get { return process.Header; }
         }
 
         public void ConnectToPuppetMaster(String puppetMasterURL) {
@@ -43,7 +43,7 @@ namespace SESDAD.Processes {
         }
 
         public String GetStatus() {
-            return process.Status;
+            return process.ToString();
         }
     }
 }

@@ -4,7 +4,7 @@ using SESDAD.CommonTypes;
 
 namespace SESDAD.Processes {
     public interface IGenericProcess {
-        ProcessHeader ProcessHeader { get; }
+        ProcessHeader Header { get; }
 
         void ConnectToParentBroker(String parentbrokerURL);
 
@@ -12,6 +12,6 @@ namespace SESDAD.Processes {
         void Unfreeze();
         void Crash();
 
-        String Status { get; }
+        String ToString();
     }
 }

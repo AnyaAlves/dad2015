@@ -9,8 +9,13 @@ using SESDAD.CommonTypes;
 namespace SESDAD.Processes {
     public class SubscriberService : GenericProcessService<ISubscriber>, ISubscriberService {
         public void DeliverEntry(Entry entry) {
+            PuppetMaster.WriteIntoLog(
+                "SubEvent " +
+                Header.ProcessName + ", " +
+                entry.PublisherHeader.ProcessName + ", " +
+                entry.TopicName + ", " +
+                entry.SeqNumber);
             Process.ReceiveEntry(entry);
-            PuppetMaster.WriteIntoLog("SubEvent " + ProcessHeader.ProcessName + ", " + entry.PublisherHeader.ProcessName + ", " + entry.TopicName + ", " + entry.SeqNumber);
         }
 
         public void ForceSubscribe(String topicName) {

@@ -146,7 +146,7 @@ namespace SESDAD.Managing {
                         routingPolicy = RoutingPolicyType.FLOODING;
                     }
                     else if (fields[1].Equals("filter")) {
-                        routingPolicy = RoutingPolicyType.FILTER;
+                        routingPolicy = RoutingPolicyType.FILTERING;
                     }
                     else {
                         return;
@@ -157,13 +157,13 @@ namespace SESDAD.Managing {
                 }
                 else if (fields.Length == 2 && command.Equals("Ordering")) {
                     if (fields[1].Equals("NO")) {
-                        ordering = OrderingType.NO;
+                        ordering = OrderingType.NO_ORDER;
                     }
                     else if (fields[1].Equals("FIFO")) {
                         ordering = OrderingType.FIFO;
                     }
                     else if (fields[1].Equals("TOTAL")) {
-                        ordering = OrderingType.TOTAL;
+                        ordering = OrderingType.TOTAL_ORDER;
                     }
                     else {
                         return;
@@ -291,14 +291,8 @@ namespace SESDAD.Managing {
         public static void Main(string[] args) {
             PuppetMaster puppetMaster = new PuppetMaster();
             puppetMaster.LaunchService();
-            Console.WriteLine("Connected to SESDAD.");
             if (args.Length == 1 && File.Exists(args[0])) {
-                Console.WriteLine("Accessing to configuration file...");
                 puppetMaster.ExecuteConfigurationFile(args[0]);
-                Console.WriteLine("Implemented configuration file");
-            }
-            else {
-                Console.WriteLine("Awaiting for instructions...");
             }
             puppetMaster.StartCLI();
         }

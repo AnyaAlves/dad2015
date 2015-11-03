@@ -13,7 +13,7 @@ namespace SESDAD.Processes {
 
         public void ForcePublish(String topicName, String content) {
             Entry entry = Process.Publish(topicName, content);
-            PuppetMaster.WriteIntoLog("PubEvent " + ProcessHeader.ProcessName + ", " + ProcessHeader.ProcessName + ", " + entry.TopicName + ", " + entry.SeqNumber);
+            PuppetMaster.WriteIntoLog("PubEvent " + Header.ProcessName + ", " + Header.ProcessName + ", " + entry.TopicName + ", " + entry.SeqNumber);
         }
     }
 }

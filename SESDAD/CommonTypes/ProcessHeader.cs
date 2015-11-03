@@ -43,5 +43,12 @@ namespace SESDAD.CommonTypes {
         public override int GetHashCode() {
             return processURL.GetHashCode();
         }
+
+        public override String ToString() {
+            return
+                "* Site Name:    " + SiteName + Environment.NewLine +
+                "* Process Name: " + ProcessName + Environment.NewLine +
+                "* Process URL:  " + ProcessURL + Environment.NewLine;
+        }
     }
 }

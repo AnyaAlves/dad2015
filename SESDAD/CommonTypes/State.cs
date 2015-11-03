@@ -10,15 +10,15 @@ namespace SESDAD.CommonTypes {
     /// </summary>
     public enum RoutingPolicyType {
         FLOODING,
-        FILTER
+        FILTERING
     };
     /// <summary>
     ///  Type of Ordering
     /// </summary>
     public enum OrderingType {
-        NO,
+        NO_ORDER,
         FIFO,
-        TOTAL
+        TOTAL_ORDER
     };
     /// <summary>
     ///  Type of Process

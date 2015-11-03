@@ -15,23 +15,45 @@ namespace SESDAD.Processes {
             set { Process.Ordering = value; }
         }
 
-        public void Publish(ProcessHeader processHeader, Entry entry) {
-            Process.ForwardEntry(processHeader, entry);
-            PuppetMaster.WriteIntoFullLog("BroEvent " + ProcessHeader.ProcessName + ", " + processHeader.ProcessName + ", " + entry.TopicName + ", " + entry.SeqNumber);
-        }
-        public void Subscribe(ProcessHeader processHeader, String topicName) {
-            Process.AddSubscription(processHeader, topicName);
-        }
-        public void Unsubscribe(ProcessHeader processHeader, String topicName) {
-            Process.RemoveSubscription(processHeader, topicName);
+        //subscriber->broker
+        public void RegisterSubscriber(ProcessHeader subscriberHeader) {
+            Process.AddSubscriber(subscriberHeader);
         }
 
-        public void RegisterChildBroker(ProcessHeader processHeader) {
-            Process.AddChildBroker(processHeader);
+        public void Subscribe(ProcessHeader subscriberHeader, String topicName) {
+            Process.MakeSubscription(subscriberHeader, topicName);
+        }
+        public void Unsubscribe(ProcessHeader subscriberHeader, String topicName) {
+            Process.RemoveSubscription(subscriberHeader, topicName);
         }
 
-        public void RegisterSubscriber(ProcessHeader processHeader) {
-            Process.AddSubscriber(processHeader);
+        public void AckDelivery(ProcessHeader subscriberHeader) {
+            Process.AckDelivery(subscriberHeader);
         }
+
+        //publisher->broker
+        public void Publish(Entry entry) {
+            Process.SubmitEntry(entry);
+        }
+
+        //child->broker
+        public void RegisterChildBroker(ProcessHeader childBrokerHeader) {
+            Process.AddChildBroker(childBrokerHeader);
+        }
+        //broker->parent
+        public void SpreadSubscription(ProcessHeader brokerHeader, String topicName) {
+            Process.SpreadSubscription(brokerHeader, topicName);
+        }
+        //broker->brokers
+        public void MulticastEntry(ProcessHeader senderBrokerHeader, Entry entry) {
+            PuppetMaster.WriteIntoFullLog(
+                "BroEvent " +
+                Header.ProcessName + ", " +
+                entry.PublisherHeader.ProcessName + ", " +
+                entry.TopicName + ", " +
+                entry.SeqNumber);
+            Process.MulticastEntry(senderBrokerHeader, entry);
+        }
+
     }
 }

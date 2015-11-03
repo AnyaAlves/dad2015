@@ -23,9 +23,10 @@ namespace SESDAD.Processes {
 
         public GenericProcess(ProcessHeader newProcessHeader) {
             processHeader = newProcessHeader;
+            parentBroker = null;
         }
 
-        public ProcessHeader ProcessHeader {
+        public ProcessHeader Header {
             get { return processHeader; }
         }
         protected IMessageBrokerService ParentBroker {
@@ -42,8 +43,8 @@ namespace SESDAD.Processes {
 
             Service service = new Service();
             service.Process = iProcess;
-            
-            Match match = Regex.Match(ProcessHeader.ProcessURL, @"^tcp://[\w\.]+:(\d{4,5})/(\w+)$");
+
+            Match match = Regex.Match(Header.ProcessURL, @"^tcp://[\w\.]+:(\d{4,5})/(\w+)$");
             int portNumber;
             String serviceName = match.Groups[2].Value;
             portNumber = Int32.Parse(match.Groups[1].Value);
@@ -68,17 +69,8 @@ namespace SESDAD.Processes {
             Environment.Exit(-1);
         }
 
-        public String Status {
-            get {
-                return
-                    "**********************************************" + Environment.NewLine +
-                    "* Hello, I'm a " + processHeader.ProcessType.ToString() + ". Here's my info:" + Environment.NewLine +
-                    "*" + Environment.NewLine +
-                    "* Site Name:    " + processHeader.SiteName + Environment.NewLine +
-                    "* Process Name: " + processHeader.ProcessName + Environment.NewLine +
-                    "* Process URL:  " + processHeader.ProcessURL + Environment.NewLine +
-                    "**********************************************" + Environment.NewLine;
-            }
+        public override String ToString() {
+            return Header.ToString();
         }
     }
 }

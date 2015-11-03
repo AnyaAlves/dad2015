@@ -29,11 +29,21 @@ namespace SESDAD.Processes {
         }
 
         public Entry Publish(String topicName, String content) {
-            Entry entry = new Entry(topicName, content, ProcessHeader, seqNumber++);
-            ParentBroker.Publish(ProcessHeader, entry);
+            Entry entry = new Entry(topicName, content, Header, seqNumber++);
+            ParentBroker.Publish(entry);
             return entry;
         }
         //public void Ack(int seqNumber) {}
+
+        public override String ToString() {
+            return
+                "**********************************************" + Environment.NewLine +
+                " Publisher :" + Environment.NewLine + Environment.NewLine +
+                base.ToString() +
+                "**********************************************" + Environment.NewLine +
+                " Sequence Number: " + seqNumber.ToString() + Environment.NewLine +
+                "**********************************************" + Environment.NewLine;
+        }
     }
 
     class Program {
@@ -43,7 +53,8 @@ namespace SESDAD.Processes {
 
             process.LaunchService<PublisherService, IPublisher>(((IPublisher)process));
             process.ConnectToParentBroker(args[3]);
-
+            
+            Console.WriteLine(process);
             Console.ReadLine();
         }
     }

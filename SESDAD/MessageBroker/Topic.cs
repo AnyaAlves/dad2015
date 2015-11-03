@@ -8,21 +8,32 @@ using SESDAD.CommonTypes;
 
 namespace SESDAD.Processes {
     using PublisherTable = Dictionary<ProcessHeader,int>;
+
+
+    public delegate IList<ProcessHeader> ProcessListDel(Topic topic);
     
     public class Topic : Node<Topic> {
         private IDictionary<ProcessHeader, PublisherTable> subscriberList;
-        private IList<IMessageBrokerService> brokerList;
+        private IList<ProcessHeader> brokerList;
 
         public Topic(String topicName, Topic parent) :
             base (topicName, parent) {
             subscriberList = new Dictionary<ProcessHeader,PublisherTable>();
-            brokerList = new List<IMessageBrokerService>();
+            brokerList = new List<ProcessHeader>();
         }
 
         public IList<ProcessHeader> SubscriberList {
-            get {
-                return subscriberList.Keys.ToList();
-            }
+            get { return subscriberList.Keys.ToList(); }
+        }
+        public IList<ProcessHeader> BrokerList {
+            get { return brokerList; }
+        }
+
+        public IList<ProcessHeader> GetSubscriberList(Topic topic) {
+            return topic.SubscriberList;
+        }
+        public IList<ProcessHeader> GetBrokerList(Topic topic) {
+            return topic.BrokerList;
         }
 
         public void AddSubscriber(ProcessHeader subscriber) {
@@ -33,8 +44,12 @@ namespace SESDAD.Processes {
             subscriberList.Remove(subscriber);
         }
 
-        public void AddBroker(IMessageBrokerService broker) {
+        public void AddBroker(ProcessHeader broker) {
             brokerList.Add(broker);
+        }
+
+        public void RemoveBroker(ProcessHeader broker) {
+            brokerList.Remove(broker);
         }
 
         public Topic GetSubtopic(String topicPath) {
@@ -53,52 +68,37 @@ namespace SESDAD.Processes {
             return child.GetSubtopic(topics[1]);
         }
 
-        // /a/aa/b
-
-        public IList<ProcessHeader> GetSubscriberList(String topicPath) {
-            IList<ProcessHeader> subscribers = new List<ProcessHeader>();
+        public IList<ProcessHeader> GetProcessList(String topicPath, ProcessListDel processList) {
+            IList<ProcessHeader> process = new List<ProcessHeader>();
             Topic child;
             var topics = topicPath.Split(new[] { '/' }, 2);
             String childName = topics[0];
 
             //if topic has *, append subscribers
             if (Children.TryGetValue("*", out child)) {
-                subscribers = child.SubscriberList;
+                process = processList(child);
             }
             //if topic doesn't have this child, return current list
             if (!Children.TryGetValue(childName, out child)) {
-                return subscribers;
+                return process;
             }
             //if current topic is the last, return subscribers list
             if (topics.Length == 1) {
-                return child.SubscriberList;
+                return processList(child);
             }
-            return subscribers.Concat(child.GetSubscriberList(topics[1])).ToList();
+            return process.Concat(child.GetProcessList(topics[1], processList)).ToList();
         }
 
-        public IList<IMessageBrokerService> GetBrokerList(String topicPath) {
-            IList<IMessageBrokerService> brokers = new List<IMessageBrokerService>();
-            Topic child;
-            var topics = topicPath.Split(new[] { '/' }, 2);
-            String childName = topics[0];
+        public IList<ProcessHeader> GetSubscriberList(String topicPath) {
+            return GetProcessList(topicPath, new ProcessListDel(GetSubscriberList));
+        }
 
-            //if topic has *, append subscribers
-            if (Children.TryGetValue("*", out child)) {
-                brokers = child.brokerList;
-            }
-            //if topic doesn't have this child, return current list
-            if (!Children.TryGetValue(childName, out child)) {
-                return brokers;
-            }
-            //if current topic is the last, return subscribers list
-            if (topics.Length == 1) {
-                return child.brokerList;
-            }
-            return brokers.Concat(child.GetBrokerList(topics[1])).ToList();
+        public IList<ProcessHeader> GetBrokerList(String topicPath) {
+            return GetProcessList(topicPath, new ProcessListDel(GetBrokerList));
         }
 
         public bool HasProcesses() {
-            return (brokerList != null) && (subscriberList != null);
+            return brokerList.Any() && subscriberList.Any();
         }
     }
 }

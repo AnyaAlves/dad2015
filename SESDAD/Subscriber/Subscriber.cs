@@ -23,10 +23,10 @@ namespace SESDAD.Processes {
         }
 
         public void Subscribe(String topicName) {
-            ParentBroker.Subscribe(ProcessHeader, topicName);
+            ParentBroker.Subscribe(Header, topicName);
         }
         public void Unsubscribe(String topicName) {
-            ParentBroker.Unsubscribe(ProcessHeader, topicName);
+            ParentBroker.Unsubscribe(Header, topicName);
         }
 
         public void ReceiveEntry(Entry entry) {
@@ -35,7 +35,15 @@ namespace SESDAD.Processes {
 
         public override void ConnectToParentBroker(String parentBrokerURL) {
             base.ConnectToParentBroker(parentBrokerURL);
-            ParentBroker.RegisterSubscriber(ProcessHeader);
+            ParentBroker.RegisterSubscriber(Header);
+        }
+
+        public override String ToString() {
+            return
+                "**********************************************" + Environment.NewLine +
+                " Subscriber :" + Environment.NewLine + Environment.NewLine +
+                base.ToString() +
+                "**********************************************" + Environment.NewLine;
         }
     }
 
@@ -47,6 +55,7 @@ namespace SESDAD.Processes {
             process.LaunchService<SubscriberService, ISubscriber>(((ISubscriber)process));
             process.ConnectToParentBroker(args[3]);
 
+            Console.WriteLine(process);
             Console.ReadLine();
         }
     }
