@@ -50,7 +50,7 @@ namespace SESDAD.Managing {
         public PuppetMasterService(String newServiceName, int newPort) {
             log = "";
             serviceName = newServiceName;
-            serviceURL = "tcp://localhost:" + newPort.ToString() + "/" + newServiceName;
+            serviceURL = "tcp://localhost:" + newPort + "/" + newServiceName;
             port = newPort;
             routingPolicy = RoutingPolicyType.FLOODING;
             ordering = OrderingType.FIFO;
@@ -69,7 +69,7 @@ namespace SESDAD.Managing {
         public RoutingPolicyType RoutingPolicy {
             set {
                 routingPolicy = value;
-                foreach (IMessageBrokerService brokerService in brokerTable.Values.ToList()) {
+                foreach (IMessageBrokerService brokerService in brokerTable.Values) {
                     brokerService.RoutingPolicy = value;
                 }
             }
@@ -80,7 +80,7 @@ namespace SESDAD.Managing {
         public OrderingType Ordering {
             set {
                 ordering = value;
-                foreach (IMessageBrokerService brokerService in brokerTable.Values.ToList()) {
+                foreach (IMessageBrokerService brokerService in brokerTable.Values) {
                     brokerService.Ordering = value;
                 }
             }
@@ -197,7 +197,7 @@ namespace SESDAD.Managing {
             int publishTimes,
             String topicName,
             int intervalTime) {
-                WriteIntoLog("Publisher " + processName + " Publish " + publishTimes.ToString() + " Ontopic " + topicName + " Interval " + intervalTime.ToString());
+                WriteIntoLog("Publisher " + processName + " Publish " + publishTimes + " Ontopic " + topicName + " Interval " + intervalTime);
             if (stateList[processName].Equals(ProcessState.FROZEN) ||
                 stateList[processName].Equals(ProcessState.UNFROZEN)) {
                 IPublisherService remoteService;
@@ -213,35 +213,38 @@ namespace SESDAD.Managing {
         /// Gets Puppet Master Service status
         ///</summary>
         public void ExecuteStatusCommand() {
-            Console.WriteLine("------------------------------------------------------------------------------");
-            Console.WriteLine(
-                " Routing Policy : " + routingPolicy.ToString() + Environment.NewLine +
-                " Ordering :       " + ordering.ToString() + Environment.NewLine +
-                " Logging Level :  " + loggingLevel.ToString());
-            Console.WriteLine("------------------------------------------------------------------------------");
-            Console.WriteLine(" Predicted states :" + Environment.NewLine);
-            foreach (KeyValuePair<String, ProcessState> process in stateList.ToList()) {
-                Console.WriteLine(" -> " + process.Key + " is " + process.Value.ToString());
+            String separator = "--------------------------------------------------------------------";
+            String nl = Environment.NewLine;
+
+
+            Console.WriteLine(separator + nl +
+                " Routing Policy : " + routingPolicy + nl +
+                " Ordering :       " + ordering + nl +
+                " Logging Level :  " + loggingLevel + nl +
+                separator + nl +
+                " Predicted states :");
+            foreach (KeyValuePair<String, ProcessState> process in stateList) {
+                Console.WriteLine(" -> " + process.Key + " is " + process.Value);
             }
-            Console.WriteLine("------------------------------------------------------------------------------");
-            Console.WriteLine(" Brokers :" + Environment.NewLine);
-            foreach (IMessageBrokerService process in brokerTable.Values.ToList()) {
+            Console.WriteLine(separator + nl +
+                " Brokers :" + nl);
+            foreach (IMessageBrokerService process in brokerTable.Values) {
                 Console.WriteLine(process.GetStatus());
             }
-            Console.WriteLine("------------------------------------------------------------------------------");
-            Console.WriteLine(" Publishers :" + Environment.NewLine);
-            foreach (IPublisherService process in publisherTable.Values.ToList()) {
+            Console.WriteLine(separator + nl +
+                " Publishers :" + nl);
+            foreach (IPublisherService process in publisherTable.Values) {
                 Console.WriteLine(process.GetStatus());
             }
-            Console.WriteLine("------------------------------------------------------------------------------");
-            Console.WriteLine(" Subscribers :" + Environment.NewLine);
-            foreach (ISubscriberService process in subscriberTable.Values.ToList()) {
+            Console.WriteLine(separator + nl +
+                " Subscribers :" + nl);
+            foreach (ISubscriberService process in subscriberTable.Values) {
                 Console.WriteLine(process.GetStatus());
             }
-            Console.WriteLine("------------------------------------------------------------------------------");
-            Console.WriteLine(" Log :" + Environment.NewLine);
-            Console.WriteLine(log);
-            Console.WriteLine("------------------------------------------------------------------------------");
+            Console.WriteLine(separator + nl +
+                " Log :" + nl +
+                log + nl +
+                separator);
         }
         private bool TryGetService(String processName, out IGenericProcessService remoteService) {
             if (brokerTable.ContainsKey(processName)) {

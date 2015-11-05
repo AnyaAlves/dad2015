@@ -22,7 +22,7 @@ namespace SESDAD.Processes {
         void AddSubscriber(ProcessHeader subscriberHeader);
         void MakeSubscription(ProcessHeader subscriberHeader, String topicName);
         void RemoveSubscription(ProcessHeader subscriberHeader, String topicName);
-        void AckDelivery(ProcessHeader subscriberHeader);
+        void AckDelivery(ProcessHeader subscriberHeader, ProcessHeader publisherHeader);
         
         //publisher->broker
         void SubmitEntry(Entry entry);

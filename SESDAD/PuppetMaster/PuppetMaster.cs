@@ -1,4 +1,6 @@
-﻿using System;
+﻿
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -122,7 +124,7 @@ namespace SESDAD.Managing {
             }
             else {
                 if (fields.Length == 1 && command.Equals("Status")) {
-                    foreach (IPuppetMasterService service in puppetMasterServiceTable.Values.ToList()) {
+                    foreach (IPuppetMasterService service in puppetMasterServiceTable.Values) {
                         service.ExecuteStatusCommand();
                     }
                 }
@@ -151,7 +153,7 @@ namespace SESDAD.Managing {
                     else {
                         return;
                     }
-                    foreach (IPuppetMasterService service in puppetMasterServiceTable.Values.ToList()) {
+                    foreach (IPuppetMasterService service in puppetMasterServiceTable.Values) {
                         service.RoutingPolicy = routingPolicy;
                     }
                 }
@@ -168,7 +170,7 @@ namespace SESDAD.Managing {
                     else {
                         return;
                     }
-                    foreach (IPuppetMasterService service in puppetMasterServiceTable.Values.ToList()) {
+                    foreach (IPuppetMasterService service in puppetMasterServiceTable.Values) {
                         service.Ordering = ordering;
                     }
                 }
@@ -182,7 +184,7 @@ namespace SESDAD.Managing {
                     else {
                         return;
                     }
-                    foreach (IPuppetMasterService service in puppetMasterServiceTable.Values.ToList()) {
+                    foreach (IPuppetMasterService service in puppetMasterServiceTable.Values) {
                         service.LoggingLevel = loggingLevel;
                     }
                 }
@@ -212,7 +214,8 @@ namespace SESDAD.Managing {
                                 intervalTimes);
                     }
                 }
-                else if (fields.Length == 8 && command.Equals("Process") &&
+                else if (fields.Length == 8 &&
+                            command.Equals("Process") &&
                             fields[2].Equals("Is") &&
                             fields[4].Equals("On") &&
                             fields[6].Equals("URL") &&
@@ -290,9 +293,24 @@ namespace SESDAD.Managing {
         //</summary>
         public static void Main(string[] args) {
             PuppetMaster puppetMaster = new PuppetMaster();
+            FileAttributes attr;
+            String[] filepaths;
+
             puppetMaster.LaunchService();
-            if (args.Length == 1 && File.Exists(args[0])) {
-                puppetMaster.ExecuteConfigurationFile(args[0]);
+            foreach (String arg in args) {
+                attr = File.GetAttributes(arg);
+
+                if (attr.HasFlag(FileAttributes.Directory)) {
+                    filepaths = Directory.GetFiles(arg);
+                }
+                else {
+                    filepaths = new[] { arg };
+                }
+
+                foreach (String filepath in filepaths) {
+                    puppetMaster.ExecuteConfigurationFile(filepath);
+                    puppetMaster.StartCLI();
+                }
             }
             puppetMaster.StartCLI();
         }

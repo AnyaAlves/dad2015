@@ -28,7 +28,7 @@ RoutingPolicy filtering
 LoggingLevel full
 Status
 
-Publisher pub0 Publish 5 Ontopic /a/aa/b Interval 1
+Publisher pub0 Publish 5 Ontopic /a/aa/b Interval 500
 Status
 
 -Crash bro0

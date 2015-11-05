@@ -36,13 +36,15 @@ namespace SESDAD.Processes {
         //public void Ack(int seqNumber) {}
 
         public override String ToString() {
+            String nl = Environment.NewLine;
+
             return
-                "**********************************************" + Environment.NewLine +
-                " Publisher :" + Environment.NewLine + Environment.NewLine +
-                base.ToString() +
-                "**********************************************" + Environment.NewLine +
-                " Sequence Number: " + seqNumber.ToString() + Environment.NewLine +
-                "**********************************************" + Environment.NewLine;
+                "**********************************************" + nl +
+                " Publisher :" + nl +
+                base.ToString() + nl +
+                "**********************************************" + nl +
+                " Sequence Number: " + seqNumber + nl +
+                "**********************************************" + nl;
         }
     }
 

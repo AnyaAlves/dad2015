@@ -30,7 +30,13 @@ namespace SESDAD.Processes {
         }
 
         public void ReceiveEntry(Entry entry) {
-            Console.WriteLine("New event about: " + entry.TopicName + "\n" + "Content: " + entry.Content);
+            String nl = Environment.NewLine;
+
+            Console.WriteLine("New event received!" + nl +
+                "Topic Name: " + entry.TopicName + nl +
+                "Content: " + entry.Content + nl +
+                "Publisher: " + nl + entry.PublisherHeader + nl);
+            ParentBroker.AckDelivery(Header, entry.PublisherHeader);
         }
 
         public override void ConnectToParentBroker(String parentBrokerURL) {
@@ -39,11 +45,13 @@ namespace SESDAD.Processes {
         }
 
         public override String ToString() {
+            String nl = Environment.NewLine;
+
             return
-                "**********************************************" + Environment.NewLine +
-                " Subscriber :" + Environment.NewLine + Environment.NewLine +
-                base.ToString() +
-                "**********************************************" + Environment.NewLine;
+                "**********************************************" + nl +
+                " Subscriber :" + nl +
+                base.ToString() + nl +
+                "**********************************************" + nl;
         }
     }
 

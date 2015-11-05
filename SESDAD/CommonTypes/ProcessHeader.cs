@@ -44,11 +44,16 @@ namespace SESDAD.CommonTypes {
             return processURL.GetHashCode();
         }
 
+        public static String operator+(ProcessHeader left, ProcessHeader right) {
+            return left.ProcessURL + right.ProcessURL;
+        }
+
         public override String ToString() {
+            String nl = Environment.NewLine;
             return
-                "* Site Name:    " + SiteName + Environment.NewLine +
-                "* Process Name: " + ProcessName + Environment.NewLine +
-                "* Process URL:  " + ProcessURL + Environment.NewLine;
+                " Site Name:    " + SiteName + nl +
+                " Process Name: " + ProcessName + nl +
+                " Process URL:  " + ProcessURL;
         }
     }
 }

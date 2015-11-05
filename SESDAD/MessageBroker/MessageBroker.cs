@@ -11,28 +11,27 @@ using SESDAD.CommonTypes;
 namespace SESDAD.Processes {
 
     public class MessageBroker : GenericProcess, IMessageBroker {
+        private Topic topicRoot;
         // States
         private RoutingPolicyType routingPolicy;
-        private OrderingType ordering;
         // Tables
-        private IDictionary<ProcessHeader, IMessageBrokerService> childBrokerList;
         private IDictionary<ProcessHeader, ISubscriberService> subscriberList;
-        private Topic topicRoot;
-        private Queue<Entry> requestBuffer;
+        private IDictionary<ProcessHeader, IMessageBrokerService> childBrokerList;
+        EntryBufferManager bufferManager;
 
         public MessageBroker(ProcessHeader processHeader) :
             base(processHeader) {
-            childBrokerList = new Dictionary<ProcessHeader, IMessageBrokerService>();
-            subscriberList = new Dictionary<ProcessHeader, ISubscriberService>();
             topicRoot = new Topic("", null);
-            requestBuffer = new Queue<Entry>();
+            subscriberList = new Dictionary<ProcessHeader, ISubscriberService>();
+            childBrokerList = new Dictionary<ProcessHeader, IMessageBrokerService>();
+            bufferManager = new EntryBufferManager();
         }
 
         public RoutingPolicyType RoutingPolicy {
             set { routingPolicy = value; }
         }
         public OrderingType Ordering {
-            set { ordering = value; }
+            set { bufferManager.Ordering = value; }
         }
 
         public void AddSubscriber(ProcessHeader subscriberHeader) {
@@ -64,7 +63,9 @@ namespace SESDAD.Processes {
             topic.RemoveSubscriber(subscriberHeader);
             //spread unsub
         }
-        public void AckDelivery(ProcessHeader subscriberHeader) { }
+        public void AckDelivery(ProcessHeader subscriberHeader, ProcessHeader publisherHeader) {
+            bufferManager.RemoveFromPendingDeliveryBuffer(subscriberHeader, publisherHeader);
+        }
 
         public void SubmitEntry(Entry entry) {
             MulticastEntry(Header, entry);
@@ -92,7 +93,7 @@ namespace SESDAD.Processes {
         }
 
         public void MulticastEntry(ProcessHeader senderBrokerHeader, Entry entry) {
-            requestBuffer.Enqueue(entry);
+            bufferManager.InsertIntoSubmissionBuffer(entry);
             ThreadStart ts = new ThreadStart(this.ForwardEntries);
             Thread t = new Thread(ts);
             t.Start();
@@ -116,28 +117,32 @@ namespace SESDAD.Processes {
             }
         }
 
+
+
         public void ForwardEntries() {
-            Entry entry = requestBuffer.Dequeue();
-            String topicName = entry.TopicName;
-            IList<ProcessHeader> topicSubscriberList = topicRoot.GetSubscriberList(topicName);
+            Entry entry = bufferManager.GetEntry();
+            IList<ProcessHeader> topicSubscriberList = topicRoot.GetSubscriberList(entry.TopicName);
 
             foreach (ProcessHeader subscriber in topicSubscriberList) {
                 subscriberList[subscriber].DeliverEntry(entry);
+                bufferManager.InsertIntoPendingDeliveryBuffer(subscriber, entry);
             }
         }
 
         public override String ToString() {
+            String nl = Environment.NewLine;
+
             return
-                "**********************************************" + Environment.NewLine +
-                " Message Broker :" + Environment.NewLine + Environment.NewLine +
-                base.ToString() +
-                "**********************************************" + Environment.NewLine +
-                " Subscribers :" + Environment.NewLine + Environment.NewLine +
-                String.Join(Environment.NewLine, subscriberList.Keys) +
-                "**********************************************" + Environment.NewLine +
-                " Children :" + Environment.NewLine + Environment.NewLine +
-                String.Join(Environment.NewLine, childBrokerList.Keys) +
-                "**********************************************" + Environment.NewLine;
+                "**********************************************" + nl +
+                " Message Broker :" + nl +
+                base.ToString() + nl +
+                "**********************************************" + nl +
+                " Subscribers :" + nl +
+                String.Join(nl, subscriberList.Keys) + nl +
+                "**********************************************" + nl +
+                " Children :" + nl +
+                String.Join(nl, childBrokerList.Keys) + nl +
+                "**********************************************" + nl;
         }
     }
 

@@ -27,8 +27,8 @@ namespace SESDAD.Processes {
             Process.RemoveSubscription(subscriberHeader, topicName);
         }
 
-        public void AckDelivery(ProcessHeader subscriberHeader) {
-            Process.AckDelivery(subscriberHeader);
+        public void AckDelivery(ProcessHeader subscriberHeader, ProcessHeader publisherHeader) {
+            Process.AckDelivery(subscriberHeader, publisherHeader);
         }
 
         //publisher->broker

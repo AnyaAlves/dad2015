@@ -32,7 +32,7 @@ namespace SESDAD.CommonTypes {
         void RegisterSubscriber(ProcessHeader subscriberHeader);
         void Subscribe(ProcessHeader subscriberHeader, String topicName);
         void Unsubscribe(ProcessHeader subscriberHeader, String topicName);
-        void AckDelivery(ProcessHeader subscriberHeader);
+        void AckDelivery(ProcessHeader subscriberHeader, ProcessHeader publisherHeader);
 
         //publisher->broker
         void Publish(Entry entry);

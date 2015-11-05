@@ -7,23 +7,22 @@ using System.Threading.Tasks;
 using SESDAD.CommonTypes;
 
 namespace SESDAD.Processes {
-    using PublisherTable = Dictionary<ProcessHeader,int>;
 
 
     public delegate IList<ProcessHeader> ProcessListDel(Topic topic);
     
     public class Topic : Node<Topic> {
-        private IDictionary<ProcessHeader, PublisherTable> subscriberList;
+        private IList<ProcessHeader> subscriberList;
         private IList<ProcessHeader> brokerList;
 
         public Topic(String topicName, Topic parent) :
             base (topicName, parent) {
-            subscriberList = new Dictionary<ProcessHeader,PublisherTable>();
+            subscriberList = new List<ProcessHeader>();
             brokerList = new List<ProcessHeader>();
         }
 
         public IList<ProcessHeader> SubscriberList {
-            get { return subscriberList.Keys.ToList(); }
+            get { return subscriberList; }
         }
         public IList<ProcessHeader> BrokerList {
             get { return brokerList; }
@@ -37,7 +36,7 @@ namespace SESDAD.Processes {
         }
 
         public void AddSubscriber(ProcessHeader subscriber) {
-            subscriberList.Add(subscriber, new PublisherTable());
+            subscriberList.Add(subscriber);
         }
 
         public void RemoveSubscriber(ProcessHeader subscriber) {
