@@ -47,6 +47,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Exceptions\InvalidCommandException.cs" />
+    <Compile Include="Exceptions\InvalidProcessServiceException.cs" />
+    <Compile Include="Exceptions\InvalidPuppetMasterServiceException.cs" />
+    <Compile Include="Exceptions\InvalidSiteException.cs" />
     <Compile Include="IPuppetMasterService.cs" />
     <Compile Include="PuppetMaster.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

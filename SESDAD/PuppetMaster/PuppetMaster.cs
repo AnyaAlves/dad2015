@@ -14,6 +14,7 @@ using System.Threading;
 
 using System.Diagnostics;
 using SESDAD.CommonTypes;
+using SESDAD.Managing.Exceptions;
 
 namespace SESDAD.Managing {
     ///<summary>
@@ -104,8 +105,17 @@ namespace SESDAD.Managing {
             StreamReader file = new StreamReader(configurationFileName);
 
             while ((line = file.ReadLine()) != null) {
+                if (line.Equals("") || line[0].Equals('-')) {
+                    continue;
+                }
                 System.Console.WriteLine(line);
-                ParseLineToCommand(line);
+                try {
+                    ParseLineToCommand(line);
+                }
+                catch (Exception e) {
+                    CloseProcesses();
+                    throw e;
+                }
             }
             file.Close();
         }
@@ -117,8 +127,12 @@ namespace SESDAD.Managing {
             while (true) {
                 System.Console.Write("PuppetMaster> ");
                 command = System.Console.ReadLine();
-                if (!ParseLineToCommand(command)) {
-                    break;
+                try {
+                    ParseLineToCommand(command);
+                }
+                catch (Exception e) {
+                    CloseProcesses();
+                    return;
                 }
             }
         }
@@ -130,186 +144,176 @@ namespace SESDAD.Managing {
         //<summary>
         // Converts string input into command
         //</summary>
-        private bool ParseLineToCommand(String line) {
-            try {
-                int waitingTime;
-                String serviceURL;
-                String[] fields = line.Split(' ');
-                String command = fields[0];
-                if (fields.Length == 2 &&
-                    command.ToLower().Equals("Wait") &&
-                    Int32.TryParse(fields[1], out waitingTime)) {
-                    Thread.Sleep(waitingTime);
+        private void ParseLineToCommand(String line) {
+            int waitingTime;
+            String serviceURL;
+            String[] fields = line.Split(' ');
+            String command = fields[0].ToLower();
+            if (fields.Length == 2 &&
+                command.Equals("Wait") &&
+                Int32.TryParse(fields[1], out waitingTime)) {
+                Thread.Sleep(waitingTime);
+            }
+            if (fields.Length == 4 && command.Equals("site") && fields[2].ToLower().Equals("parent")) {
+                Site parentSite;
+                siteTable.TryGetValue(fields[3], out parentSite);
+                siteTable.Add(fields[1], new Site(fields[1], parentSite));
+            }
+            else if (fields.Length == 1 && command.Equals("status")) {
+                foreach (IPuppetMasterService service in puppetMasterServiceTable.Values) {
+                    service.ExecuteStatusCommand();
                 }
-                if (fields.Length == 4 && command.ToLower().Equals("site") && fields[2].ToLower().Equals("parent")) {
-                    Site parentSite;
-                    siteTable.TryGetValue(fields[3], out parentSite);
-                    siteTable.Add(fields[1], new Site(fields[1], parentSite));
+            }
+            else if (fields.Length == 2 && command.Equals("crash")) {
+                if (!TryGetServiceURL(fields[1], out serviceURL)) {
+                    throw new InvalidProcessServiceException(fields[1]);
                 }
-                else if (fields.Length == 1 && command.ToLower().Equals("status")) {
-                    foreach (IPuppetMasterService service in puppetMasterServiceTable.Values) {
-                        service.ExecuteStatusCommand();
-                    }
+                puppetMasterServiceTable[serviceURL].ExecuteCrashCommand(fields[1]);
+            }
+            else if (fields.Length == 2 && command.Equals("freeze")) {
+                if (!TryGetServiceURL(fields[1], out serviceURL)) {
+                    throw new InvalidProcessServiceException(fields[1]);
                 }
-                else if (fields.Length == 2 &&
-                         command.ToLower().Equals("crash") &&
-                         TryGetServiceURL(fields[1], out serviceURL)) {
-                    puppetMasterServiceTable[serviceURL].ExecuteCrashCommand(fields[1]);
+                puppetMasterServiceTable[serviceURL].ExecuteFreezeCommand(fields[1]);
+            }
+            else if (fields.Length == 2 && command.Equals("unfreeze")) {
+                if (!TryGetServiceURL(fields[1], out serviceURL)) {
+                    throw new InvalidProcessServiceException(fields[1]);
                 }
-                else if (fields.Length == 2 &&
-                         command.ToLower().Equals("freeze") &&
-                         TryGetServiceURL(fields[1], out serviceURL)) {
-                    puppetMasterServiceTable[serviceURL].ExecuteFreezeCommand(fields[1]);
+                puppetMasterServiceTable[serviceURL].ExecuteUnfreezeCommand(fields[1]);
+            }
+            else if (fields.Length == 2 && command.Equals("routingpolicy")) {
+                if (fields[1].ToLower().Equals("flooding")) {
+                    routingPolicy = RoutingPolicyType.FLOOD;
                 }
-                else if (fields.Length == 2 &&
-                         command.ToLower().Equals("unfreeze") &&
-                         TryGetServiceURL(fields[1], out serviceURL)) {
-                    puppetMasterServiceTable[serviceURL].ExecuteUnfreezeCommand(fields[1]);
-                }
-                else if (fields.Length == 2 && command.ToLower().Equals("routingpolicy")) {
-                    if (fields[1].ToLower().Equals("flooding")) {
-                        routingPolicy = RoutingPolicyType.FLOOD;
-                    }
-                    else if (fields[1].ToLower().Equals("filter")) {
-                        routingPolicy = RoutingPolicyType.FILTER;
-                    }
-                    else {
-                        return false;
-                    }
-                    foreach (IPuppetMasterService service in puppetMasterServiceTable.Values) {
-                        service.RoutingPolicy = routingPolicy;
-                    }
-                }
-                else if (fields.Length == 2 && command.ToLower().Equals("ordering")) {
-                    if (fields[1].ToLower().Equals("no")) {
-                        ordering = OrderingType.NO_ORDER;
-                    }
-                    else if (fields[1].ToLower().Equals("fifo")) {
-                        ordering = OrderingType.FIFO;
-                    }
-                    else if (fields[1].ToLower().Equals("total")) {
-                        ordering = OrderingType.TOTAL_ORDER;
-                    }
-                    else {
-                        return false;
-                    }
-                    foreach (IPuppetMasterService service in puppetMasterServiceTable.Values) {
-                        service.Ordering = ordering;
-                    }
-                }
-                else if (fields.Length == 2 && command.ToLower().Equals("logginglevel")) {
-                    if (fields[1].ToLower().Equals("full")) {
-                        loggingLevel = LoggingLevelType.FULL;
-                    }
-                    else if (fields[1].ToLower().Equals("light")) {
-                        loggingLevel = LoggingLevelType.LIGHT;
-                    }
-                    else {
-                        return false;
-                    }
-                    foreach (IPuppetMasterService service in puppetMasterServiceTable.Values) {
-                        service.LoggingLevel = loggingLevel;
-                    }
-                }
-                else if (fields.Length == 4 &&
-                         command.ToLower().Equals("subscriber") &&
-                         subscriberResolutionCache.TryGetValue(fields[1], out serviceURL)) {
-                    if (fields[2].ToLower().Equals("subscribe")) {
-                        puppetMasterServiceTable[serviceURL].ExecuteSubscribeCommand(fields[1], fields[3]);
-                    }
-                    else if (fields[2].ToLower().Equals("unsubscribe")) {
-                        puppetMasterServiceTable[serviceURL].ExecuteUnsubscribeCommand(fields[1], fields[3]);
-                    }
-                }
-                else if (fields.Length == 8 &&
-                         command.ToLower().Equals("publisher") &&
-                         fields[2].ToLower().Equals("publish") &&
-                         fields[4].ToLower().Equals("ontopic") &&
-                         fields[6].ToLower().Equals("interval")) {
-                    int publishTimes, intervalTimes;
-                    if (Int32.TryParse(fields[3], out publishTimes) &&
-                        Int32.TryParse(fields[7], out intervalTimes) &&
-                        publisherResolutionCache.TryGetValue(fields[1], out serviceURL)) {
-                        puppetMasterServiceTable[serviceURL].ExecutePublishCommand(
-                                fields[1],
-                                publishTimes,
-                                fields[5],
-                                intervalTimes);
-                    }
-                }
-                else if (fields.Length == 8 &&
-                            command.ToLower().Equals("process") &&
-                            fields[2].ToLower().Equals("is") &&
-                            fields[4].ToLower().Equals("on") &&
-                            fields[6].ToLower().Equals("url") &&
-                            Regex.IsMatch(fields[7], REGEXURL)) {
-
-                    String processName = fields[1],
-                           processType = fields[3],
-                           siteName = fields[5],
-                           processURL = fields[7];
-                    serviceURL = Regex.Match(processURL, REGEXURL).Groups[1].Value;
-
-                    IPuppetMasterService serviceProxy;
-                    if (!puppetMasterServiceTable.TryGetValue(serviceURL, out serviceProxy)) {
-                        serviceProxy = (IPuppetMasterService)Activator.GetObject(
-                               typeof(IPuppetMasterService),
-                               @"tcp://" + serviceURL + ":" + PORT + "/" + SERVICE_NAME);
-
-                        serviceProxy.RoutingPolicy = routingPolicy;
-                        serviceProxy.Ordering = ordering;
-                        serviceProxy.LoggingLevel = loggingLevel;
-
-                        puppetMasterServiceTable.Add(serviceURL, serviceProxy);
-                    }
-
-                    if (processType.ToLower().Equals("broker")) {
-                        Site site = siteTable[siteName],
-                             parentSite;
-
-                        siteTable.TryGetValue(siteName, out parentSite);
-                        puppetMasterServiceTable[serviceURL].ExecuteBrokerCommand(
-                                processName,
-                                siteName,
-                                processURL,
-                                parentSite.ParentBrokerURL);
-
-                        brokerResolutionCache.Add(processName, serviceURL);
-                        site.BrokerURL = processURL;
-                    }
-                    else if (processType.ToLower().Equals("publisher")) {
-                        Site site;
-
-                        siteTable.TryGetValue(siteName, out site);
-                        puppetMasterServiceTable[serviceURL].ExecutePublisherCommand(
-                                processName,
-                                siteName,
-                                processURL,
-                                site.BrokerURL);
-                        publisherResolutionCache.Add(processName, serviceURL);
-                    }
-                    else if (processType.ToLower().Equals("subscriber")) {
-                        Site site;
-
-                        siteTable.TryGetValue(siteName, out site);
-                        puppetMasterServiceTable[serviceURL].ExecuteSubscriberCommand(
-                                processName,
-                                siteName,
-                                processURL,
-                                site.BrokerURL);
-                        subscriberResolutionCache.Add(processName, serviceURL);
-                    }
+                else if (fields[1].ToLower().Equals("filter")) {
+                    routingPolicy = RoutingPolicyType.FILTER;
                 }
                 else {
-                    return false;
+                    throw new InvalidCommandException(command);
+                }
+                foreach (IPuppetMasterService service in puppetMasterServiceTable.Values) {
+                    service.RoutingPolicy = routingPolicy;
                 }
             }
-            catch (Exception e) {
-                CloseProcesses();
-                throw e;
+            else if (fields.Length == 2 && command.Equals("ordering")) {
+                if (fields[1].ToLower().Equals("no")) {
+                    ordering = OrderingType.NO_ORDER;
+                }
+                else if (fields[1].ToLower().Equals("fifo")) {
+                    ordering = OrderingType.FIFO;
+                }
+                else if (fields[1].ToLower().Equals("total")) {
+                    ordering = OrderingType.TOTAL_ORDER;
+                }
+                else {
+                    throw new InvalidCommandException(command);
+                }
+                foreach (IPuppetMasterService service in puppetMasterServiceTable.Values) {
+                    service.Ordering = ordering;
+                }
             }
+            else if (fields.Length == 2 && command.Equals("logginglevel")) {
+                if (fields[1].ToLower().Equals("full")) {
+                    loggingLevel = LoggingLevelType.FULL;
+                }
+                else if (fields[1].ToLower().Equals("light")) {
+                    loggingLevel = LoggingLevelType.LIGHT;
+                }
+                else {
+                    throw new InvalidCommandException(command);
+                }
+                foreach (IPuppetMasterService service in puppetMasterServiceTable.Values) {
+                    service.LoggingLevel = loggingLevel;
+                }
+            }
+            else if (fields.Length == 4 && command.Equals("subscriber")) {
+                if (!subscriberResolutionCache.TryGetValue(fields[1], out serviceURL)) {
+                    throw new InvalidProcessServiceException(fields[1]);
+                }
+                if (fields[2].ToLower().Equals("subscribe")) {
+                    puppetMasterServiceTable[serviceURL].ExecuteSubscribeCommand(fields[1], fields[3]);
+                }
+                else if (fields[2].ToLower().Equals("unsubscribe")) {
+                    puppetMasterServiceTable[serviceURL].ExecuteUnsubscribeCommand(fields[1], fields[3]);
+                }
+            }
+            else if (fields.Length == 8 &&
+                     command.Equals("publisher") &&
+                     fields[2].ToLower().Equals("publish") &&
+                     fields[4].ToLower().Equals("ontopic") &&
+                     fields[6].ToLower().Equals("interval")) {
+                int publishTimes = Int32.Parse(fields[3]),
+                    intervalTimes = Int32.Parse(fields[7]);
 
-            return true;
+                if (!publisherResolutionCache.TryGetValue(fields[1], out serviceURL)) {
+                    throw new InvalidProcessServiceException(fields[1]);
+                }
+                puppetMasterServiceTable[serviceURL].ExecutePublishCommand(
+                    fields[1],
+                    publishTimes,
+                    fields[5],
+                    intervalTimes);
+            }
+            else if (fields.Length == 8 &&
+                        command.Equals("process") &&
+                        fields[2].ToLower().Equals("is") &&
+                        fields[4].ToLower().Equals("on") &&
+                        fields[6].ToLower().Equals("url") &&
+                        Regex.IsMatch(fields[7], REGEXURL)) {
+
+                String processName = fields[1],
+                       processType = fields[3],
+                       siteName = fields[5],
+                       processURL = fields[7];
+                serviceURL = Regex.Match(processURL, REGEXURL).Groups[1].Value;
+                IPuppetMasterService serviceProxy;
+                Site site;
+
+                if (!puppetMasterServiceTable.TryGetValue(serviceURL, out serviceProxy)) {
+                    serviceProxy = (IPuppetMasterService)Activator.GetObject(
+                           typeof(IPuppetMasterService),
+                           @"tcp://" + serviceURL + ":" + PORT + "/" + SERVICE_NAME);
+
+                    serviceProxy.RoutingPolicy = routingPolicy;
+                    serviceProxy.Ordering = ordering;
+                    serviceProxy.LoggingLevel = loggingLevel;
+
+                    puppetMasterServiceTable.Add(serviceURL, serviceProxy);
+                }
+                if (!siteTable.TryGetValue(siteName, out site)) {
+                    throw new InvalidSiteException(siteName);
+                }
+                if (processType.ToLower().Equals("broker")) {
+                    serviceProxy.ExecuteBrokerCommand(
+                            processName,
+                            siteName,
+                            processURL,
+                            site.ParentBrokerURL);
+
+                    brokerResolutionCache.Add(processName, serviceURL);
+                    site.BrokerURL = processURL;
+                }
+                else if (processType.ToLower().Equals("publisher")) {
+                    serviceProxy.ExecutePublisherCommand(
+                            processName,
+                            siteName,
+                            processURL,
+                            site.BrokerURL);
+                    publisherResolutionCache.Add(processName, serviceURL);
+                }
+                else if (processType.ToLower().Equals("subscriber")) {
+                    serviceProxy.ExecuteSubscriberCommand(
+                            processName,
+                            siteName,
+                            processURL,
+                            site.BrokerURL);
+                    subscriberResolutionCache.Add(processName, serviceURL);
+                }
+            }
+            else {
+                throw new InvalidCommandException(command);
+            }
         }
 
         private string GetScriptsDir() {

@@ -44,6 +44,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Entry.cs" />
+    <Compile Include="Exceptions\InvalidConnectionException.cs" />
+    <Compile Include="Exceptions\InvalidInvokationException.cs" />
+    <Compile Include="Exceptions\InvalidPublicationException.cs" />
+    <Compile Include="Exceptions\InvalidSubscriptionException.cs" />
+    <Compile Include="Exceptions\InvalidUnsubscriptionException.cs" />
     <Compile Include="Node.cs" />
     <Compile Include="ProcessHeader.cs" />
     <Compile Include="RemoteInterfaces.cs" />
