@@ -59,5 +59,6 @@ namespace SESDAD.Managing {
         /// Unfreezes a process
         ///</summary>
         void ExecuteUnfreezeCommand(String processName);
+        void CloseProcesses();
     }
 }
