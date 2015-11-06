@@ -7,6 +7,7 @@ using System.Runtime.Remoting;
 using System.Text.RegularExpressions;
 
 using SESDAD.CommonTypes;
+using SESDAD.Managing.Exceptions;
 
 namespace SESDAD.Managing {
     internal enum ProcessType {
@@ -69,8 +70,13 @@ namespace SESDAD.Managing {
         public RoutingPolicyType RoutingPolicy {
             set {
                 routingPolicy = value;
-                foreach (IMessageBrokerService brokerService in brokerTable.Values) {
-                    brokerService.RoutingPolicy = value;
+                try {
+                    foreach (IMessageBrokerService brokerService in brokerTable.Values) {
+                        brokerService.RoutingPolicy = value;
+                    }
+                }
+                catch (Exception e) {
+                    throw e;
                 }
             }
         }
@@ -80,8 +86,13 @@ namespace SESDAD.Managing {
         public OrderingType Ordering {
             set {
                 ordering = value;
-                foreach (IMessageBrokerService brokerService in brokerTable.Values) {
-                    brokerService.Ordering = value;
+                try {
+                    foreach (IMessageBrokerService brokerService in brokerTable.Values) {
+                        brokerService.Ordering = value;
+                    }
+                }
+                catch (Exception e) {
+                    throw e;
                 }
             }
         }
@@ -90,7 +101,12 @@ namespace SESDAD.Managing {
         ///</summary>
         public LoggingLevelType LoggingLevel {
             set {
-                loggingLevel = value;
+                try {
+                    loggingLevel = value;
+                }
+                catch (Exception e) {
+                    throw e;
+                }
             }
         }
         ///<summary>
@@ -106,11 +122,16 @@ namespace SESDAD.Managing {
                 String arguments = processName + " " + siteName + " " + processURL + " " + parentBrokerURL;
                 System.Diagnostics.Process.Start(BROKERFILE, arguments);
                 Thread.Sleep(1);
-                IMessageBrokerService processService = (IMessageBrokerService)Activator.GetObject(
-                    typeof(IMessageBrokerService),
-                    processURL);
-                processService.ConnectToPuppetMaster(serviceURL);
-                brokerTable.Add(processName, processService);
+                try {
+                    IMessageBrokerService processService = (IMessageBrokerService)Activator.GetObject(
+                        typeof(IMessageBrokerService),
+                        processURL);
+                    processService.ConnectToPuppetMaster(serviceURL);
+                    brokerTable.Add(processName, processService);
+                }
+                catch (Exception e) {
+                    throw e;
+                }
                 stateList[processName] = ProcessState.UNFROZEN;
             }
         }
@@ -127,11 +148,16 @@ namespace SESDAD.Managing {
                 String arguments = processName + " " + siteName + " " + processURL + " " + brokerURL;
                 System.Diagnostics.Process.Start(PUBLISHERFILE, arguments);
                 Thread.Sleep(1);
-                IPublisherService processService = (IPublisherService)Activator.GetObject(
-                    typeof(IPublisherService),
-                    processURL);
-                processService.ConnectToPuppetMaster(serviceURL);
-                publisherTable.Add(processName, processService);
+                try {
+                    IPublisherService processService = (IPublisherService)Activator.GetObject(
+                        typeof(IPublisherService),
+                        processURL);
+                    processService.ConnectToPuppetMaster(serviceURL);
+                    publisherTable.Add(processName, processService);
+                }
+                catch (Exception e) {
+                    throw e;
+                }
                 stateList[processName] = ProcessState.UNFROZEN;
             }
         }
@@ -148,11 +174,16 @@ namespace SESDAD.Managing {
                 String arguments = processName + " " + siteName + " " + processURL + " " + brokerURL;
                 System.Diagnostics.Process.Start(SUBSCRIBERFILE, arguments);
                 Thread.Sleep(1);
-                ISubscriberService processService = (ISubscriberService)Activator.GetObject(
-                    typeof(ISubscriberService),
-                    processURL);
-                processService.ConnectToPuppetMaster(serviceURL);
-                subscriberTable.Add(processName, processService);
+                try {
+                    ISubscriberService processService = (ISubscriberService)Activator.GetObject(
+                        typeof(ISubscriberService),
+                        processURL);
+                    processService.ConnectToPuppetMaster(serviceURL);
+                    subscriberTable.Add(processName, processService);
+                }
+                catch (Exception e) {
+                    throw e;
+                }
                 stateList[processName] = ProcessState.UNFROZEN;
             }
         }
@@ -167,8 +198,14 @@ namespace SESDAD.Managing {
                 if (stateList[processName].Equals(ProcessState.FROZEN) ||
                     stateList[processName].Equals(ProcessState.UNFROZEN)) {
                     ISubscriberService remoteService;
-                    if (subscriberTable.TryGetValue(processName, out remoteService)) {
+                    if (!subscriberTable.TryGetValue(processName, out remoteService)) {
+                        throw new InvalidProcessServiceException(processName);
+                    }
+                    try {
                         remoteService.ForceSubscribe(topicName);
+                    }
+                    catch (Exception e) {
+                        throw e;
                     }
                 }
             }
@@ -184,8 +221,14 @@ namespace SESDAD.Managing {
                 if (stateList[processName].Equals(ProcessState.FROZEN) ||
                     stateList[processName].Equals(ProcessState.UNFROZEN)) {
                     ISubscriberService remoteService;
-                    if (subscriberTable.TryGetValue(processName, out remoteService)) {
+                    if (!subscriberTable.TryGetValue(processName, out remoteService)) {
+                        throw new InvalidProcessServiceException(processName);
+                    }
+                    try {
                         remoteService.ForceUnsubscribe(topicName);
+                    }
+                    catch (Exception e) {
+                        throw e;
                     }
                 }
             }
@@ -203,11 +246,17 @@ namespace SESDAD.Managing {
                 if (stateList[processName].Equals(ProcessState.FROZEN) ||
                     stateList[processName].Equals(ProcessState.UNFROZEN)) {
                     IPublisherService remoteService;
-                    if (publisherTable.TryGetValue(processName, out remoteService)) {
+                    if (!publisherTable.TryGetValue(processName, out remoteService)) {
+                        throw new InvalidProcessServiceException(processName);
+                    }
+                    try {
                         for (int times = 0; times < publishTimes; times++) {
                             remoteService.ForcePublish(topicName, "Message");
                             Thread.Sleep(intervalTime);
                         }
+                    }
+                    catch (Exception e) {
+                        throw e;
                     }
                 }
             }
@@ -232,17 +281,26 @@ namespace SESDAD.Managing {
                 Console.WriteLine(separator + nl +
                     " Brokers :" + nl);
                 foreach (IMessageBrokerService process in brokerTable.Values) {
-                    Console.WriteLine(process.GetStatus());
+                    try {
+                        Console.WriteLine(process.GetStatus());
+                    }
+                    catch (Exception e) { }
                 }
                 Console.WriteLine(separator + nl +
                     " Publishers :" + nl);
                 foreach (IPublisherService process in publisherTable.Values) {
-                    Console.WriteLine(process.GetStatus());
+                    try {
+                        Console.WriteLine(process.GetStatus());
+                    }
+                    catch (Exception e) { }
                 }
                 Console.WriteLine(separator + nl +
                     " Subscribers :" + nl);
                 foreach (ISubscriberService process in subscriberTable.Values) {
-                    Console.WriteLine(process.GetStatus());
+                    try {
+                        Console.WriteLine(process.GetStatus());
+                    }
+                    catch (Exception e) { }
                 }
                 Console.WriteLine(separator + nl +
                     " Log :" + nl +
@@ -285,14 +343,15 @@ namespace SESDAD.Managing {
                 WriteIntoLog("Crash " + processName);
                 if (!stateList[processName].Equals(ProcessState.CRASHED)) {
                     IGenericProcessService remoteService;
-                    if (TryGetService(processName, out remoteService)) {
-                        try {
-                            remoteService.ForceCrash();
-                        }
-                        catch (Exception) { }
-                        TryRemoveService(processName);
-                        stateList[processName] = ProcessState.CRASHED;
+                    if (!TryGetService(processName, out remoteService)) {
+                        throw new InvalidProcessServiceException(processName);
                     }
+                    try {
+                        remoteService.ForceCrash();
+                    }
+                    catch (Exception e) { }
+                    TryRemoveService(processName);
+                    stateList[processName] = ProcessState.CRASHED;
                 }
             }
         }
@@ -304,10 +363,16 @@ namespace SESDAD.Managing {
                 WriteIntoLog("Freeze " + processName);
                 if (stateList[processName].Equals(ProcessState.UNFROZEN)) {
                     IGenericProcessService remoteService;
-                    if (TryGetService(processName, out remoteService)) {
-                        remoteService.ForceFreeze();
-                        stateList[processName] = ProcessState.FROZEN;
+                    if (!TryGetService(processName, out remoteService)) {
+                        throw new InvalidProcessServiceException(processName);
                     }
+                    try {
+                        remoteService.ForceFreeze();
+                    }
+                    catch (Exception e) {
+                        throw e;
+                    }
+                    stateList[processName] = ProcessState.FROZEN;
                 }
             }
         }
@@ -319,10 +384,16 @@ namespace SESDAD.Managing {
                 WriteIntoLog("Unfreeze " + processName);
                 if (stateList[processName].Equals(ProcessState.FROZEN)) {
                     IGenericProcessService remoteService;
-                    if (TryGetService(processName, out remoteService)) {
-                        remoteService.ForceUnfreeze();
-                        stateList[processName] = ProcessState.UNFROZEN;
+                    if (!TryGetService(processName, out remoteService)) {
+                        throw new InvalidProcessServiceException(processName);
                     }
+                    try {
+                        remoteService.ForceUnfreeze();
+                    }
+                    catch (Exception e) {
+                        throw e;
+                    }
+                    stateList[processName] = ProcessState.UNFROZEN;
                 }
             }
         }

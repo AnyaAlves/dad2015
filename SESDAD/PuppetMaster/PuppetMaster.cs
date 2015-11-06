@@ -189,6 +189,9 @@ namespace SESDAD.Managing {
                 else if (fields[1].ToLower().Equals("filter")) {
                     routingPolicy = RoutingPolicyType.FILTER;
                 }
+                else if (fields[1].ToLower().Equals("filtering")) {
+                    routingPolicy = RoutingPolicyType.FILTER;
+                }
                 else {
                     throw new InvalidCommandException(command);
                 }
