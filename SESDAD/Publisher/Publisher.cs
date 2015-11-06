@@ -30,7 +30,10 @@ namespace SESDAD.Processes {
 
         public Entry Publish(String topicName, String content) {
             Entry entry = new Entry(topicName, content, Header, seqNumber++);
+            Monitor.Enter(WaitingObject);
             ParentBroker.Publish(entry);
+            Monitor.Pulse(WaitingObject);
+            Monitor.Exit(WaitingObject);
             return entry;
         }
         //public void Ack(int seqNumber) {}

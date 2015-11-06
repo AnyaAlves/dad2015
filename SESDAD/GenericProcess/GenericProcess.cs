@@ -18,14 +18,19 @@ namespace SESDAD.Processes {
 
     public abstract class GenericProcess : IGenericProcess {
 
+        private Thread waitingThread;
+        private Object waitingObject;
         private ProcessHeader processHeader;
         private IMessageBrokerService parentBroker;
 
         public GenericProcess(ProcessHeader newProcessHeader) {
+            waitingObject = new Object();
             processHeader = newProcessHeader;
             parentBroker = null;
         }
-
+        protected Object WaitingObject {
+            get { return waitingObject; }
+        }
         public ProcessHeader Header {
             get { return processHeader; }
         }
@@ -63,8 +68,21 @@ namespace SESDAD.Processes {
                 parentBrokerURL);
         }
 
-        public void Freeze() { }
-        public void Unfreeze() { }
+        private void Pause() {
+            Monitor.Enter(waitingObject);
+            waitingThread.Suspend();
+            Monitor.Pulse(waitingObject);
+            Monitor.Exit(waitingObject);
+        }
+
+        public void Freeze() {
+            ThreadStart tw = new ThreadStart(Pause);
+            waitingThread = new Thread(tw);
+            waitingThread.Start();
+        }
+        public void Unfreeze() {
+            waitingThread.Resume();
+        }
         public void Crash() {
             Environment.Exit(-1);
         }
