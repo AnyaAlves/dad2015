@@ -105,7 +105,7 @@ namespace SESDAD.Managing {
             StreamReader file = new StreamReader(configurationFileName);
 
             while ((line = file.ReadLine()) != null) {
-                if (line.Equals("") || line[0].Equals('-')) {
+                if (line.Equals("") || line[0].Equals('-') || line[0].Equals('/')) {
                     continue;
                 }
                 System.Console.WriteLine(line);
