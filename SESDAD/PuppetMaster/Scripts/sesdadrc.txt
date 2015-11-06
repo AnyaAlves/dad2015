@@ -13,7 +13,7 @@ Process sub0 Is subscriber On Site0 URL tcp://localhost:8089/sub
 Process sub3 Is subscriber On Site3 URL tcp://localhost:8090/sub
 Process sub1 Is subscriber On Site1 URL tcp://localhost:8091/sub
 
-Ordering NO
+Ordering FIFO
 RoutingPolicy filter
 LoggingLevel full
 

@@ -45,7 +45,8 @@ namespace SESDAD.CommonTypes {
         }
 
         public static String operator+(ProcessHeader left, ProcessHeader right) {
-            return left.ProcessURL + right.ProcessURL;
+            //return left.ProcessURL + right.ProcessURL;
+            return left.ProcessName + right.ProcessName;
         }
 
         public override String ToString() {

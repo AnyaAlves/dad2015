@@ -63,7 +63,10 @@ namespace SESDAD.Processes {
         }
 
         public void AckDelivery(ProcessHeader subscriberHeader, ProcessHeader publisherHeader) {
-            bufferManager.SendPendingEntry(subscriberHeader, publisherHeader, this);
+            Entry entry = bufferManager.SendPendingEntry(subscriberHeader, publisherHeader);
+            if (entry != null) {
+                SendEntry(subscriberHeader, entry);
+            }
         }
 
         public void SubmitEntry(Entry entry) {
@@ -93,8 +96,8 @@ namespace SESDAD.Processes {
 
         public void MulticastEntry(ProcessHeader senderBrokerHeader, Entry entry) {
             bufferManager.InsertIntoInputBuffer(entry);
-            Console.WriteLine(bufferManager);
-            Console.WriteLine("Sender: " + senderBrokerHeader.ProcessName);
+            //Console.WriteLine(bufferManager);
+
             ThreadStart ts = new ThreadStart(this.ForwardEntries);
             Thread t = new Thread(ts);
             t.Start();
@@ -108,9 +111,7 @@ namespace SESDAD.Processes {
                 brokerList = topicRoot.GetBrokerList(entry.TopicName);
             }
             brokerList.Remove(senderBrokerHeader);
-
-            Console.WriteLine("broker List: \n" + String.Join("\n", brokerList));
-
+            
             //if current broker isn't root AND parent isn't sender, send to parent
             if (ParentBroker != null && !ParentBroker.Header.Equals(senderBrokerHeader)) {
                 ParentBroker.MulticastEntry(Header, entry);
@@ -125,15 +126,15 @@ namespace SESDAD.Processes {
             subscriberList[subscriber].DeliverEntry(entry);        
         }
 
-
-
         public void ForwardEntries() {
+            //Console.WriteLine(bufferManager);
             Entry entry = bufferManager.GetEntry();
             IList<ProcessHeader> topicSubscriberList = topicRoot.GetSubscriberList(entry.TopicName);
 
             foreach (ProcessHeader subscriber in topicSubscriberList) {
-                SendEntry(subscriber, entry);
-                bufferManager.MoveToPendingDeliveryBuffer(subscriber, entry);
+                if (!bufferManager.TryMoveToPendingDeliveryBuffer(subscriber, entry)) {
+                    SendEntry(subscriber, entry);
+                }
             }
         }
 

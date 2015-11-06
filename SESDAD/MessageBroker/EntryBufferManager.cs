@@ -13,6 +13,7 @@ namespace SESDAD.Processes {
         private IDictionary<ProcessHeader, int> seqNumberList;
         private IList<Entry> inputBuffer;
         private IDictionary<String, Queue<Entry>> pendingDeliveryBuffer;
+        private IDictionary<String, bool> pendingList;
         private OrderingType ordering;
 
         public OrderingType Ordering {
@@ -22,6 +23,7 @@ namespace SESDAD.Processes {
         public EntryBufferManager() {
             inputBuffer = new List<Entry>();
             pendingDeliveryBuffer = new Dictionary<String, Queue<Entry>>();
+            pendingList = new Dictionary<String, bool>();
             seqNumberList = new Dictionary<ProcessHeader, int>();
         }
 
@@ -38,22 +40,32 @@ namespace SESDAD.Processes {
             }
         }
 
-        public void MoveToPendingDeliveryBuffer(ProcessHeader subscriber, Entry entry) {
+        public bool TryMoveToPendingDeliveryBuffer(ProcessHeader subscriber, Entry entry) {
             lock (pendingDeliveryBuffer) {
                 if (ordering == OrderingType.FIFO) {
                     Queue<Entry> pendingDeliveryList;
+                    bool pending;
                     if (!pendingDeliveryBuffer.TryGetValue(subscriber + entry.PublisherHeader, out pendingDeliveryList)) {
                         pendingDeliveryList = new Queue<Entry>();
+                        pendingDeliveryBuffer.Add(subscriber + entry.PublisherHeader, pendingDeliveryList);
+                        pendingList.Add(subscriber + entry.PublisherHeader, false);
                     }
-                    pendingDeliveryList.Enqueue(entry);
+                    pending = pendingList[subscriber + entry.PublisherHeader];
+                    if (pending) {
+                        pendingDeliveryList.Enqueue(entry);
+                    } else {
+                        pendingList[subscriber + entry.PublisherHeader] = true;
+                    }
+                    return pending;
                 }
             }
+            return false;
         }
 
         public Entry GetEntry() {
             Entry entry = null;
 
-            lock (inputBuffer) {            
+            lock (inputBuffer) {
                 if (ordering == OrderingType.NO_ORDER) {
                     entry = inputBuffer.First();
                 }
@@ -72,24 +84,36 @@ namespace SESDAD.Processes {
             return entry;
         }
 
-        public void SendPendingEntry(ProcessHeader subscriber, ProcessHeader publisher, MessageBroker mb) { //FIXME
-            lock (pendingDeliveryBuffer) {
-                if (ordering == OrderingType.NO_ORDER) { return; }
-                if (ordering == OrderingType.FIFO) {
-                    Queue<Entry> pendingDeliveryList = pendingDeliveryBuffer[subscriber + publisher];
-                    pendingDeliveryList.Dequeue();
+        //method.BeginInvoke
+
+        public Entry SendPendingEntry(ProcessHeader subscriber, ProcessHeader publisher) { //FIXME
+            Queue<Entry> pendingDeliveryList = null;
+            Entry entry = null;
+
+            if (ordering == OrderingType.NO_ORDER) { return entry; }
+
+            if (ordering == OrderingType.FIFO) {
+                lock (pendingDeliveryBuffer) {
+                    pendingDeliveryList = pendingDeliveryBuffer[subscriber + publisher];
                     if (pendingDeliveryList.Any()) {
-                        Entry entry = pendingDeliveryList.Peek();
-                        mb.SendEntry(subscriber, entry);
+                        entry = pendingDeliveryList.Dequeue();
+                    }
+                    else {
+                        pendingList[subscriber + publisher] = false;
                     }
                 }
             }
+            return entry;
         }
 
         public override String ToString() {
             String nl = Environment.NewLine;
-            return "Input Buffer:" + nl + string.Join(nl, inputBuffer) + nl +
-                "Pending Delivery Buffer:" + nl + string.Join(nl, pendingDeliveryBuffer.Keys.ToList());
+            String cOut = "Input Buffer:" + nl + string.Join(nl, inputBuffer) + nl + nl +
+                            "Pending Delivery Buffer:" + nl;
+            foreach (String subscriber in pendingDeliveryBuffer.Keys) {
+                cOut += "Pending to " + subscriber + nl + string.Join(nl, pendingDeliveryBuffer[subscriber]) + nl + nl;
+            }
+            return cOut;
         }
 
 
