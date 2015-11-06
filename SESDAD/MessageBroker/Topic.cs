@@ -83,9 +83,9 @@ namespace SESDAD.Processes {
             }
             //if current topic is the last, return subscribers list
             if (topics.Length == 1) {
-                return processList(child);
+                return process.Union(processList(child)).ToList();
             }
-            return process.Concat(child.GetProcessList(topics[1], processList)).ToList();
+            return process.Union(child.GetProcessList(topics[1], processList)).ToList();
         }
 
         public IList<ProcessHeader> GetSubscriberList(String topicPath) {

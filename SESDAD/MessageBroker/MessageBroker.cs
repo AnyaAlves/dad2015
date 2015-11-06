@@ -17,6 +17,8 @@ namespace SESDAD.Processes {
         // Tables
         private IDictionary<ProcessHeader, ISubscriberService> subscriberList;
         private IDictionary<ProcessHeader, IMessageBrokerService> childBrokerList;
+        private IDictionary<ProcessHeader, int> seqNumList;
+
         EntryBufferManager bufferManager;
 
         public MessageBroker(ProcessHeader processHeader) :
@@ -25,6 +27,7 @@ namespace SESDAD.Processes {
             subscriberList = new Dictionary<ProcessHeader, ISubscriberService>();
             childBrokerList = new Dictionary<ProcessHeader, IMessageBrokerService>();
             bufferManager = new EntryBufferManager();
+            seqNumList = new Dictionary<ProcessHeader, int>();
         }
 
         public RoutingPolicyType RoutingPolicy {
@@ -117,6 +120,7 @@ namespace SESDAD.Processes {
             }
             else if (routingPolicy == RoutingPolicyType.FILTER) {
                 brokerList = topicRoot.GetBrokerList(entry.TopicName);
+                Console.WriteLine("Brokers:\n" + string.Join("\n", brokerList));
             }
             brokerList.Remove(senderBrokerHeader);
             
@@ -126,6 +130,10 @@ namespace SESDAD.Processes {
             }
             //send to brokerlist
             foreach (ProcessHeader childBroker in brokerList) {
+                //if (!seqNumList.ContainsKey(childBroker)) {
+                //    seqNumList.Add(childBroker, 0);
+                //}
+                //entry.SeqNumber = seqNumList[childBroker]++;
                 childBrokerList[childBroker].MulticastEntry(Header, entry);
             }
         }
@@ -137,6 +145,7 @@ namespace SESDAD.Processes {
         public void ForwardEntries() {
             Entry entry = bufferManager.GetEntry();
             IList<ProcessHeader> topicSubscriberList = topicRoot.GetSubscriberList(entry.TopicName);
+            Console.WriteLine("Subscribers:\n" + string.Join("\n", topicSubscriberList));
 
             foreach (ProcessHeader subscriber in topicSubscriberList) {
                 if (!bufferManager.TryMoveToPendingDeliveryBuffer(subscriber, entry)) {

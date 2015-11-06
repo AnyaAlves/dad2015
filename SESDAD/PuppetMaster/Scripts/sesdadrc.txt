@@ -17,25 +17,24 @@ Process sub0 Is subscriber On Site0 URL tcp://localhost:9000/sub
 Process sub1 Is subscriber On Site1 URL tcp://localhost:9001/sub
 Process sub2 Is subscriber On Site2 URL tcp://localhost:9002/sub
 Process sub3 Is subscriber On Site3 URL tcp://localhost:9003/sub
-Process sub22 Is subscriber On Site2 URL tcp://localhost:9022/sub
-Process sub23 Is subscriber On Site3 URL tcp://localhost:9023/sub
 Process sub4 Is subscriber On Site4 URL tcp://localhost:9004/sub
 Process sub5 Is subscriber On Site5 URL tcp://localhost:9005/sub
 
 Ordering FIFO
-RoutingPolicy flooding
+RoutingPolicy filter
 LoggingLevel full
 
 Subscriber sub0 Subscribe /a/aa/*
 Subscriber sub1 Subscribe /a/*
 Subscriber sub2 Subscribe /a/aa/aaa
-Subscriber sub3 Subscribe /a/aa/aaa
+Subscriber sub3 Subscribe /a/aa/aac
 Subscriber sub4 Subscribe /a/aa/aaa
 Subscriber sub5 Subscribe /a/aa/aab
 
 
-Publisher pub0 Publish 20 Ontopic /a/aa/aab Interval 1
-Publisher pub0 Publish 20 Ontopic /a/aa/aaa Interval 1
+Publisher pub0 Publish 4 Ontopic /a/aa/aab Interval 1
+Publisher pub0 Publish 4 Ontopic /a/aa/aaa Interval 1
+//Publisher pub0 Publish 5 Ontopic /a/aa/aac Interval 1
 
 -Crash bro0
 -Freeze pub0
