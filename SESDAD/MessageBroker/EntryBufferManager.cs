@@ -8,13 +8,11 @@ using SESDAD.CommonTypes;
 
 namespace SESDAD.Processes {
 
-    using PendingDeliveryList = IList<Tuple<ProcessHeader, Entry>>;
-
     public class EntryBufferManager {
         //FIFO stuff
         private IDictionary<ProcessHeader, int> seqNumberList;
-        private IList<Entry> submissionBuffer;
-        private IDictionary<String, PendingDeliveryList> pendingDeliveryBuffer;
+        private IList<Entry> inputBuffer;
+        private IDictionary<String, Queue<Entry>> pendingDeliveryBuffer;
         private OrderingType ordering;
 
         public OrderingType Ordering {
@@ -22,34 +20,32 @@ namespace SESDAD.Processes {
         }
 
         public EntryBufferManager() {
-            submissionBuffer = new List<Entry>();
-            pendingDeliveryBuffer = new Dictionary<String, PendingDeliveryList>();
-
+            inputBuffer = new List<Entry>();
+            pendingDeliveryBuffer = new Dictionary<String, Queue<Entry>>();
             seqNumberList = new Dictionary<ProcessHeader, int>();
         }
 
-        public void InsertIntoSubmissionBuffer(Entry entry) {
-            lock (submissionBuffer) {
-                submissionBuffer.Add(entry);
-            }
-        }
-
-        public void InsertIntoPendingDeliveryBuffer(ProcessHeader subscriberHeader, Entry entry) {
-            lock (pendingDeliveryBuffer) {
+        public void InsertIntoInputBuffer(Entry entry) {
+            lock (inputBuffer) {
                 if (ordering == OrderingType.FIFO) {
-                    PendingDeliveryList pendingDeliveryList;
-                    if (!pendingDeliveryBuffer.TryGetValue(subscriberHeader + entry.PublisherHeader, out pendingDeliveryList)) {
-                        pendingDeliveryList = new List<Tuple<ProcessHeader, Entry>>();
+                    //if publisher is unknown, add it
+                    int seqNumber = 0;
+                    if (!seqNumberList.TryGetValue(entry.PublisherHeader, out seqNumber)) {
+                        seqNumberList.Add(entry.PublisherHeader, seqNumber);
                     }
-                    pendingDeliveryList.Add(new Tuple<ProcessHeader, Entry>(subscriberHeader, entry));
                 }
+                inputBuffer.Add(entry);
             }
         }
 
-        public void RemoveFromPendingDeliveryBuffer(ProcessHeader subscriberHeader, ProcessHeader publisherHeader) {
+        public void MoveToPendingDeliveryBuffer(ProcessHeader subscriber, Entry entry) {
             lock (pendingDeliveryBuffer) {
                 if (ordering == OrderingType.FIFO) {
-                    pendingDeliveryBuffer.Remove(subscriberHeader + publisherHeader);
+                    Queue<Entry> pendingDeliveryList;
+                    if (!pendingDeliveryBuffer.TryGetValue(subscriber + entry.PublisherHeader, out pendingDeliveryList)) {
+                        pendingDeliveryList = new Queue<Entry>();
+                    }
+                    pendingDeliveryList.Enqueue(entry);
                 }
             }
         }
@@ -57,16 +53,13 @@ namespace SESDAD.Processes {
         public Entry GetEntry() {
             Entry entry = null;
 
-            lock (submissionBuffer) {
+            lock (inputBuffer) {            
                 if (ordering == OrderingType.NO_ORDER) {
-                    entry = submissionBuffer.First();
+                    entry = inputBuffer.First();
                 }
                 else if (ordering == OrderingType.FIFO) {
-                    foreach (Entry bufferEntry in submissionBuffer) {
-                        int seqNumber = 0;
-                        if (!seqNumberList.TryGetValue(bufferEntry.PublisherHeader, out seqNumber)) {
-                            seqNumberList.Add(bufferEntry.PublisherHeader, seqNumber);
-                        }
+                    foreach (Entry bufferEntry in inputBuffer) {
+                        int seqNumber = seqNumberList[bufferEntry.PublisherHeader];
                         if (seqNumber == bufferEntry.SeqNumber) {
                             entry = bufferEntry;
                             seqNumberList[entry.PublisherHeader]++;
@@ -74,9 +67,31 @@ namespace SESDAD.Processes {
                         }
                     }
                 }
-                submissionBuffer.Remove(entry);
+                inputBuffer.Remove(entry);
             }
             return entry;
         }
+
+        public void SendPendingEntry(ProcessHeader subscriber, ProcessHeader publisher, MessageBroker mb) { //FIXME
+            lock (pendingDeliveryBuffer) {
+                if (ordering == OrderingType.NO_ORDER) { return; }
+                if (ordering == OrderingType.FIFO) {
+                    Queue<Entry> pendingDeliveryList = pendingDeliveryBuffer[subscriber + publisher];
+                    pendingDeliveryList.Dequeue();
+                    if (pendingDeliveryList.Any()) {
+                        Entry entry = pendingDeliveryList.Peek();
+                        mb.SendEntry(subscriber, entry);
+                    }
+                }
+            }
+        }
+
+        public override String ToString() {
+            String nl = Environment.NewLine;
+            return "Input Buffer:" + nl + string.Join(nl, inputBuffer) + nl +
+                "Pending Delivery Buffer:" + nl + string.Join(nl, pendingDeliveryBuffer.Keys.ToList());
+        }
+
+
     }
 }

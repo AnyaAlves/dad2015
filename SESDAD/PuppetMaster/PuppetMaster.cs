@@ -25,9 +25,9 @@ namespace SESDAD.Managing {
         private OrderingType ordering;
         private LoggingLevelType loggingLevel;
         //Constants
-        private readonly int PORT;
-        private readonly String REGEXURL,
-                             SERVICENAME;
+        private const int PORT = 30000;
+        private const String REGEXURL = @"^tcp://([\w\.]+):\d{1,5}/\w+$";
+        private const String SERVICE_NAME = "puppet";
         //Tables
         private IDictionary<String, Site> siteTable;
         private IDictionary<String, String> brokerResolutionCache,
@@ -38,11 +38,7 @@ namespace SESDAD.Managing {
         /// Puppet Master CLI constructor
         ///</summary>
         internal PuppetMaster() {
-            PORT = 1000;
-            REGEXURL = @"^tcp://([\w\.]+):\d{1,5}/\w+$";
-            SERVICENAME = "PuppetMasterService";
-
-            routingPolicy = RoutingPolicyType.FLOODING;
+            routingPolicy = RoutingPolicyType.FLOOD;
             ordering = OrderingType.FIFO;
             loggingLevel = LoggingLevelType.LIGHT;
 
@@ -54,6 +50,7 @@ namespace SESDAD.Managing {
             publisherResolutionCache = new Dictionary<String, String>();
             subscriberResolutionCache = new Dictionary<String, String>();
         }
+
         internal void TcpConnect() {
             TcpChannel channel = new TcpChannel(PORT);
             ChannelServices.RegisterChannel(channel, true);
@@ -64,10 +61,10 @@ namespace SESDAD.Managing {
         //</summary>
         internal void LaunchService() {
             TcpConnect();
-            PuppetMasterService puppetMasterService = new PuppetMasterService(SERVICENAME, PORT);
+            PuppetMasterService puppetMasterService = new PuppetMasterService(SERVICE_NAME, PORT);
             RemotingServices.Marshal(
                 puppetMasterService,
-                "PuppetMasterService",
+                SERVICE_NAME,
                 typeof(PuppetMasterService));
         }
 
@@ -86,7 +83,7 @@ namespace SESDAD.Managing {
                 service.CloseProcesses();
             }
 
-            routingPolicy = RoutingPolicyType.FLOODING;
+            routingPolicy = RoutingPolicyType.FLOOD;
             ordering = OrderingType.FIFO;
             loggingLevel = LoggingLevelType.LIGHT;
 
@@ -104,19 +101,10 @@ namespace SESDAD.Managing {
         //</summary>
         internal void ExecuteConfigurationFile(String configurationFileName) {
             String line;
-            String[] fields;
-            int waitingTime;
             StreamReader file = new StreamReader(configurationFileName);
 
             while ((line = file.ReadLine()) != null) {
                 System.Console.WriteLine(line);
-                fields = line.Split(' ');
-                if (fields.Length == 2 &&
-                    fields[0].Equals("Wait") &&
-                    Int32.TryParse(fields[1], out waitingTime)) {
-                    Thread.Sleep(waitingTime);
-                    continue;
-                }
                 ParseLineToCommand(line);
             }
             file.Close();
@@ -143,13 +131,16 @@ namespace SESDAD.Managing {
         // Converts string input into command
         //</summary>
         private bool ParseLineToCommand(String line) {
-            String command, serviceURL;
-            String[] fields;
-            fields = line.Split(' ');
-            command = fields[0];
-
             try {
-
+                int waitingTime;
+                String serviceURL;
+                String[] fields = line.Split(' ');
+                String command = fields[0];
+                if (fields.Length == 2 &&
+                    command.ToLower().Equals("Wait") &&
+                    Int32.TryParse(fields[1], out waitingTime)) {
+                    Thread.Sleep(waitingTime);
+                }
                 if (fields.Length == 4 && command.ToLower().Equals("site") && fields[2].ToLower().Equals("parent")) {
                     Site parentSite;
                     siteTable.TryGetValue(fields[3], out parentSite);
@@ -175,12 +166,12 @@ namespace SESDAD.Managing {
                          TryGetServiceURL(fields[1], out serviceURL)) {
                     puppetMasterServiceTable[serviceURL].ExecuteUnfreezeCommand(fields[1]);
                 }
-                else if (fields.Length == 2 && command.ToLower().Equals("routingPolicy")) {
+                else if (fields.Length == 2 && command.ToLower().Equals("routingpolicy")) {
                     if (fields[1].ToLower().Equals("flooding")) {
-                        routingPolicy = RoutingPolicyType.FLOODING;
+                        routingPolicy = RoutingPolicyType.FLOOD;
                     }
                     else if (fields[1].ToLower().Equals("filter")) {
-                        routingPolicy = RoutingPolicyType.FILTERING;
+                        routingPolicy = RoutingPolicyType.FILTER;
                     }
                     else {
                         return false;
@@ -263,7 +254,7 @@ namespace SESDAD.Managing {
                     if (!puppetMasterServiceTable.TryGetValue(serviceURL, out serviceProxy)) {
                         serviceProxy = (IPuppetMasterService)Activator.GetObject(
                                typeof(IPuppetMasterService),
-                               @"tcp://" + serviceURL + ":" + PORT + @"/PuppetMasterService");
+                               @"tcp://" + serviceURL + ":" + PORT + "/" + SERVICE_NAME);
 
                         serviceProxy.RoutingPolicy = routingPolicy;
                         serviceProxy.Ordering = ordering;
@@ -320,14 +311,32 @@ namespace SESDAD.Managing {
 
             return true;
         }
-        public void Run(String arguments) {
+
+        private string GetScriptsDir() {
+            string dir = Directory.GetCurrentDirectory();
+            DirectoryInfo dirInfo = null;
+            //go 2 directories up
+            for (int i = 0; i < 2; i++) {
+                dirInfo = Directory.GetParent(dir);
+                dir = dirInfo.FullName;
+            }
+            return dirInfo.GetDirectories("Scripts").First().FullName;
+        }
+
+        public void Run(String fileNames) {
             System.Console.Clear();
-            foreach (String arg in arguments.Split(' ')) {
-                if (!File.Exists(arg)) {
-                    Console.WriteLine(String.Join(Environment.NewLine, Directory.GetFiles(Directory.GetCurrentDirectory(), "*.txt", SearchOption.AllDirectories)));
+            string dir = GetScriptsDir();
+
+            foreach (String fileName in fileNames.Split(' ')) {
+                if (!File.Exists(dir + "\\" + fileName)) {
+                    //get a list of scripts inside the folder
+                    Console.WriteLine("Available scripts: ");
+                    foreach (string file in Directory.GetFiles(dir)) {
+                        Console.WriteLine(" " + Path.GetFileName(file));
+                    }
                     return;
                 }
-                ExecuteConfigurationFile(arg);
+                ExecuteConfigurationFile(dir + "\\" + fileName);
             }
             StartCLI();
             CloseProcesses();
@@ -342,20 +351,16 @@ namespace SESDAD.Managing {
         //</summary>
         public static void Main(string[] args) {
             PuppetMaster puppetMaster = new PuppetMaster();
-            String filename;
+            String fileNames = string.Join("", args);
 
             // Close all processes when ctrl+c is pressed
             Console.CancelKeyPress += new ConsoleCancelEventHandler(puppetMaster.CloseProcesses);
 
             puppetMaster.LaunchService();
-            foreach (String arg in args) {
-                puppetMaster.Run(arg);
-            }
 
             while (true) {
-                Console.WriteLine("Select File: ");
-                filename = Console.ReadLine();
-                puppetMaster.Run(filename);
+                puppetMaster.Run(fileNames);
+                fileNames = Console.ReadLine();
             }
         }
     }

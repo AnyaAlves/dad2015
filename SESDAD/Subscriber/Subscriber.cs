@@ -23,37 +23,22 @@ namespace SESDAD.Processes {
         }
 
         public void Subscribe(String topicName) {
-            Monitor.Enter(WaitingObject);
             ParentBroker.Subscribe(Header, topicName);
-            Monitor.Pulse(WaitingObject);
-            Monitor.Exit(WaitingObject);
         }
         public void Unsubscribe(String topicName) {
-            Monitor.Enter(WaitingObject);
             ParentBroker.Unsubscribe(Header, topicName);
-            Monitor.Pulse(WaitingObject);
-            Monitor.Exit(WaitingObject);
         }
 
         public void ReceiveEntry(Entry entry) {
             String nl = Environment.NewLine;
 
-            Console.WriteLine("New event received!" + nl +
-                "Topic Name: " + entry.TopicName + nl +
-                "Content: " + entry.Content + nl +
-                "Publisher: " + nl + entry.PublisherHeader + nl);
-            Monitor.Enter(WaitingObject);
-            ParentBroker.AckDelivery(Header, entry.PublisherHeader);            
-            Monitor.Pulse(WaitingObject);
-            Monitor.Exit(WaitingObject);
+            Console.WriteLine("New event received!" + nl + entry);
+            ParentBroker.AckDelivery(Header, entry.PublisherHeader);
         }
 
         public override void ConnectToParentBroker(String parentBrokerURL) {
             base.ConnectToParentBroker(parentBrokerURL);
-            Monitor.Enter(WaitingObject);
             ParentBroker.RegisterSubscriber(Header);
-            Monitor.Pulse(WaitingObject);
-            Monitor.Exit(WaitingObject);
         }
 
         public override String ToString() {

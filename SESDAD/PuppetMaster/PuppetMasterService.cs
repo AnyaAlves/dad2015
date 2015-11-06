@@ -52,7 +52,7 @@ namespace SESDAD.Managing {
             serviceName = newServiceName;
             serviceURL = "tcp://localhost:" + newPort + "/" + newServiceName;
             port = newPort;
-            routingPolicy = RoutingPolicyType.FLOODING;
+            routingPolicy = RoutingPolicyType.FLOOD;
             ordering = OrderingType.FIFO;
             loggingLevel = LoggingLevelType.LIGHT;
             brokerTable = new Dictionary<String, IMessageBrokerService>();
@@ -362,7 +362,7 @@ namespace SESDAD.Managing {
                     catch (Exception) { }
                 }
                 log = "";
-                routingPolicy = RoutingPolicyType.FLOODING;
+                routingPolicy = RoutingPolicyType.FLOOD;
                 ordering = OrderingType.FIFO;
                 loggingLevel = LoggingLevelType.LIGHT;
                 brokerTable = new Dictionary<String, IMessageBrokerService>();

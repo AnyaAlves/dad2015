@@ -32,5 +32,13 @@ namespace SESDAD.CommonTypes {
         public int SeqNumber {
             get { return seqNumber; }
         }
+
+        public override string ToString() {            
+            String nl = Environment.NewLine;
+             return "Topic Name: " + topicName + nl +
+                "Content: " + content + nl +
+                "Publisher: " + publisherHeader.ProcessURL + nl +
+                "#Seq: " + seqNumber + nl;
+        }
     }
 }

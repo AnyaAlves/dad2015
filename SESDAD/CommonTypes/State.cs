@@ -9,8 +9,8 @@ namespace SESDAD.CommonTypes {
     ///  Type of Routing Policy
     /// </summary>
     public enum RoutingPolicyType {
-        FLOODING,
-        FILTERING
+        FLOOD,
+        FILTER
     };
     /// <summary>
     ///  Type of Ordering

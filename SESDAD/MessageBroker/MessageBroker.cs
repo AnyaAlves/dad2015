@@ -49,13 +49,8 @@ namespace SESDAD.Processes {
         public void MakeSubscription(ProcessHeader subscriberHeader, String topicName) {
             Topic topic = topicRoot.GetSubtopic(topicName);
             //if current broker isn't root root and topic is new (hasn't been sent), send to parent 
-            if (routingPolicy == RoutingPolicyType.FILTERING &&
-                    ParentBroker == null &&
-                    !topic.HasProcesses()) {
-                Monitor.Enter(WaitingObject);
+            if (ParentBroker != null && !topic.HasProcesses()) {
                 ParentBroker.SpreadSubscription(Header, topicName);
-                Monitor.Pulse(WaitingObject);
-                Monitor.Exit(WaitingObject);
             }
             topic.AddSubscriber(subscriberHeader);
         }
@@ -66,8 +61,9 @@ namespace SESDAD.Processes {
             topic.RemoveSubscriber(subscriberHeader);
             //spread unsub
         }
+
         public void AckDelivery(ProcessHeader subscriberHeader, ProcessHeader publisherHeader) {
-            bufferManager.RemoveFromPendingDeliveryBuffer(subscriberHeader, publisherHeader);
+            bufferManager.SendPendingEntry(subscriberHeader, publisherHeader, this);
         }
 
         public void SubmitEntry(Entry entry) {
@@ -83,53 +79,50 @@ namespace SESDAD.Processes {
 
         public override void ConnectToParentBroker(String parentBrokerURL) {
             base.ConnectToParentBroker(parentBrokerURL);
-            Monitor.Enter(WaitingObject);
             ParentBroker.RegisterChildBroker(Header);
-            Monitor.Pulse(WaitingObject);
-            Monitor.Exit(WaitingObject);
         }
 
         public void SpreadSubscription(ProcessHeader brokerHeader, String topicName) {
             Topic topic = topicRoot.GetSubtopic(topicName);
 
             if (ParentBroker != null && !topic.HasProcesses()) {
-                Monitor.Enter(WaitingObject);
                 ParentBroker.SpreadSubscription(Header, topicName);
-                Monitor.Pulse(WaitingObject);
-                Monitor.Exit(WaitingObject);
-                topic.AddBroker(brokerHeader);
             }
+            topic.AddBroker(brokerHeader);
         }
 
         public void MulticastEntry(ProcessHeader senderBrokerHeader, Entry entry) {
-            bufferManager.InsertIntoSubmissionBuffer(entry);
+            bufferManager.InsertIntoInputBuffer(entry);
+            Console.WriteLine(bufferManager);
+            Console.WriteLine("Sender: " + senderBrokerHeader.ProcessName);
             ThreadStart ts = new ThreadStart(this.ForwardEntries);
             Thread t = new Thread(ts);
             t.Start();
 
-            IList<ProcessHeader> brokerList;
+            IList<ProcessHeader> brokerList = null;
 
-            if (routingPolicy == RoutingPolicyType.FLOODING) {
+            if (routingPolicy == RoutingPolicyType.FLOOD) {
                 brokerList = childBrokerList.Keys.ToList();
             }
-            else {// if (routingPolicy == RoutingPolicyType.FILTERING) {
+            else if (routingPolicy == RoutingPolicyType.FILTER) {
                 brokerList = topicRoot.GetBrokerList(entry.TopicName);
             }
+            brokerList.Remove(senderBrokerHeader);
+
+            Console.WriteLine("broker List: \n" + String.Join("\n", brokerList));
 
             //if current broker isn't root AND parent isn't sender, send to parent
             if (ParentBroker != null && !ParentBroker.Header.Equals(senderBrokerHeader)) {
-                Monitor.Enter(WaitingObject);
                 ParentBroker.MulticastEntry(Header, entry);
-                Monitor.Pulse(WaitingObject);
-                Monitor.Exit(WaitingObject);
             }
             //send to brokerlist
             foreach (ProcessHeader childBroker in brokerList) {
-                Monitor.Enter(WaitingObject);
                 childBrokerList[childBroker].MulticastEntry(Header, entry);
-                Monitor.Pulse(WaitingObject);
-                Monitor.Exit(WaitingObject);
             }
+        }
+
+        public void SendEntry(ProcessHeader subscriber, Entry entry) {
+            subscriberList[subscriber].DeliverEntry(entry);        
         }
 
 
@@ -139,11 +132,8 @@ namespace SESDAD.Processes {
             IList<ProcessHeader> topicSubscriberList = topicRoot.GetSubscriberList(entry.TopicName);
 
             foreach (ProcessHeader subscriber in topicSubscriberList) {
-                Monitor.Enter(WaitingObject);
-                subscriberList[subscriber].DeliverEntry(entry);
-                Monitor.Pulse(WaitingObject);
-                Monitor.Exit(WaitingObject);
-                bufferManager.InsertIntoPendingDeliveryBuffer(subscriber, entry);
+                SendEntry(subscriber, entry);
+                bufferManager.MoveToPendingDeliveryBuffer(subscriber, entry);
             }
         }
 
