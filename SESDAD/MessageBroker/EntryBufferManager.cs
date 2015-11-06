@@ -72,7 +72,7 @@ namespace SESDAD.Processes {
                 else if (ordering == OrderingType.FIFO) {
                     foreach (Entry bufferEntry in inputBuffer) {
                         int seqNumber = seqNumberList[bufferEntry.PublisherHeader];
-                        if (seqNumber == bufferEntry.SeqNumber) {
+                        if (seqNumber == bufferEntry.SenderSeqNumber) {
                             entry = bufferEntry;
                             seqNumberList[entry.PublisherHeader]++;
                             break;

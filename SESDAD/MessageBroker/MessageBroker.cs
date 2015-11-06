@@ -130,10 +130,10 @@ namespace SESDAD.Processes {
             }
             //send to brokerlist
             foreach (ProcessHeader childBroker in brokerList) {
-                //if (!seqNumList.ContainsKey(childBroker)) {
-                //    seqNumList.Add(childBroker, 0);
-                //}
-                //entry.SeqNumber = seqNumList[childBroker]++;
+                if (!seqNumList.ContainsKey(childBroker)) {
+                    seqNumList.Add(childBroker, 0);
+                }
+                entry.SenderSeqNumber = seqNumList[childBroker]++;
                 childBrokerList[childBroker].MulticastEntry(Header, entry);
             }
         }
