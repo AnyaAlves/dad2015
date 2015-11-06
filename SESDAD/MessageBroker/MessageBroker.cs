@@ -63,7 +63,7 @@ namespace SESDAD.Processes {
         }
 
         public void AckDelivery(ProcessHeader subscriberHeader, ProcessHeader publisherHeader) {
-            Entry entry = bufferManager.SendPendingEntry(subscriberHeader, publisherHeader);
+            Entry entry = bufferManager.GetPendingEntry(subscriberHeader, publisherHeader);
             if (entry != null) {
                 SendEntry(subscriberHeader, entry);
             }
@@ -94,13 +94,21 @@ namespace SESDAD.Processes {
             topic.AddBroker(brokerHeader);
         }
 
-        public void MulticastEntry(ProcessHeader senderBrokerHeader, Entry entry) {
-            bufferManager.InsertIntoInputBuffer(entry);
-            //Console.WriteLine(bufferManager);
+        private void Done(IAsyncResult result) {
+            var target = (Action<Entry>)result.AsyncState;
+            ForwardEntries();
+            target.EndInvoke(result);
+        }
 
+        public void MulticastEntry(ProcessHeader senderBrokerHeader, Entry entry) {            
+            Console.WriteLine("Multicasted by: " + senderBrokerHeader.ProcessName + "\n" + entry);
+          /*  bufferManager.InsertIntoInputBuffer(entry);
             ThreadStart ts = new ThreadStart(this.ForwardEntries);
             Thread t = new Thread(ts);
-            t.Start();
+            t.Start();*/
+
+            Action<Entry> method = bufferManager.InsertIntoInputBuffer;
+            method.BeginInvoke(entry, Done, method);
 
             IList<ProcessHeader> brokerList = null;
 
@@ -127,7 +135,6 @@ namespace SESDAD.Processes {
         }
 
         public void ForwardEntries() {
-            //Console.WriteLine(bufferManager);
             Entry entry = bufferManager.GetEntry();
             IList<ProcessHeader> topicSubscriberList = topicRoot.GetSubscriberList(entry.TopicName);
 

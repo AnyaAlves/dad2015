@@ -13,7 +13,7 @@ namespace SESDAD.Processes {
         private IDictionary<ProcessHeader, int> seqNumberList;
         private IList<Entry> inputBuffer;
         private IDictionary<String, Queue<Entry>> pendingDeliveryBuffer;
-        private IDictionary<String, bool> pendingList;
+        private IDictionary<String, bool> isPending;
         private OrderingType ordering;
 
         public OrderingType Ordering {
@@ -23,7 +23,7 @@ namespace SESDAD.Processes {
         public EntryBufferManager() {
             inputBuffer = new List<Entry>();
             pendingDeliveryBuffer = new Dictionary<String, Queue<Entry>>();
-            pendingList = new Dictionary<String, bool>();
+            isPending = new Dictionary<String, bool>();
             seqNumberList = new Dictionary<ProcessHeader, int>();
         }
 
@@ -48,13 +48,13 @@ namespace SESDAD.Processes {
                     if (!pendingDeliveryBuffer.TryGetValue(subscriber + entry.PublisherHeader, out pendingDeliveryList)) {
                         pendingDeliveryList = new Queue<Entry>();
                         pendingDeliveryBuffer.Add(subscriber + entry.PublisherHeader, pendingDeliveryList);
-                        pendingList.Add(subscriber + entry.PublisherHeader, false);
+                        isPending.Add(subscriber + entry.PublisherHeader, false);
                     }
-                    pending = pendingList[subscriber + entry.PublisherHeader];
+                    pending = isPending[subscriber + entry.PublisherHeader];
                     if (pending) {
                         pendingDeliveryList.Enqueue(entry);
                     } else {
-                        pendingList[subscriber + entry.PublisherHeader] = true;
+                        isPending[subscriber + entry.PublisherHeader] = true;
                     }
                     return pending;
                 }
@@ -84,22 +84,20 @@ namespace SESDAD.Processes {
             return entry;
         }
 
-        //method.BeginInvoke
-
-        public Entry SendPendingEntry(ProcessHeader subscriber, ProcessHeader publisher) { //FIXME
+        public Entry GetPendingEntry(ProcessHeader subscriber, ProcessHeader publisher) { //FIXME
             Queue<Entry> pendingDeliveryList = null;
             Entry entry = null;
 
-            if (ordering == OrderingType.NO_ORDER) { return entry; }
+            if (ordering == OrderingType.NO_ORDER) { }
 
-            if (ordering == OrderingType.FIFO) {
+            else if (ordering == OrderingType.FIFO) {
                 lock (pendingDeliveryBuffer) {
                     pendingDeliveryList = pendingDeliveryBuffer[subscriber + publisher];
                     if (pendingDeliveryList.Any()) {
                         entry = pendingDeliveryList.Dequeue();
                     }
                     else {
-                        pendingList[subscriber + publisher] = false;
+                        isPending[subscriber + publisher] = false;
                     }
                 }
             }

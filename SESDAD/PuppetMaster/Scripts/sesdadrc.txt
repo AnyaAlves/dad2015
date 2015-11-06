@@ -2,26 +2,40 @@ Site Site0 Parent none
 Site Site1 Parent Site0
 Site Site2 Parent Site0
 Site Site3 Parent Site1
+Site Site4 Parent Site1
+Site Site5 Parent Site2
 
-Process bro0 Is broker On Site0 URL tcp://localhost:8086/broker
-Process bro1 Is broker On Site1 URL tcp://localhost:8087/broker
-Process bro2 Is broker On Site2 URL tcp://localhost:8092/broker
-Process bro3 Is broker On Site3 URL tcp://localhost:8093/broker
+Process bro0 Is broker On Site0 URL tcp://localhost:8000/broker
+Process bro1 Is broker On Site1 URL tcp://localhost:8001/broker
+Process bro2 Is broker On Site2 URL tcp://localhost:8002/broker
+Process bro3 Is broker On Site3 URL tcp://localhost:8003/broker
+Process bro4 Is broker On Site4 URL tcp://localhost:8004/broker
+Process bro5 Is broker On Site5 URL tcp://localhost:8005/broker
 
-Process pub2 Is publisher On Site2 URL tcp://localhost:8088/pub
-Process sub0 Is subscriber On Site0 URL tcp://localhost:8089/sub
-Process sub3 Is subscriber On Site3 URL tcp://localhost:8090/sub
-Process sub1 Is subscriber On Site1 URL tcp://localhost:8091/sub
+Process pub0 Is publisher On Site0 URL tcp://localhost:10000/pub
+Process sub0 Is subscriber On Site0 URL tcp://localhost:9000/sub
+Process sub1 Is subscriber On Site1 URL tcp://localhost:9001/sub
+Process sub2 Is subscriber On Site2 URL tcp://localhost:9002/sub
+Process sub3 Is subscriber On Site3 URL tcp://localhost:9003/sub
+Process sub22 Is subscriber On Site2 URL tcp://localhost:9022/sub
+Process sub23 Is subscriber On Site3 URL tcp://localhost:9023/sub
+Process sub4 Is subscriber On Site4 URL tcp://localhost:9004/sub
+Process sub5 Is subscriber On Site5 URL tcp://localhost:9005/sub
 
 Ordering FIFO
-RoutingPolicy filter
+RoutingPolicy flooding
 LoggingLevel full
 
 Subscriber sub0 Subscribe /a/aa/*
 Subscriber sub1 Subscribe /a/*
+Subscriber sub2 Subscribe /a/aa/aaa
 Subscriber sub3 Subscribe /a/aa/aaa
+Subscriber sub4 Subscribe /a/aa/aaa
+Subscriber sub5 Subscribe /a/aa/aab
 
-Publisher pub2 Publish 5 Ontopic /a/aa/b Interval 500
+
+Publisher pub0 Publish 20 Ontopic /a/aa/aab Interval 1
+Publisher pub0 Publish 20 Ontopic /a/aa/aaa Interval 1
 
 -Crash bro0
 -Freeze pub0
