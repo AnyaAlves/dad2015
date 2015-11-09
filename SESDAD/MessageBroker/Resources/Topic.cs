@@ -67,25 +67,27 @@ namespace SESDAD.Processes {
             return child.GetSubtopic(topics[1]);
         }
 
-        public IList<ProcessHeader> GetProcessList(String topicPath, ProcessListDel processList) {
-            IList<ProcessHeader> process = new List<ProcessHeader>();
-            Topic child;
+        public IList<ProcessHeader> GetProcessList(String topicPath, ProcessListDel getProcessList) {
+            IList<ProcessHeader> processList = new List<ProcessHeader>();
+            Topic subtopic;
+            //split whole topic string into subtopic|suffix
             var topics = topicPath.Split(new[] { '/' }, 2);
-            String childName = topics[0];
 
-            //if topic has *, append subscribers
-            if (Children.TryGetValue("*", out child)) {
-                process = processList(child);
+            //if topic has this subtopic
+            if (Children.TryGetValue(topics[0], out subtopic)) {
+                //if next topic is the last, get processes interested in that subtopic
+                if (topics.Length == 1) {
+                    processList = getProcessList(subtopic);
+                }
+                else { //recurse with suffix
+                    processList = subtopic.GetProcessList(topics[1], getProcessList);
+                }
             }
-            //if topic doesn't have this child, return current list
-            if (!Children.TryGetValue(childName, out child)) {
-                return process;
+            //append processes interested in prefix
+            if (Children.TryGetValue("*", out subtopic)) {
+                processList = processList.Union(getProcessList(subtopic)).ToList();
             }
-            //if current topic is the last, return subscribers list
-            if (topics.Length == 1) {
-                return process.Union(processList(child)).ToList();
-            }
-            return process.Union(child.GetProcessList(topics[1], processList)).ToList();
+            return processList;
         }
 
         public IList<ProcessHeader> GetSubscriberList(String topicPath) {

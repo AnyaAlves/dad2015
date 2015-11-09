@@ -69,7 +69,16 @@ namespace SESDAD.Processes {
         }
 
         private void Pause() {
+            Monitor.Enter(waitingObject);
             waitingThread.Suspend();
+            Monitor.Pulse(waitingObject);
+            Monitor.Exit(waitingObject);
+        }
+
+        public void TryFreeze() {
+            Monitor.Enter(waitingObject);
+            Monitor.Pulse(waitingObject);
+            Monitor.Exit(waitingObject);
         }
 
         public void Freeze() {

@@ -8,10 +8,12 @@ using SESDAD.CommonTypes;
 
 namespace SESDAD.Processes {
 
+    using Envelope = KeyValuePair<Entry, int>;
+
     public class EntryBufferManager {
         //FIFO stuff
-        private IDictionary<ProcessHeader, int> seqNumberList;
-        private IList<Entry> inputBuffer;
+        private IDictionary<ProcessHeader, int> pubSeqNumberList;
+        private IDictionary<Entry, int> inputBuffer;
         private IDictionary<String, Queue<Entry>> pendingDeliveryBuffer;
         private IDictionary<String, bool> isPending;
         private OrderingType ordering;
@@ -21,22 +23,22 @@ namespace SESDAD.Processes {
         }
 
         public EntryBufferManager() {
-            inputBuffer = new List<Entry>();
+            inputBuffer = new Dictionary<Entry, int>();
             pendingDeliveryBuffer = new Dictionary<String, Queue<Entry>>();
             isPending = new Dictionary<String, bool>();
-            seqNumberList = new Dictionary<ProcessHeader, int>();
+            pubSeqNumberList = new Dictionary<ProcessHeader, int>();
         }
 
-        public void InsertIntoInputBuffer(Entry entry) {
+        public void InsertIntoInputBuffer(Entry entry, int brokerSeqNumber) {
             lock (inputBuffer) {
                 if (ordering == OrderingType.FIFO) {
                     //if publisher is unknown, add it
                     int seqNumber = 0;
-                    if (!seqNumberList.TryGetValue(entry.PublisherHeader, out seqNumber)) {
-                        seqNumberList.Add(entry.PublisherHeader, seqNumber);
+                    if (!pubSeqNumberList.TryGetValue(entry.PublisherHeader, out seqNumber)) {
+                        pubSeqNumberList.Add(entry.PublisherHeader, seqNumber);
                     }
                 }
-                inputBuffer.Add(entry);
+                inputBuffer.Add(entry, brokerSeqNumber);
             }
         }
 
@@ -67,14 +69,15 @@ namespace SESDAD.Processes {
 
             lock (inputBuffer) {
                 if (ordering == OrderingType.NO_ORDER) {
-                    entry = inputBuffer.First();
+                    entry = inputBuffer.First().Key;
                 }
                 else if (ordering == OrderingType.FIFO) {
-                    foreach (Entry bufferEntry in inputBuffer) {
-                        int seqNumber = seqNumberList[bufferEntry.PublisherHeader];
-                        if (seqNumber == bufferEntry.SenderSeqNumber) {
-                            entry = bufferEntry;
-                            seqNumberList[entry.PublisherHeader]++;
+                    foreach (Envelope envelope in inputBuffer) {
+                        entry = envelope.Key;
+                        int brokerSeqNumber = envelope.Value;
+                        int pubSeqNumber = pubSeqNumberList[entry.PublisherHeader];
+                        if (pubSeqNumber == brokerSeqNumber) {
+                            pubSeqNumberList[entry.PublisherHeader]++;
                             break;
                         }
                     }

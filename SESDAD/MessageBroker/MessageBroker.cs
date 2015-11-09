@@ -17,7 +17,7 @@ namespace SESDAD.Processes {
         // Tables
         private IDictionary<ProcessHeader, ISubscriberService> subscriberList;
         private IDictionary<ProcessHeader, IMessageBrokerService> childBrokerList;
-        private IDictionary<ProcessHeader, int> seqNumList;
+        private IDictionary<ProcessHeader, int> brokerSeqNumList;
 
         EntryBufferManager bufferManager;
 
@@ -26,8 +26,8 @@ namespace SESDAD.Processes {
             topicRoot = new Topic("", null);
             subscriberList = new Dictionary<ProcessHeader, ISubscriberService>();
             childBrokerList = new Dictionary<ProcessHeader, IMessageBrokerService>();
+            brokerSeqNumList = new Dictionary<ProcessHeader, int>();
             bufferManager = new EntryBufferManager();
-            seqNumList = new Dictionary<ProcessHeader, int>();
         }
 
         public RoutingPolicyType RoutingPolicy {
@@ -48,16 +48,14 @@ namespace SESDAD.Processes {
             subscriberList.Add(subscriberHeader, newSubscriber);
         }
 
-
         public void MakeSubscription(ProcessHeader subscriberHeader, String topicName) {
             Topic topic = topicRoot.GetSubtopic(topicName);
-            //if current broker isn't root root and topic is new (hasn't been sent), send to parent 
+            //if current broker isn't root and topic is new (hasn't been sent), send to parent 
             if (ParentBroker != null && !topic.HasProcesses()) {
                 ParentBroker.SpreadSubscription(Header, topicName);
             }
             topic.AddSubscriber(subscriberHeader);
         }
-
 
         public void RemoveSubscription(ProcessHeader subscriberHeader, String topicName) {
             Topic topic = topicRoot.GetSubtopic(topicName);
@@ -73,7 +71,7 @@ namespace SESDAD.Processes {
         }
 
         public void SubmitEntry(Entry entry) {
-            MulticastEntry(Header, entry);
+            MulticastEntry(Header, entry, entry.SeqNumber);
         }
 
         public void AddChildBroker(ProcessHeader childBrokerHeader) {
@@ -97,21 +95,9 @@ namespace SESDAD.Processes {
             topic.AddBroker(brokerHeader);
         }
 
-        private void Done(IAsyncResult result) {
-            var target = (Action<Entry>)result.AsyncState;
-            ForwardEntries();
-            target.EndInvoke(result);
-        }
-
-        public void MulticastEntry(ProcessHeader senderBrokerHeader, Entry entry) {            
-            Console.WriteLine("Multicasted by: " + senderBrokerHeader.ProcessName + "\n" + entry);
-          /*  bufferManager.InsertIntoInputBuffer(entry);
-            ThreadStart ts = new ThreadStart(this.ForwardEntries);
-            Thread t = new Thread(ts);
-            t.Start();*/
-
-            Action<Entry> method = bufferManager.InsertIntoInputBuffer;
-            method.BeginInvoke(entry, Done, method);
+        public void MulticastEntry(ProcessHeader senderBrokerHeader, Entry entry, int brokerSeqNumber) {            
+            Action<Entry, int> method = bufferManager.InsertIntoInputBuffer;
+            method.BeginInvoke(entry, brokerSeqNumber, ForwardEntries, method);
 
             IList<ProcessHeader> brokerList = null;
 
@@ -120,38 +106,38 @@ namespace SESDAD.Processes {
             }
             else if (routingPolicy == RoutingPolicyType.FILTER) {
                 brokerList = topicRoot.GetBrokerList(entry.TopicName);
-                Console.WriteLine("Brokers:\n" + string.Join("\n", brokerList));
             }
             brokerList.Remove(senderBrokerHeader);
             
             //if current broker isn't root AND parent isn't sender, send to parent
             if (ParentBroker != null && !ParentBroker.Header.Equals(senderBrokerHeader)) {
-                ParentBroker.MulticastEntry(Header, entry);
+                ParentBroker.MulticastEntry(Header, entry, brokerSeqNumber);
             }
             //send to brokerlist
             foreach (ProcessHeader childBroker in brokerList) {
-                if (!seqNumList.ContainsKey(childBroker)) {
-                    seqNumList.Add(childBroker, 0);
+                if (!brokerSeqNumList.ContainsKey(childBroker)) {
+                    brokerSeqNumList.Add(childBroker, 0);
                 }
-                entry.SenderSeqNumber = seqNumList[childBroker]++;
-                childBrokerList[childBroker].MulticastEntry(Header, entry);
+                brokerSeqNumber = brokerSeqNumList[childBroker]++;
+                childBrokerList[childBroker].MulticastEntry(Header, entry, brokerSeqNumber);
             }
         }
 
-        public void SendEntry(ProcessHeader subscriber, Entry entry) {
-            subscriberList[subscriber].DeliverEntry(entry);        
-        }
-
-        public void ForwardEntries() {
+        public void ForwardEntries(IAsyncResult result) {
             Entry entry = bufferManager.GetEntry();
             IList<ProcessHeader> topicSubscriberList = topicRoot.GetSubscriberList(entry.TopicName);
-            Console.WriteLine("Subscribers:\n" + string.Join("\n", topicSubscriberList));
 
             foreach (ProcessHeader subscriber in topicSubscriberList) {
                 if (!bufferManager.TryMoveToPendingDeliveryBuffer(subscriber, entry)) {
                     SendEntry(subscriber, entry);
                 }
             }
+            var target = (Action<Entry, int>)result.AsyncState;
+            target.EndInvoke(result);
+        }
+
+        public void SendEntry(ProcessHeader subscriber, Entry entry) {
+            subscriberList[subscriber].DeliverEntry(entry);
         }
 
         public override String ToString() {

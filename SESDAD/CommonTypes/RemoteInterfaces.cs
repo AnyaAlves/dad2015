@@ -42,7 +42,7 @@ namespace SESDAD.CommonTypes {
         //broker->parent
         void SpreadSubscription(ProcessHeader brokerHeader, String topicName);
         //broker->brokers
-        void MulticastEntry(ProcessHeader senderBrokerHeader, Entry entry);
+        void MulticastEntry(ProcessHeader senderBrokerHeader, Entry entry, int brokerSeqNumber);
 
     }
 

@@ -127,12 +127,18 @@ namespace SESDAD.Managing {
             while (true) {
                 System.Console.Write("PuppetMaster> ");
                 command = System.Console.ReadLine();
+                if (command.ToLower().Equals("abort")) {
+                    return;
+                }
+                if (command.Equals("")) {
+                    continue;
+                }
                 try {
                     ParseLineToCommand(command);
                 }
                 catch (Exception e) {
                     CloseProcesses();
-                    return;
+                    Console.WriteLine(e.Message);
                 }
             }
         }
@@ -150,11 +156,11 @@ namespace SESDAD.Managing {
             String[] fields = line.Split(' ');
             String command = fields[0].ToLower();
             if (fields.Length == 2 &&
-                command.Equals("Wait") &&
+                command.Equals("wait") &&
                 Int32.TryParse(fields[1], out waitingTime)) {
                 Thread.Sleep(waitingTime);
             }
-            if (fields.Length == 4 && command.Equals("site") && fields[2].ToLower().Equals("parent")) {
+            else if (fields.Length == 4 && command.Equals("site") && fields[2].ToLower().Equals("parent")) {
                 Site parentSite;
                 siteTable.TryGetValue(fields[3], out parentSite);
                 siteTable.Add(fields[1], new Site(fields[1], parentSite));

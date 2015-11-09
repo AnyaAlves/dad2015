@@ -32,7 +32,7 @@ namespace SESDAD.Processes {
         //broker->parent
         void SpreadSubscription(ProcessHeader brokerHeader, String topicName);
         //broker->brokers
-        void MulticastEntry(ProcessHeader senderBrokerHeader, Entry entry);
+        void MulticastEntry(ProcessHeader senderBrokerHeader, Entry entry, int brokerSeqNumber);
 
         //broker->subscribers
         //void ForwardEntries();

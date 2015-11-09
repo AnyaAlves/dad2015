@@ -7,7 +7,7 @@ namespace SESDAD.CommonTypes {
         private String topicName,
                        content;
         private ProcessHeader publisherHeader;
-        private int seqNumber, senderSeqNumber;
+        private int seqNumber;
 
         public Entry(
             String newTopicName,
@@ -18,7 +18,6 @@ namespace SESDAD.CommonTypes {
             content = newContent;
             publisherHeader = newPubliserHeader;
             seqNumber = newSeqNumber;
-            senderSeqNumber = newSeqNumber;
         }
 
         public String TopicName {
@@ -32,10 +31,6 @@ namespace SESDAD.CommonTypes {
         }
         public int SeqNumber {
             get { return seqNumber; }
-        }
-        public int SenderSeqNumber {
-            get { return senderSeqNumber; }
-            set { senderSeqNumber = value; }
         }
 
         public override string ToString() {            
