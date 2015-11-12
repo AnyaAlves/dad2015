@@ -39,22 +39,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Event.cs" />
-    <Compile Include="EventContainer.cs" />
+    <Compile Include="Types\Event.cs" />
+    <Compile Include="Types\EventContainer.cs" />
     <Compile Include="Exceptions\InvalidConnectionException.cs" />
     <Compile Include="Exceptions\InvalidInvokationException.cs" />
     <Compile Include="Exceptions\InvalidPublicationException.cs" />
     <Compile Include="Exceptions\InvalidSubscriptionException.cs" />
     <Compile Include="Exceptions\InvalidUnsubscriptionException.cs" />
-    <Compile Include="Node.cs" />
-    <Compile Include="ProcessHeader.cs" />
+    <Compile Include="Types\Node.cs" />
+    <Compile Include="Types\ProcessHeader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RemoteInterfaces\IGenericProcessService.cs" />
     <Compile Include="RemoteInterfaces\IMessageBrokerService.cs" />
     <Compile Include="RemoteInterfaces\IPublisherService.cs" />
     <Compile Include="RemoteInterfaces\IPuppetMasterService.cs" />
     <Compile Include="RemoteInterfaces\ISubscriberService.cs" />
-    <Compile Include="States.cs" />
+    <Compile Include="Types\States.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
