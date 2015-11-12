@@ -1,6 +1,6 @@
 ﻿using System;
 
-using SESDAD.CommonTypes;
+using SESDAD.Commons;
 
 namespace SESDAD.Processes {
     public interface IGenericProcess {

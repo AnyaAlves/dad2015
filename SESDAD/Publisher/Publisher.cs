@@ -12,26 +12,29 @@ using System.Runtime.Remoting.Channels;
 using System.Net.Sockets;
 using System.Threading;
 
-using SESDAD.CommonTypes;
+using SESDAD.Commons;
 
 namespace SESDAD.Processes {
 
     public class Publisher : GenericProcess, IPublisher {
-        private int seqNumber;
+        private int SeqNumber { get; set; }
 
         public Publisher(ProcessHeader newProcessHeader) :
             base(newProcessHeader) {
-                seqNumber = 0;
+                SeqNumber = 0;
         }
 
-        public int SeqNumber {
-            get { return seqNumber; }
+        private void DonePublishing(IAsyncResult result) {
+            var target = (Action<Event>)result.AsyncState;
+            target.EndInvoke(result);
         }
 
-        public Entry Publish(String topicName, String content) {
-            Entry entry = new Entry(topicName, content, Header, seqNumber++);
-            ParentBroker.Publish(entry);
-            return entry;
+        public int Publish(String topicName, String content) {
+            int seqNumber = SeqNumber++;
+            Event @event = new Event(topicName, content, Header, seqNumber);
+            Action<Event> method = ParentBroker.Publish;
+            method.BeginInvoke(@event, DonePublishing, method);
+            return seqNumber;
         }
         //public void Ack(int seqNumber) {}
 
@@ -43,7 +46,7 @@ namespace SESDAD.Processes {
                 " Publisher :" + nl +
                 base.ToString() + nl +
                 "**********************************************" + nl +
-                " Sequence Number: " + seqNumber + nl +
+                " Sequence Number: " + SeqNumber + nl +
                 "**********************************************" + nl;
         }
     }

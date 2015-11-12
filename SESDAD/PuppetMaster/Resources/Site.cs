@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using SESDAD.CommonTypes;
+using SESDAD.Commons;
 
 namespace SESDAD.Managing {
 

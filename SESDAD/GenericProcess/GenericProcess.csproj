@@ -46,9 +46,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CommonTypes\CommonTypes.csproj">
-      <Project>{33bb861b-c2ea-4135-9a01-d3aac85d4443}</Project>
-      <Name>CommonTypes</Name>
+    <ProjectReference Include="..\Commons\Commons.csproj">
+      <Project>{e8caa9ca-a373-48b1-b7e6-2fd5e47763e1}</Project>
+      <Name>Commons</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

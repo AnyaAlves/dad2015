@@ -23,6 +23,7 @@
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
+    <UseVSHostingProcess>true</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -59,9 +60,9 @@
     <Compile Include="Resources\Types.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CommonTypes\CommonTypes.csproj">
-      <Project>{33bb861b-c2ea-4135-9a01-d3aac85d4443}</Project>
-      <Name>CommonTypes</Name>
+    <ProjectReference Include="..\Commons\Commons.csproj">
+      <Project>{e8caa9ca-a373-48b1-b7e6-2fd5e47763e1}</Project>
+      <Name>Commons</Name>
     </ProjectReference>
     <ProjectReference Include="..\MessageBroker\MessageBroker.csproj">
       <Project>{fd782c32-d5b2-47b2-beb5-72b3ffeedf76}</Project>
@@ -81,6 +82,10 @@
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>if exist "$(TargetPath).locked" del "$(TargetPath).locked"
+if exist "$(TargetPath)" if not exist "$(TargetPath).locked" move "$(TargetPath)" "$(TargetPath).locked"</PreBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

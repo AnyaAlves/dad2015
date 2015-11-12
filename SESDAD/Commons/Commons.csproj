@@ -4,16 +4,15 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{23DFB7B6-D6F5-4AC0-8B1B-5BD55F98A182}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{E8CAA9CA-A373-48B1-B7E6-2FD5E47763E1}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>SESDAD.Processes</RootNamespace>
-    <AssemblyName>Subscriber</AssemblyName>
+    <RootNamespace>Commons</RootNamespace>
+    <AssemblyName>Commons</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -21,11 +20,8 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>
-    </DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -33,13 +29,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject>SESDAD.Processes.Program</StartupObject>
-  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Runtime.Remoting" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -47,23 +39,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ISubscriber.cs" />
+    <Compile Include="Event.cs" />
+    <Compile Include="EventContainer.cs" />
+    <Compile Include="Exceptions\InvalidConnectionException.cs" />
+    <Compile Include="Exceptions\InvalidInvokationException.cs" />
+    <Compile Include="Exceptions\InvalidPublicationException.cs" />
+    <Compile Include="Exceptions\InvalidSubscriptionException.cs" />
+    <Compile Include="Exceptions\InvalidUnsubscriptionException.cs" />
+    <Compile Include="Node.cs" />
+    <Compile Include="ProcessHeader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SubscriberService.cs" />
-    <Compile Include="Subscriber.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Commons\Commons.csproj">
-      <Project>{e8caa9ca-a373-48b1-b7e6-2fd5e47763e1}</Project>
-      <Name>Commons</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\GenericProcess\GenericProcess.csproj">
-      <Project>{90749e08-4a8a-474e-a821-ed5481a5609e}</Project>
-      <Name>GenericProcess</Name>
-    </ProjectReference>
+    <Compile Include="RemoteInterfaces\IGenericProcessService.cs" />
+    <Compile Include="RemoteInterfaces\IMessageBrokerService.cs" />
+    <Compile Include="RemoteInterfaces\IPublisherService.cs" />
+    <Compile Include="RemoteInterfaces\IPuppetMasterService.cs" />
+    <Compile Include="RemoteInterfaces\ISubscriberService.cs" />
+    <Compile Include="States.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

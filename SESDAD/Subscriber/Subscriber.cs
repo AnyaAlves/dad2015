@@ -12,7 +12,7 @@ using System.Runtime.Remoting.Channels;
 using System.Net.Sockets;
 using System.Threading;
 
-using SESDAD.CommonTypes;
+using SESDAD.Commons;
 
 
 namespace SESDAD.Processes {
@@ -29,11 +29,9 @@ namespace SESDAD.Processes {
             ParentBroker.Unsubscribe(Header, topicName);
         }
 
-        public void ReceiveEntry(Entry entry) {
-            String nl = Environment.NewLine;
-
-            Console.WriteLine("New event received!" + nl + entry);
-            ParentBroker.AckDelivery(Header, entry.PublisherHeader);
+        public void ReceiveEvent(Event @event) {
+            Console.WriteLine("New event received!\n" + @event);
+            ParentBroker.AckDelivery(Header, @event.PublisherHeader);
         }
 
         public override void ConnectToParentBroker(String parentBrokerURL) {

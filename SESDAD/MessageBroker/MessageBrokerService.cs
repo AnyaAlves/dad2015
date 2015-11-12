@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using SESDAD.CommonTypes;
+using SESDAD.Commons;
 
 namespace SESDAD.Processes {
     public class MessageBrokerService : GenericProcessService<IMessageBroker>, IMessageBrokerService {
@@ -32,8 +32,8 @@ namespace SESDAD.Processes {
         }
 
         //publisher->broker
-        public void Publish(Entry entry) {
-            Process.SubmitEntry(entry);
+        public void Publish(Event @event) {
+            Process.SubmitEvent(@event);
         }
 
         //child->broker
@@ -45,14 +45,14 @@ namespace SESDAD.Processes {
             Process.SpreadSubscription(brokerHeader, topicName);
         }
         //broker->brokers
-        public void MulticastEntry(ProcessHeader senderBrokerHeader, Entry entry, int brokerSeqNumber) {
+        public void MulticastEvent(EventContainer eventContainer) {
             PuppetMaster.WriteIntoFullLog(
                 "BroEvent " +
                 Header.ProcessName + ", " +
-                entry.PublisherHeader.ProcessName + ", " +
-                entry.TopicName + ", " +
-                entry.SeqNumber);
-            Process.MulticastEntry(senderBrokerHeader, entry, brokerSeqNumber);
+                eventContainer.Event.PublisherHeader.ProcessName + ", " +
+                eventContainer.Event.TopicName + ", " +
+                eventContainer.Event.SeqNumber);
+            Process.MulticastEvent(eventContainer);
         }
 
     }

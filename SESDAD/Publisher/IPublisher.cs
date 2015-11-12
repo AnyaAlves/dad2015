@@ -1,12 +1,12 @@
 ﻿using System;
 
 using SESDAD.Processes;
-using SESDAD.CommonTypes;
+using SESDAD.Commons;
 
 namespace SESDAD.Processes {
     public interface IPublisher : IGenericProcess {
 
-        Entry Publish(String topicName, String content);
+        int Publish(String topicName, String content);
         //void Ack(int seqNumber);
     }
 }

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using SESDAD.CommonTypes;
+using SESDAD.Commons;
 using SESDAD.Processes;
 
 namespace SESDAD.Processes {
@@ -12,6 +12,6 @@ namespace SESDAD.Processes {
         void Subscribe(String topicName);
         void Unsubscribe(String topicName);
 
-        void ReceiveEntry(Entry entry);
+        void ReceiveEvent(Event @event);
     }
 }

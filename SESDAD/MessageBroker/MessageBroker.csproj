@@ -47,7 +47,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Resources\EntryBufferManager.cs" />
+    <Compile Include="Resources\EventOrderManager.cs" />
     <Compile Include="IMessageBroker.cs" />
     <Compile Include="MessageBroker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -58,9 +58,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CommonTypes\CommonTypes.csproj">
-      <Project>{33bb861b-c2ea-4135-9a01-d3aac85d4443}</Project>
-      <Name>CommonTypes</Name>
+    <ProjectReference Include="..\Commons\Commons.csproj">
+      <Project>{e8caa9ca-a373-48b1-b7e6-2fd5e47763e1}</Project>
+      <Name>Commons</Name>
     </ProjectReference>
     <ProjectReference Include="..\GenericProcess\GenericProcess.csproj">
       <Project>{90749e08-4a8a-474e-a821-ed5481a5609e}</Project>

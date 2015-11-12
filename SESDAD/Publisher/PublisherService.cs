@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using SESDAD.CommonTypes;
+using SESDAD.Commons;
 using SESDAD.Processes;
 
 namespace SESDAD.Processes {
@@ -12,8 +12,8 @@ namespace SESDAD.Processes {
         //public void Ack() { }
 
         public void ForcePublish(String topicName, String content) {
-            Entry entry = Process.Publish(topicName, content);
-            PuppetMaster.WriteIntoLog("PubEvent " + Header.ProcessName + ", " + Header.ProcessName + ", " + entry.TopicName + ", " + entry.SeqNumber);
+            int seqNumber = Process.Publish(topicName, content);
+            PuppetMaster.WriteIntoLog("PubEvent " + Header.ProcessName + ", " + Header.ProcessName + ", " + topicName + ", " + seqNumber);
         }
     }
 }

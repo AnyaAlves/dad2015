@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using SESDAD.CommonTypes;
+using SESDAD.Commons;
 
 namespace SESDAD.Processes {
     public abstract class GenericProcessService<I> : MarshalByRefObject

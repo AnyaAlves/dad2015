@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using SESDAD.CommonTypes;
+using SESDAD.Commons;
 using SESDAD.Processes;
 
 namespace SESDAD.Processes {
@@ -25,14 +25,14 @@ namespace SESDAD.Processes {
         void AckDelivery(ProcessHeader subscriberHeader, ProcessHeader publisherHeader);
         
         //publisher->broker
-        void SubmitEntry(Entry entry);
+        void SubmitEvent(Event @event);
 
         //child->broker
         void AddChildBroker(ProcessHeader childBrokerHeader);
         //broker->parent
         void SpreadSubscription(ProcessHeader brokerHeader, String topicName);
         //broker->brokers
-        void MulticastEntry(ProcessHeader senderBrokerHeader, Entry entry, int brokerSeqNumber);
+        void MulticastEvent(EventContainer eventContainer);
 
         //broker->subscribers
         //void ForwardEntries();

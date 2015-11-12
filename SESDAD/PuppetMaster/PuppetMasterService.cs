@@ -6,7 +6,7 @@ using System.Threading;
 using System.Runtime.Remoting;
 using System.Text.RegularExpressions;
 
-using SESDAD.CommonTypes;
+using SESDAD.Commons;
 using SESDAD.Managing.Exceptions;
 
 namespace SESDAD.Managing {
@@ -25,7 +25,7 @@ namespace SESDAD.Managing {
     ///<summary>
     /// Puppet Master Service
     ///</summary>
-    public class PuppetMasterService : MarshalByRefObject, SESDAD.Managing.IPuppetMasterService, SESDAD.CommonTypes.IPuppetMasterService {
+    public class PuppetMasterService : MarshalByRefObject, SESDAD.Managing.IPuppetMasterService, SESDAD.Commons.IPuppetMasterService {
         // Log
         private String log,
             // ID

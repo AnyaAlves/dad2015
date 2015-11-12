@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Runtime.Remoting;
-using System.Threading;
 
-using SESDAD.CommonTypes;
+using SESDAD.Commons;
 
 
 namespace SESDAD.Processes {
@@ -17,17 +16,17 @@ namespace SESDAD.Processes {
         // Tables
         private IDictionary<ProcessHeader, ISubscriberService> subscriberList;
         private IDictionary<ProcessHeader, IMessageBrokerService> childBrokerList;
-        private IDictionary<ProcessHeader, int> brokerSeqNumList;
+        private IDictionary<String, int> brokerSeqNumList;
 
-        EntryBufferManager bufferManager;
+        EventOrderManager bufferManager;
 
         public MessageBroker(ProcessHeader processHeader) :
             base(processHeader) {
             topicRoot = new Topic("", null);
             subscriberList = new Dictionary<ProcessHeader, ISubscriberService>();
             childBrokerList = new Dictionary<ProcessHeader, IMessageBrokerService>();
-            brokerSeqNumList = new Dictionary<ProcessHeader, int>();
-            bufferManager = new EntryBufferManager();
+            brokerSeqNumList = new Dictionary<String, int>();
+            bufferManager = new EventOrderManager();
         }
 
         public RoutingPolicyType RoutingPolicy {
@@ -64,14 +63,14 @@ namespace SESDAD.Processes {
         }
 
         public void AckDelivery(ProcessHeader subscriberHeader, ProcessHeader publisherHeader) {
-            Entry entry = bufferManager.GetPendingEntry(subscriberHeader, publisherHeader);
-            if (entry != null) {
-                SendEntry(subscriberHeader, entry);
+            Event @event;
+            if (bufferManager.TryGetPendingEvent(subscriberHeader, publisherHeader, out @event)) {
+                SendToSubscriber(subscriberList[subscriberHeader], @event);
             }
         }
 
-        public void SubmitEntry(Entry entry) {
-            MulticastEntry(Header, entry, entry.SeqNumber);
+        public void SubmitEvent(Event @event) {
+            MulticastEvent(new EventContainer(Header, @event, @event.SeqNumber));
         }
 
         public void AddChildBroker(ProcessHeader childBrokerHeader) {
@@ -95,50 +94,112 @@ namespace SESDAD.Processes {
             topic.AddBroker(brokerHeader);
         }
 
-        public void MulticastEntry(ProcessHeader senderBrokerHeader, Entry entry, int brokerSeqNumber) {            
-            Action<Entry, int> method = bufferManager.InsertIntoInputBuffer;
-            method.BeginInvoke(entry, brokerSeqNumber, ForwardEntries, method);
+        public void MulticastEvent(EventContainer eventContainer) {
+            Console.WriteLine("New event on buffer:\n" + eventContainer.Event +
+                "Multicasted by: " + eventContainer.SenderBroker.ProcessName + " NewSeq: " + eventContainer.NewSeqNumber + "\n");
+            InsertIntoBuffer(eventContainer);
 
+            //if current broker isn't root AND parent isn't sender, send to parent
+            if (ParentBroker != null && !ParentBroker.Header.Equals(eventContainer.SenderBroker)) {
+                SendToBroker(ParentBroker, eventContainer);
+            }
+        }
+
+        public void ForwardToSubscribers(Event @event) {
+            lock (@event) {
+                IList<ProcessHeader> topicSubscriberList = topicRoot.GetSubscriberList(@event.TopicName);
+
+                foreach (ProcessHeader subscriber in topicSubscriberList.ToList()) {
+                    bufferManager.SetPendingEvent(subscriber, @event);
+                    SendToSubscriber(subscriberList[subscriber], @event);
+                }
+            }
+        }
+
+
+        public void ForwardToBrokers(EventContainer eventContainer) {
             IList<ProcessHeader> brokerList = null;
 
             if (routingPolicy == RoutingPolicyType.FLOOD) {
                 brokerList = childBrokerList.Keys.ToList();
             }
             else if (routingPolicy == RoutingPolicyType.FILTER) {
-                brokerList = topicRoot.GetBrokerList(entry.TopicName);
+                brokerList = topicRoot.GetBrokerList(eventContainer.Event.TopicName);
             }
-            brokerList.Remove(senderBrokerHeader);
-            
-            //if current broker isn't root AND parent isn't sender, send to parent
-            if (ParentBroker != null && !ParentBroker.Header.Equals(senderBrokerHeader)) {
-                ParentBroker.MulticastEntry(Header, entry, brokerSeqNumber);
-            }
+            brokerList.Remove(eventContainer.SenderBroker);
+
             //send to brokerlist
-            foreach (ProcessHeader childBroker in brokerList) {
-                if (!brokerSeqNumList.ContainsKey(childBroker)) {
-                    brokerSeqNumList.Add(childBroker, 0);
+            lock (childBrokerList) {
+                foreach (ProcessHeader childBroker in brokerList) {
+                    //FIFO
+                    String key = childBroker + eventContainer.Event.PublisherHeader;
+                    if (!brokerSeqNumList.ContainsKey(key)) {
+                        brokerSeqNumList.Add(key, 0);
+                    }
+                    eventContainer.NewSeqNumber = brokerSeqNumList[key]++;
+                    //NO ORDER+FIFO
+                    SendToBroker(childBrokerList[childBroker], eventContainer);
                 }
-                brokerSeqNumber = brokerSeqNumList[childBroker]++;
-                childBrokerList[childBroker].MulticastEntry(Header, entry, brokerSeqNumber);
-            }
+            }        
         }
 
-        public void ForwardEntries(IAsyncResult result) {
-            Entry entry = bufferManager.GetEntry();
-            IList<ProcessHeader> topicSubscriberList = topicRoot.GetSubscriberList(entry.TopicName);
 
-            foreach (ProcessHeader subscriber in topicSubscriberList) {
-                if (!bufferManager.TryMoveToPendingDeliveryBuffer(subscriber, entry)) {
-                    SendEntry(subscriber, entry);
-                }
+        //async stuff:
+        private void InsertIntoBuffer(EventContainer eventContainer) {
+            Action<EventContainer> method = bufferManager.InsertIntoInputBuffer;
+            method.BeginInvoke(eventContainer, DoneInsertIntoBuffer, method);
+        }
+        private void DoneInsertIntoBuffer(IAsyncResult result) {
+            lock(this) {
+            EventContainer eventContainer = bufferManager.GetNextEvent();
+            ForwardToBrokers(eventContainer);
+            ForwardToSubscribers(eventContainer.Event);
             }
-            var target = (Action<Entry, int>)result.AsyncState;
+
+            var target = (Action<EventContainer>)result.AsyncState;
+            target.EndInvoke(result);
+        }
+        private void FW2Bro(EventContainer eventContainer) {
+            Action<EventContainer> method = ForwardToBrokers;
+            method.BeginInvoke(eventContainer, DoneFW2Bro, method);
+        }
+        private void DoneFW2Bro(IAsyncResult result) {
+            var target = (Action<EventContainer>)result.AsyncState;
+            target.EndInvoke(result);
+        }
+        private void FW2Sub(Event @event) {
+            Action<Event> method = ForwardToSubscribers;
+            method.BeginInvoke(@event, DoneFW2Sub, method);
+        }
+        private void DoneFW2Sub(IAsyncResult result) {
+            var target = (Action<Event>)result.AsyncState;
             target.EndInvoke(result);
         }
 
-        public void SendEntry(ProcessHeader subscriber, Entry entry) {
-            subscriberList[subscriber].DeliverEntry(entry);
+
+        private void SendToBroker(IMessageBrokerService broker, EventContainer eventContainer) {
+            eventContainer.SenderBroker = Header;
+            Action<EventContainer> method = broker.MulticastEvent;
+            method.BeginInvoke(eventContainer, DoneSendToBroker, method);
+            //broker.MulticastEvent(eventContainer);
         }
+        private void DoneSendToBroker(IAsyncResult result) {
+            var target = (Action<EventContainer>)result.AsyncState;
+            target.EndInvoke(result);
+        }
+
+
+        private void SendToSubscriber(ISubscriberService subscriber, Event @event) {
+            Action<Event> method = subscriber.DeliverEvent;
+            //method.BeginInvoke(@event, DoneSendToSendToSubscriber, method);
+            subscriber.DeliverEvent(@event);
+        }
+        private void DoneSendToSendToSubscriber(IAsyncResult result) {
+            var target = (Action<Event>)result.AsyncState;
+            target.EndInvoke(result);
+        }
+
+
 
         public override String ToString() {
             String nl = Environment.NewLine;

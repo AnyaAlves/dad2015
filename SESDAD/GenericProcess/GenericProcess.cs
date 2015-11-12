@@ -12,7 +12,7 @@ using System.Runtime.Remoting.Channels;
 using System.Net.Sockets;
 using System.Threading;
 
-using SESDAD.CommonTypes;
+using SESDAD.Commons;
 
 namespace SESDAD.Processes {
 

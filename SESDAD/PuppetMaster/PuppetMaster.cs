@@ -13,7 +13,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 
 using System.Diagnostics;
-using SESDAD.CommonTypes;
+using SESDAD.Commons;
 using SESDAD.Managing.Exceptions;
 
 namespace SESDAD.Managing {
@@ -356,11 +356,11 @@ namespace SESDAD.Managing {
         }
     }
     //<summary>
-    // Project entry point class
+    // Project @event point class
     //</summary>
     public static class Program {
         //<summary>
-        // Project entry point method
+        // Project @event point method
         //</summary>
         public static void Main(string[] args) {
             PuppetMaster puppetMaster = new PuppetMaster();

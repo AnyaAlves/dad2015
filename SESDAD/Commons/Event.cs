@@ -1,22 +1,18 @@
 ﻿using System;
 
-namespace SESDAD.CommonTypes {
+namespace SESDAD.Commons {
 
     [Serializable]
-    public class Entry {
-        private String topicName,
-                       content;
+    public class Event {
+        private String topicName;
+        private String content;
         private ProcessHeader publisherHeader;
         private int seqNumber;
 
-        public Entry(
-            String newTopicName,
-            String newContent,
-            ProcessHeader newPubliserHeader,
-            int newSeqNumber) {
+        public Event(String newTopicName, String newContent, ProcessHeader newPublisherHeader, int newSeqNumber) {
             topicName = newTopicName;
             content = newContent;
-            publisherHeader = newPubliserHeader;
+            publisherHeader = newPublisherHeader;
             seqNumber = newSeqNumber;
         }
 
@@ -37,7 +33,7 @@ namespace SESDAD.CommonTypes {
             String nl = Environment.NewLine;
              return "Topic Name: " + topicName + nl +
                 "Content: " + content + nl +
-                "Publisher: " + publisherHeader.ProcessURL + nl +
+                "Publisher: " + publisherHeader.ProcessName + "\t" +
                 "#Seq: " + seqNumber + nl;
         }
     }
