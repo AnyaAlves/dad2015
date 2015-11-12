@@ -24,19 +24,19 @@ namespace SESDAD.Processes {
                 SeqNumber = 0;
         }
 
-        private void DonePublishing(IAsyncResult result) {
-            var target = (Action<Event>)result.AsyncState;
-            target.EndInvoke(result);
-        }
-
         public int Publish(String topicName, String content) {
             int seqNumber = SeqNumber++;
             Event @event = new Event(topicName, content, Header, seqNumber);
             Action<Event> method = ParentBroker.Publish;
             method.BeginInvoke(@event, DonePublishing, method);
+            
             return seqNumber;
         }
-        //public void Ack(int seqNumber) {}
+
+        private void DonePublishing(IAsyncResult result) {
+            var target = (Action<Event>)result.AsyncState;
+            target.EndInvoke(result);
+        }
 
         public override String ToString() {
             String nl = Environment.NewLine;
