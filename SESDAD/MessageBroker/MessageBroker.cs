@@ -106,14 +106,12 @@ namespace SESDAD.Processes {
         }
 
         public void ForwardToSubscribers(Event @event) {
-            lock (@event) {
                 IList<ProcessHeader> topicSubscriberList = topicRoot.GetSubscriberList(@event.TopicName);
 
                 foreach (ProcessHeader subscriber in topicSubscriberList.ToList()) {
                     bufferManager.SetPendingEvent(subscriber, @event);
                     SendToSubscriber(subscriberList[subscriber], @event);
                 }
-            }
         }
 
 
@@ -129,18 +127,16 @@ namespace SESDAD.Processes {
             brokerList.Remove(eventContainer.SenderBroker);
 
             //send to brokerlist
-            lock (childBrokerList) {
                 foreach (ProcessHeader childBroker in brokerList) {
                     //FIFO
                     String key = childBroker + eventContainer.Event.PublisherHeader;
                     if (!brokerSeqNumList.ContainsKey(key)) {
                         brokerSeqNumList.Add(key, 0);
                     }
-                    eventContainer.NewSeqNumber = brokerSeqNumList[key]++;
+                    EventContainer newEventContainer = new EventContainer(Header, eventContainer.Event, brokerSeqNumList[key]++);
                     //NO ORDER+FIFO
-                    SendToBroker(childBrokerList[childBroker], eventContainer);
-                }
-            }        
+                    SendToBroker(childBrokerList[childBroker], newEventContainer);
+                }   
         }
 
 
@@ -150,7 +146,8 @@ namespace SESDAD.Processes {
             method.BeginInvoke(eventContainer, DoneInsertIntoBuffer, method);
         }
         private void DoneInsertIntoBuffer(IAsyncResult result) {
-            lock(this) {
+            String locker = "";
+            lock (locker) {
             EventContainer eventContainer = bufferManager.GetNextEvent();
             ForwardToBrokers(eventContainer);
             ForwardToSubscribers(eventContainer.Event);
@@ -159,26 +156,8 @@ namespace SESDAD.Processes {
             var target = (Action<EventContainer>)result.AsyncState;
             target.EndInvoke(result);
         }
-        private void FW2Bro(EventContainer eventContainer) {
-            Action<EventContainer> method = ForwardToBrokers;
-            method.BeginInvoke(eventContainer, DoneFW2Bro, method);
-        }
-        private void DoneFW2Bro(IAsyncResult result) {
-            var target = (Action<EventContainer>)result.AsyncState;
-            target.EndInvoke(result);
-        }
-        private void FW2Sub(Event @event) {
-            Action<Event> method = ForwardToSubscribers;
-            method.BeginInvoke(@event, DoneFW2Sub, method);
-        }
-        private void DoneFW2Sub(IAsyncResult result) {
-            var target = (Action<Event>)result.AsyncState;
-            target.EndInvoke(result);
-        }
-
 
         private void SendToBroker(IMessageBrokerService broker, EventContainer eventContainer) {
-            eventContainer.SenderBroker = Header;
             Action<EventContainer> method = broker.MulticastEvent;
             method.BeginInvoke(eventContainer, DoneSendToBroker, method);
             //broker.MulticastEvent(eventContainer);
@@ -191,8 +170,8 @@ namespace SESDAD.Processes {
 
         private void SendToSubscriber(ISubscriberService subscriber, Event @event) {
             Action<Event> method = subscriber.DeliverEvent;
-            //method.BeginInvoke(@event, DoneSendToSendToSubscriber, method);
-            subscriber.DeliverEvent(@event);
+            method.BeginInvoke(@event, DoneSendToSendToSubscriber, method);
+            //subscriber.DeliverEvent(@event);
         }
         private void DoneSendToSendToSubscriber(IAsyncResult result) {
             var target = (Action<Event>)result.AsyncState;
