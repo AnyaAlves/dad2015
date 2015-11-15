@@ -7,7 +7,7 @@
     <ProjectGuid>{E8CAA9CA-A373-48B1-B7E6-2FD5E47763E1}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Commons</RootNamespace>
+    <RootNamespace>SESDAD.Commons</RootNamespace>
     <AssemblyName>Commons</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -32,6 +32,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Remoting" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -39,22 +40,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Types\Event.cs" />
-    <Compile Include="Types\EventContainer.cs" />
+    <Compile Include="Resources\Event.cs" />
+    <Compile Include="Resources\EventContainer.cs" />
     <Compile Include="Exceptions\InvalidConnectionException.cs" />
     <Compile Include="Exceptions\InvalidInvokationException.cs" />
     <Compile Include="Exceptions\InvalidPublicationException.cs" />
     <Compile Include="Exceptions\InvalidSubscriptionException.cs" />
     <Compile Include="Exceptions\InvalidUnsubscriptionException.cs" />
-    <Compile Include="Types\Node.cs" />
-    <Compile Include="Types\ProcessHeader.cs" />
+    <Compile Include="Resources\Node.cs" />
+    <Compile Include="Resources\ProcessHeader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RemoteInterfaces\IGenericProcessService.cs" />
     <Compile Include="RemoteInterfaces\IMessageBrokerService.cs" />
     <Compile Include="RemoteInterfaces\IPublisherService.cs" />
     <Compile Include="RemoteInterfaces\IPuppetMasterService.cs" />
     <Compile Include="RemoteInterfaces\ISubscriberService.cs" />
-    <Compile Include="Types\States.cs" />
+    <Compile Include="Resources\Types.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

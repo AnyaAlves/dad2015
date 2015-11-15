@@ -10,50 +10,62 @@ using SESDAD.Commons;
 
 namespace SESDAD.Processes {
 
+
     public class EventOrderManager {
         public OrderingType Ordering { get; set; }
-        private ConcurrentQueue<EventContainer> inputBuffer;
+
+        private ConcurrentQueue<EventContainer> brokerQueue;
+        private ConcurrentQueue<Event> subscriberQueue;
         //FIFO stuff
-        private IDictionary<ProcessHeader, EventTable> fifoBuffer;
+        private IDictionary<ProcessHeader, EventTable> fifoTables;
         private IDictionary<String, Queue<Event>> pendingDeliveryBuffer;
 
         public EventOrderManager() {
-            inputBuffer = new ConcurrentQueue<EventContainer>();
-            fifoBuffer = new Dictionary<ProcessHeader, EventTable>();
+            brokerQueue = new ConcurrentQueue<EventContainer>();
+            subscriberQueue = new ConcurrentQueue<Event>();
+            fifoTables = new Dictionary<ProcessHeader, EventTable>();
             pendingDeliveryBuffer = new Dictionary<String, Queue<Event>>();
         }
 
-        public void InsertIntoInputBuffer(EventContainer eventContainer) {
-
+        public void EnqueueEvent(EventContainer eventContainer) {
+            //Console.WriteLine("EnqueueEvent Thread: " + Thread.CurrentThread.ManagedThreadId + "\n");
             if (Ordering == OrderingType.NO_ORDER) {
-                inputBuffer.Enqueue(eventContainer);
+                lock (brokerQueue) {
+                    brokerQueue.Enqueue(eventContainer);
+                    subscriberQueue.Enqueue(eventContainer.Event);
+                }
             }
 
             else if (Ordering == OrderingType.FIFO) {
                 //if publisher is unknown, add it
                 ProcessHeader publisher = eventContainer.Event.PublisherHeader;
                 EventTable eventTable;
-                lock (fifoBuffer) {
-                    if (!fifoBuffer.TryGetValue(publisher, out eventTable)) {
-                        eventTable = new EventTable(ref inputBuffer);
-                        fifoBuffer.Add(publisher, eventTable);
+                lock (fifoTables) {
+                    if (!fifoTables.TryGetValue(publisher, out eventTable)) {
+                        eventTable = new EventTable(ref brokerQueue, ref subscriberQueue);
+                        fifoTables.Add(publisher, eventTable);
                     }
                 }
-                lock (eventTable) {
-                    eventTable.AddEvent(eventContainer);
-                }
+                eventTable.AddEvent(eventContainer);
             }
         }
 
-        public EventContainer GetNextEvent() {
-            EventContainer eventContainer = null;
-            while (!inputBuffer.TryDequeue(out eventContainer)) {
+        public EventContainer GetNextBrokerEvent() {
+            EventContainer eventContainer;
+            while (!brokerQueue.TryDequeue(out eventContainer)) {
                 Thread.Sleep(10);
             }
             return eventContainer;
         }
+        public Event GetNextSubscriberEvent() {
+            Event @event;
+            while (!subscriberQueue.TryDequeue(out @event)) {
+                Thread.Sleep(10);
+            }
+            return @event;
+        }
 
-        public void SetPendingEvent(ProcessHeader subscriber, Event @event) {
+        public bool TrySetPendingEvent(ProcessHeader subscriber, Event @event) {
             if (Ordering == OrderingType.NO_ORDER) { }
             else if (Ordering == OrderingType.FIFO) {
                 Queue<Event> pendingDeliveryList;
@@ -61,14 +73,15 @@ namespace SESDAD.Processes {
                     if (!pendingDeliveryBuffer.TryGetValue(subscriber + @event.PublisherHeader, out pendingDeliveryList)) {
                         pendingDeliveryList = new Queue<Event>();
                         pendingDeliveryBuffer.Add(subscriber + @event.PublisherHeader, pendingDeliveryList);
-                    }
-                }
-                lock (pendingDeliveryList) {
-                    if (pendingDeliveryList.Any()) {
                         pendingDeliveryList.Enqueue(@event);
+                        return false;
+                    }
+                    if (pendingDeliveryList.Any()) {
+                        return true;
                     }
                 }
             }
+            return false;
         }
 
         public bool TryGetPendingEvent(ProcessHeader subscriber, ProcessHeader publisher, out Event @event) {
@@ -78,7 +91,8 @@ namespace SESDAD.Processes {
                 lock (pendingDeliveryBuffer) {
                     pendingDeliveryList = pendingDeliveryBuffer[subscriber + publisher];
                     if (pendingDeliveryList.Any()) {
-                        @event = pendingDeliveryList.Dequeue();
+                        pendingDeliveryList.Dequeue();
+                        @event = pendingDeliveryList.Peek();
                         return true;
                     }
                 }
@@ -88,35 +102,34 @@ namespace SESDAD.Processes {
         }
 
         private class EventTable {
-            private ConcurrentQueue<EventContainer> InputBuffer { get; set; }
-            private int CurrentSeqNumber { get; set; }
+            private ConcurrentQueue<EventContainer> BrokerQueue { get; set; }
+            private ConcurrentQueue<Event> SubscriberQueue { get; set; }
             private IDictionary<int, EventContainer> EventList { get; set; }
-            private Thread OrderingThread { get; set; }
+            private int CurrentSeqNumber { get; set; }
 
-            public EventTable(ref ConcurrentQueue<EventContainer> inputBuffer) {
-                InputBuffer = inputBuffer;
+            public EventTable(ref ConcurrentQueue<EventContainer> brokerQueue, ref ConcurrentQueue<Event> subscriberQueue) {
+                BrokerQueue = brokerQueue;
+                SubscriberQueue = subscriberQueue;
                 CurrentSeqNumber = 0;
                 EventList = new Dictionary<int, EventContainer>();
-                OrderingThread = new Thread(new ThreadStart(OrderEvents));
-                OrderingThread.Start();
             }
 
             public void AddEvent(EventContainer eventContainer) {
                 int newSeqNumber = eventContainer.NewSeqNumber;
-                EventList.Add(newSeqNumber, eventContainer);
+                lock (EventList) {
+                    EventList.Add(newSeqNumber, eventContainer);
+                    OrderEvents();
+                }
             }
 
             public void OrderEvents() {
                 EventContainer eventContainer;
-                while (true) { //ADD LOCK
-                    if (EventList.TryGetValue(CurrentSeqNumber, out eventContainer)) {
-                        EventList.Remove(CurrentSeqNumber);
-                        CurrentSeqNumber++;
-                        InputBuffer.Enqueue(eventContainer);
-                    }
+                while (EventList.TryGetValue(CurrentSeqNumber, out eventContainer)) {
+                    BrokerQueue.Enqueue(eventContainer);
+                    SubscriberQueue.Enqueue(eventContainer.Event);
+                    CurrentSeqNumber++;
                 }
             }
-
         }
     }
 }

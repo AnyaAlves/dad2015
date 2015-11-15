@@ -17,5 +17,12 @@ namespace SESDAD.Commons {
             Event = @event;
             NewSeqNumber = newSeqNumber;
         }
+
+        public EventContainer Clone() {
+            EventContainer other = (EventContainer)this.MemberwiseClone();
+            other.SenderBroker = SenderBroker.Clone();
+            other.Event = Event.Clone();
+            return other;
+        }
     }
 }

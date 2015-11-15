@@ -1,0 +1,12 @@
+Subscriber subscriber0 Subscribe /p00-0
+Subscriber subscriber1 Subscribe /p00-0
+Subscriber subscriber3 Subscribe /p00-0
+Subscriber subscriber3 Subscribe /p00-1
+Subscriber subscriber4 Subscribe /p00-0
+Subscriber subscriber5 Subscribe /p00-0
+Publisher publisher00 Publish 40 Ontopic /p00-0 Interval 1
+Publisher publisher00 Publish 40 Ontopic /p00-1 Interval 1
+Wait 100
+Status
+Wait 10
+Status

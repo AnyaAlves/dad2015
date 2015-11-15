@@ -32,12 +32,20 @@ namespace SESDAD.Commons {
             return left.ProcessName + right.ProcessName;
         }
 
+        public ProcessHeader Clone() {
+            ProcessHeader other = (ProcessHeader)this.MemberwiseClone();
+            other.ProcessName = String.Copy(ProcessName);
+            other.SiteName = String.Copy(SiteName);
+            other.ProcessURL = String.Copy(ProcessURL);
+            return other;
+        }
+
         public override String ToString() {
             String nl = Environment.NewLine;
             return
                 " Site Name:    " + SiteName + nl +
                 " Process Name: " + ProcessName + nl +
-                " Process URL:  " + ProcessURL;
+                " Process URL:  " + ProcessURL + nl;
         }
     }
 }

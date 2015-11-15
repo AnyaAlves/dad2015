@@ -16,6 +16,14 @@ namespace SESDAD.Commons {
             SeqNumber = seqNumber;
         }
 
+        public Event Clone() {
+            Event other = (Event)this.MemberwiseClone();
+            other.TopicName = String.Copy(TopicName);
+            other.Content = String.Copy(Content);
+            other.PublisherHeader = PublisherHeader.Clone();
+            return other;
+        }
+
         public override string ToString() {            
             String nl = Environment.NewLine;
              return "Topic Name: " + TopicName + nl +

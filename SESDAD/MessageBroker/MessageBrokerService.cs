@@ -37,8 +37,8 @@ namespace SESDAD.Processes {
         }
 
         //child->broker
-        public void RegisterChildBroker(ProcessHeader childBrokerHeader) {
-            Process.AddChildBroker(childBrokerHeader);
+        public void RegisterBroker(ProcessHeader brokerHeader) {
+            Process.AddBroker(brokerHeader);
         }
         //broker->parent
         public void SpreadSubscription(ProcessHeader brokerHeader, String topicName) {

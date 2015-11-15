@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Runtime.Remoting;
 using System.Text.RegularExpressions;
-
+using System.Diagnostics;
 using SESDAD.Commons;
 using SESDAD.Managing.Exceptions;
 
@@ -120,7 +120,8 @@ namespace SESDAD.Managing {
             lock (stateList) {
                 stateList.Add(processName, ProcessState.OFFLINE);
                 String arguments = processName + " " + siteName + " " + processURL + " " + parentBrokerURL;
-                System.Diagnostics.Process.Start(BROKERFILE, arguments);
+                Process broker = Process.Start(BROKERFILE, arguments);
+                broker.Attach(); //DebugTools
                 Thread.Sleep(1);
                 try {
                     IMessageBrokerService processService = (IMessageBrokerService)Activator.GetObject(
@@ -146,7 +147,8 @@ namespace SESDAD.Managing {
             lock (stateList) {
                 stateList.Add(processName, ProcessState.OFFLINE);
                 String arguments = processName + " " + siteName + " " + processURL + " " + brokerURL;
-                System.Diagnostics.Process.Start(PUBLISHERFILE, arguments);
+                Process publisher = Process.Start(PUBLISHERFILE, arguments);
+                publisher.Attach(); //DebugTools
                 Thread.Sleep(1);
                 try {
                     IPublisherService processService = (IPublisherService)Activator.GetObject(
@@ -172,7 +174,8 @@ namespace SESDAD.Managing {
             lock (stateList) {
                 stateList.Add(processName, ProcessState.OFFLINE);
                 String arguments = processName + " " + siteName + " " + processURL + " " + brokerURL;
-                System.Diagnostics.Process.Start(SUBSCRIBERFILE, arguments);
+                Process subscriber = Process.Start(SUBSCRIBERFILE, arguments);
+                subscriber.Attach(); //DebugTools
                 Thread.Sleep(1);
                 try {
                     ISubscriberService processService = (ISubscriberService)Activator.GetObject(
