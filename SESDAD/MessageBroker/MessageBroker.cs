@@ -91,21 +91,16 @@ namespace SESDAD.Processes {
             Topic topic = topicRoot.GetSubtopic(topicName);
             IList<ProcessHeader> brokerList = adjacentBrokerList.Keys.ToList();
             //if this isn't the origin of subscription
-            if (!brokerHeader.Equals(Header))
-            {
+            if (!brokerHeader.Equals(Header)) {
                 //mark broker as interested in topic
                 topic.RemoveBroker(brokerHeader);
                 //remove the previous sender from the list
                 brokerList.Remove(brokerHeader);
             }
 
-            Console.WriteLine("1");
-            if (!topic.AlreadySubscribed()) {
-                Console.WriteLine("2");
-                foreach (ProcessHeader broker in brokerList) {
-                    //send it
-                    adjacentBrokerList[broker].SpreadUnsubscription(Header, topicName);
-                }
+            foreach (ProcessHeader broker in brokerList) {
+                //send it
+                adjacentBrokerList[broker].SpreadUnsubscription(Header, topicName);
             }
         }
 
