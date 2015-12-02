@@ -98,7 +98,7 @@ namespace SESDAD.Processes {
             return GetProcessList(topicPath, new ProcessListDel(GetBrokerList));
         }
 
-        public bool AlreadySubscribed(ProcessHeader broker) {
+        public bool AlreadySubscribed() {
             return brokerList.Any() || subscriberList.Any();
         }
     }

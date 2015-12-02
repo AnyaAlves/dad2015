@@ -40,11 +40,14 @@ namespace SESDAD.Processes {
         public void RegisterBroker(ProcessHeader brokerHeader) {
             Process.AddBroker(brokerHeader);
         }
-        //broker->parent
+        //broker->brokers
         public void SpreadSubscription(ProcessHeader brokerHeader, String topicName) {
             Process.SpreadSubscription(brokerHeader, topicName);
         }
-        //broker->brokers
+        public void SpreadUnsubscription(ProcessHeader brokerHeader, String topicName)
+        {
+            Process.SpreadUnsubscription(brokerHeader, topicName);
+        }
         public void MulticastEvent(EventContainer eventContainer) {
             PuppetMaster.WriteIntoFullLog(
                 "BroEvent " +

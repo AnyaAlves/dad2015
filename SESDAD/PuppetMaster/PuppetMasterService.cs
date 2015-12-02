@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -26,10 +27,8 @@ namespace SESDAD.Managing {
     /// Puppet Master Service
     ///</summary>
     public class PuppetMasterService : MarshalByRefObject, SESDAD.Managing.IPuppetMasterService, SESDAD.Commons.IPuppetMasterService {
-        // Log
-        private String log,
-            // ID
-                       serviceName,
+        // ID
+        private String serviceName,
                        serviceURL;
         private int port;
         // States
@@ -49,7 +48,6 @@ namespace SESDAD.Managing {
         /// Puppet Master Service constructor
         ///</summary>
         public PuppetMasterService(String newServiceName, int newPort) {
-            log = "";
             serviceName = newServiceName;
             serviceURL = "tcp://localhost:" + newPort + "/" + newServiceName;
             port = newPort;
@@ -196,20 +194,18 @@ namespace SESDAD.Managing {
         public void ExecuteSubscribeCommand(
             String processName,
             String topicName) {
-            lock (stateList) {
-                WriteIntoLog("Subscriber " + processName + " Subscribe " + topicName);
-                if (stateList[processName].Equals(ProcessState.FROZEN) ||
-                    stateList[processName].Equals(ProcessState.UNFROZEN)) {
-                    ISubscriberService remoteService;
-                    if (!subscriberTable.TryGetValue(processName, out remoteService)) {
-                        throw new InvalidProcessServiceException(processName);
-                    }
-                    try {
-                        remoteService.ForceSubscribe(topicName);
-                    }
-                    catch (Exception e) {
-                        throw e;
-                    }
+            WriteIntoLog("Subscriber " + processName + " Subscribe " + topicName);
+            if (stateList[processName].Equals(ProcessState.FROZEN) ||
+                stateList[processName].Equals(ProcessState.UNFROZEN)) {
+                ISubscriberService remoteService;
+                if (!subscriberTable.TryGetValue(processName, out remoteService)) {
+                    throw new InvalidProcessServiceException(processName);
+                }
+                try {
+                    remoteService.ForceSubscribe(topicName);
+                }
+                catch (Exception e) {
+                    throw e;
                 }
             }
         }
@@ -219,20 +215,18 @@ namespace SESDAD.Managing {
         public void ExecuteUnsubscribeCommand(
             String processName,
             String topicName) {
-            lock (stateList) {
-                WriteIntoLog("Subscriber " + processName + " Unsubscribe " + topicName);
-                if (stateList[processName].Equals(ProcessState.FROZEN) ||
-                    stateList[processName].Equals(ProcessState.UNFROZEN)) {
-                    ISubscriberService remoteService;
-                    if (!subscriberTable.TryGetValue(processName, out remoteService)) {
-                        throw new InvalidProcessServiceException(processName);
-                    }
-                    try {
-                        remoteService.ForceUnsubscribe(topicName);
-                    }
-                    catch (Exception e) {
-                        throw e;
-                    }
+            WriteIntoLog("Subscriber " + processName + " Unsubscribe " + topicName);
+            if (stateList[processName].Equals(ProcessState.FROZEN) ||
+                stateList[processName].Equals(ProcessState.UNFROZEN)) {
+                ISubscriberService remoteService;
+                if (!subscriberTable.TryGetValue(processName, out remoteService)) {
+                    throw new InvalidProcessServiceException(processName);
+                }
+                try {
+                    remoteService.ForceUnsubscribe(topicName);
+                }
+                catch (Exception e) {
+                    throw e;
                 }
             }
         }
@@ -244,23 +238,21 @@ namespace SESDAD.Managing {
             int publishTimes,
             String topicName,
             int intervalTime) {
-            lock (stateList) {
-                WriteIntoLog("Publisher " + processName + " Publish " + publishTimes + " Ontopic " + topicName + " Interval " + intervalTime);
-                if (stateList[processName].Equals(ProcessState.FROZEN) ||
-                    stateList[processName].Equals(ProcessState.UNFROZEN)) {
-                    IPublisherService remoteService;
-                    if (!publisherTable.TryGetValue(processName, out remoteService)) {
-                        throw new InvalidProcessServiceException(processName);
+            WriteIntoLog("Publisher " + processName + " Publish " + publishTimes + " Ontopic " + topicName + " Interval " + intervalTime);
+            if (stateList[processName].Equals(ProcessState.FROZEN) ||
+                stateList[processName].Equals(ProcessState.UNFROZEN)) {
+                IPublisherService remoteService;
+                if (!publisherTable.TryGetValue(processName, out remoteService)) {
+                    throw new InvalidProcessServiceException(processName);
+                }
+                try {
+                    for (int times = 0; times < publishTimes; times++) {
+                        remoteService.ForcePublish(topicName, "Message");
+                        Thread.Sleep(intervalTime);
                     }
-                    try {
-                        for (int times = 0; times < publishTimes; times++) {
-                            remoteService.ForcePublish(topicName, "Message");
-                            Thread.Sleep(intervalTime);
-                        }
-                    }
-                    catch (Exception e) {
-                        throw e;
-                    }
+                }
+                catch (Exception e) {
+                    throw e;
                 }
             }
         }
@@ -305,10 +297,6 @@ namespace SESDAD.Managing {
                     }
                     catch (Exception e) { }
                 }
-                Console.WriteLine(separator + nl +
-                    " Log :" + nl +
-                    log + nl +
-                    separator);
             }
         }
         private bool TryGetService(String processName, out IGenericProcessService remoteService) {
@@ -412,7 +400,16 @@ namespace SESDAD.Managing {
         /// Writes into the Puppet Master Service Log
         ///</summary>
         public void WriteIntoLog(String logMessage) {
-            log += "[" + DateTime.Now.ToString("HH:mm:ss") + "] " + logMessage + Environment.NewLine;
+            string log = "[" + DateTime.Now.ToString("HH:mm:ss") + "] " + logMessage;
+            lock (stateList) {
+                using (StreamWriter w = File.AppendText("log.txt")) {
+                    w.WriteLine("{0}", log);
+                }
+
+                using (StreamReader r = File.OpenText("log.txt")){
+                    Console.WriteLine(log);
+                }
+            }
         }
 
         public void CloseProcesses() {
@@ -435,7 +432,6 @@ namespace SESDAD.Managing {
                     }
                     catch (Exception) { }
                 }
-                log = "";
                 routingPolicy = RoutingPolicyType.FLOOD;
                 ordering = OrderingType.FIFO;
                 loggingLevel = LoggingLevelType.LIGHT;

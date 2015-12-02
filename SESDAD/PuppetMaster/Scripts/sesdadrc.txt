@@ -12,7 +12,7 @@ Process bro3 Is broker On Site3 URL tcp://localhost:8003/broker
 Process bro4 Is broker On Site4 URL tcp://localhost:8004/broker
 Process bro5 Is broker On Site5 URL tcp://localhost:8005/broker
 
-Process pub0 Is publisher On Site3 URL tcp://localhost:10000/pub
+Process pub3 Is publisher On Site3 URL tcp://localhost:10003/pub
 Process sub0 Is subscriber On Site0 URL tcp://localhost:9000/sub
 Process sub1 Is subscriber On Site1 URL tcp://localhost:9001/sub
 Process sub2 Is subscriber On Site2 URL tcp://localhost:9002/sub
@@ -30,11 +30,12 @@ Subscriber sub2 Subscribe /a/aa/aaa
 Subscriber sub3 Subscribe /a/aa/aac
 Subscriber sub4 Subscribe /a/aa/aaa
 Subscriber sub5 Subscribe /a/aa/aab
+Subscriber sub5 subscribe /a/aa/aaa
+Subscriber sub5 unsubscribe /a/aa/aaa
 
-
-Publisher pub0 Publish 5 Ontopic /a/aa/aab Interval 1
-Publisher pub0 Publish 5 Ontopic /a/aa/aaa Interval 1
-Publisher pub0 Publish 5 Ontopic /a/aa/aac Interval 1
+Publisher pub3 Publish 5 Ontopic /a/aa/aab Interval 1
+Publisher pub3 Publish 5 Ontopic /a/aa/aaa Interval 1
+Publisher pub3 Publish 5 Ontopic /a/aa/aac Interval 1
 
 -Crash bro0
 -Freeze pub0

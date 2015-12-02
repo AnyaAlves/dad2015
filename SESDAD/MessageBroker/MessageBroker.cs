@@ -54,17 +54,17 @@ namespace SESDAD.Processes {
         public void MakeSubscription(ProcessHeader subscriberHeader, String topicName) {
             Topic topic = topicRoot.GetSubtopic(topicName);
 
+            topic.AddSubscriber(subscriberHeader);
             if (routingPolicy == RoutingPolicyType.FILTER) {
                 SpreadSubscription(Header, topicName);
             }
-            topic.AddSubscriber(subscriberHeader);
         }
 
         public void SpreadSubscription(ProcessHeader brokerHeader, String topicName) {
             Topic topic = topicRoot.GetSubtopic(topicName);
             IList<ProcessHeader> brokerList = adjacentBrokerList.Keys.ToList();
             //if this isn't the origin of subscription
-            if (brokerHeader != Header) {
+            if (!brokerHeader.Equals(Header)) {
                 //mark broker as interested in topic
                 topic.AddBroker(brokerHeader);
                 //remove the previous sender from the list
@@ -72,17 +72,41 @@ namespace SESDAD.Processes {
             }
 
             foreach (ProcessHeader broker in brokerList) {
-                //if topic is new (hasn't been sent) send it
-                if (!topic.AlreadySubscribed(broker)) {
-                    adjacentBrokerList[broker].SpreadSubscription(Header, topicName);
-                }
+                //send it
+                adjacentBrokerList[broker].SpreadSubscription(Header, topicName);
             }
         }
 
         public void RemoveSubscription(ProcessHeader subscriberHeader, String topicName) {
             Topic topic = topicRoot.GetSubtopic(topicName);
+
             topic.RemoveSubscriber(subscriberHeader);
-            //spread unsub
+            if (routingPolicy == RoutingPolicyType.FILTER) {
+                SpreadUnsubscription(Header, topicName);
+            }
+        }
+
+        public void SpreadUnsubscription(ProcessHeader brokerHeader, String topicName)
+        {
+            Topic topic = topicRoot.GetSubtopic(topicName);
+            IList<ProcessHeader> brokerList = adjacentBrokerList.Keys.ToList();
+            //if this isn't the origin of subscription
+            if (!brokerHeader.Equals(Header))
+            {
+                //mark broker as interested in topic
+                topic.RemoveBroker(brokerHeader);
+                //remove the previous sender from the list
+                brokerList.Remove(brokerHeader);
+            }
+
+            Console.WriteLine("1");
+            if (!topic.AlreadySubscribed()) {
+                Console.WriteLine("2");
+                foreach (ProcessHeader broker in brokerList) {
+                    //send it
+                    adjacentBrokerList[broker].SpreadUnsubscription(Header, topicName);
+                }
+            }
         }
 
         public void AckDelivery(ProcessHeader subscriberHeader, ProcessHeader publisherHeader) {
@@ -152,6 +176,8 @@ namespace SESDAD.Processes {
                 forwardingBrokerList = topicRoot.GetBrokerList(eventContainer.Event.TopicName);
             }
             forwardingBrokerList.Remove(eventContainer.SenderBroker);
+            // add this
+            forwardingBrokerList.Remove(Header);
 
             //send to brokerlist
             foreach (ProcessHeader broker in forwardingBrokerList) {

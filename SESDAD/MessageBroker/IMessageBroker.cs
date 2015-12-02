@@ -29,9 +29,9 @@ namespace SESDAD.Processes {
 
         //child->broker
         void AddBroker(ProcessHeader brokerHeader);
-        //broker->parent
-        void SpreadSubscription(ProcessHeader brokerHeader, String topicName);
         //broker->brokers
+        void SpreadSubscription(ProcessHeader brokerHeader, String topicName);
+        void SpreadUnsubscription(ProcessHeader brokerHeader, String topicName);
         void MulticastEvent(EventContainer eventContainer);
 
         //broker->subscribers

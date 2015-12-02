@@ -20,9 +20,9 @@ namespace SESDAD.Commons {
 
         //child->broker
         void RegisterBroker(ProcessHeader childBrokerHeader);
-        //broker->parent
-        void SpreadSubscription(ProcessHeader brokerHeader, String topicName);
         //broker->brokers
+        void SpreadSubscription(ProcessHeader brokerHeader, String topicName);
+        void SpreadUnsubscription(ProcessHeader brokerHeader, String topicName);
         void MulticastEvent(EventContainer eventContainer);
     }
 }
