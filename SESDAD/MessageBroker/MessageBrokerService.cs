@@ -57,6 +57,14 @@ namespace SESDAD.Processes {
                 eventContainer.Event.SeqNumber);
             Process.MulticastEvent(eventContainer);
         }
-
+        public void UnicastEvent(EventContainer eventContainer) {
+            PuppetMaster.WriteIntoFullLog(
+                "BroEvent " +
+                Header.ProcessName + ", " +
+                eventContainer.Event.PublisherHeader.ProcessName + ", " +
+                eventContainer.Event.TopicName + ", " +
+                eventContainer.Event.SeqNumber);
+            Process.UnicastEvent(eventContainer);
+        }
     }
 }

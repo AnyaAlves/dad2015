@@ -17,33 +17,46 @@ namespace SESDAD.Processes {
         private ConcurrentQueue<EventContainer> brokerQueue;
         private ConcurrentQueue<Event> subscriberQueue;
         //FIFO stuff
-        private IDictionary<ProcessHeader, EventTable> fifoTables;
+        private IDictionary<ProcessHeader, EventTable> orderTables;
         private IDictionary<String, Queue<Event>> pendingDeliveryBuffer;
 
         public EventOrderManager() {
             brokerQueue = new ConcurrentQueue<EventContainer>();
             subscriberQueue = new ConcurrentQueue<Event>();
-            fifoTables = new Dictionary<ProcessHeader, EventTable>();
+            orderTables = new Dictionary<ProcessHeader, EventTable>();
             pendingDeliveryBuffer = new Dictionary<String, Queue<Event>>();
+        }
+
+        public void EnqueueEventNoOrder(EventContainer eventContainer) {
+            lock (brokerQueue) {
+                brokerQueue.Enqueue(eventContainer);
+                subscriberQueue.Enqueue(eventContainer.Event);
+            }
         }
 
         public void EnqueueEvent(EventContainer eventContainer) {
             //Console.WriteLine("EnqueueEvent Thread: " + Thread.CurrentThread.ManagedThreadId + "\n");
             if (Ordering == OrderingType.NO_ORDER) {
-                lock (brokerQueue) {
-                    brokerQueue.Enqueue(eventContainer);
-                    subscriberQueue.Enqueue(eventContainer.Event);
-                }
-            }
-
-            else if (Ordering == OrderingType.FIFO) {
+                EnqueueEventNoOrder(eventContainer);
+            } else if (Ordering == OrderingType.FIFO) {
                 //if publisher is unknown, add it
                 ProcessHeader publisher = eventContainer.Event.PublisherHeader;
                 EventTable eventTable;
-                lock (fifoTables) {
-                    if (!fifoTables.TryGetValue(publisher, out eventTable)) {
+                lock (orderTables) {
+                    if (!orderTables.TryGetValue(publisher, out eventTable)) {
                         eventTable = new EventTable(ref brokerQueue, ref subscriberQueue);
-                        fifoTables.Add(publisher, eventTable);
+                        orderTables.Add(publisher, eventTable);
+                    }
+                }
+                eventTable.AddEvent(eventContainer);
+            } else if (Ordering == OrderingType.TOTAL_ORDER) {
+                //if broker is unknown, add it
+                ProcessHeader broker = eventContainer.SenderBroker;
+                EventTable eventTable;
+                lock (orderTables) {
+                    if (!orderTables.TryGetValue(broker, out eventTable)) {
+                        eventTable = new EventTable(ref brokerQueue, ref subscriberQueue);
+                        orderTables.Add(broker, eventTable);
                     }
                 }
                 eventTable.AddEvent(eventContainer);
@@ -80,6 +93,19 @@ namespace SESDAD.Processes {
                         return true;
                     }
                 }
+            } else if (Ordering == OrderingType.TOTAL_ORDER) {
+                Queue<Event> pendingDeliveryList;
+                lock (pendingDeliveryBuffer) {
+                    if (!pendingDeliveryBuffer.TryGetValue(subscriber.ProcessName, out pendingDeliveryList)) {
+                        pendingDeliveryList = new Queue<Event>();
+                        pendingDeliveryBuffer.Add(subscriber.ProcessName, pendingDeliveryList);
+                        pendingDeliveryList.Enqueue(@event);
+                        return false;
+                    }
+                    if (pendingDeliveryList.Any()) {
+                        return true;
+                    }
+                }
             }
             return false;
         }
@@ -92,6 +118,20 @@ namespace SESDAD.Processes {
                     pendingDeliveryList = pendingDeliveryBuffer[subscriber + publisher];
                     if (pendingDeliveryList.Any()) {
                         pendingDeliveryList.Dequeue();
+                    }
+                    if (pendingDeliveryList.Any()) {
+                        @event = pendingDeliveryList.Peek();
+                        return true;
+                    }
+                }
+            } else if (Ordering == OrderingType.TOTAL_ORDER) {
+                Queue<Event> pendingDeliveryList;
+                lock (pendingDeliveryBuffer) {
+                    pendingDeliveryList = pendingDeliveryBuffer[subscriber.ProcessName];
+                    if (pendingDeliveryList.Any()) {
+                        pendingDeliveryList.Dequeue();
+                    }
+                    if (pendingDeliveryList.Any()) {
                         @event = pendingDeliveryList.Peek();
                         return true;
                     }

@@ -18,8 +18,9 @@ namespace SESDAD.Processes {
         private IDictionary<ProcessHeader, ISubscriberService> subscriberList;
         private IDictionary<ProcessHeader, IMessageBrokerService> adjacentBrokerList;
         private IDictionary<String, int> brokerSeqNumList;
+        private int rootSeqNumber;
 
-        EventOrderManager orderManager;
+        EventOrderManager orderManager, secondaryManager;
 
         Object locker;
 
@@ -30,7 +31,9 @@ namespace SESDAD.Processes {
             adjacentBrokerList = new Dictionary<ProcessHeader, IMessageBrokerService>();
             brokerSeqNumList = new Dictionary<String, int>();
             orderManager = new EventOrderManager();
+            secondaryManager = new EventOrderManager();
             locker = new Object();
+            rootSeqNumber = 0;
         }
 
         public RoutingPolicyType RoutingPolicy {
@@ -114,7 +117,13 @@ namespace SESDAD.Processes {
         }
 
         public void SubmitEvent(Event @event) {
-            MulticastEvent(new EventContainer(Header, @event, @event.SeqNumber));
+            EventContainer eventContainer = new EventContainer(Header, @event, @event.SeqNumber);
+
+            if (orderManager.Ordering == OrderingType.NO_ORDER || orderManager.Ordering == OrderingType.FIFO) {
+                MulticastEvent(eventContainer);
+            } else if (orderManager.Ordering == OrderingType.TOTAL_ORDER) {
+                UnicastEvent(eventContainer);
+            }
         }
 
         public void AddBroker(ProcessHeader brokerHeader) {
@@ -148,6 +157,19 @@ namespace SESDAD.Processes {
             });
         }
 
+        public void UnicastEvent(EventContainer eventContainer) {
+            //Console.WriteLine("New event on buffer:\n" + eventContainer.Event +
+            //    "Unicasted by: " + eventContainer.SenderBroker.ProcessName + " NewSeq: " + eventContainer.NewSeqNumber + "\n");
+
+            Task.Run(() => secondaryManager.EnqueueEventNoOrder(eventContainer));
+
+            Task.Run(() => {
+                lock (adjacentBrokerList) {
+                    ForwardToParent(secondaryManager.GetNextBrokerEvent());
+                }
+            });
+        }
+
         private void ForwardToSubscribers(Event @event) {
             //Console.WriteLine("ForwardToSubscribers Thread: " + Thread.CurrentThread.ManagedThreadId + "\n");
             IList<ProcessHeader> forwardingSubscriberList = topicRoot.GetSubscriberList(@event.TopicName);
@@ -171,7 +193,6 @@ namespace SESDAD.Processes {
                 forwardingBrokerList = topicRoot.GetBrokerList(eventContainer.Event.TopicName);
             }
             forwardingBrokerList.Remove(eventContainer.SenderBroker);
-            // add this
             forwardingBrokerList.Remove(Header);
 
             //send to brokerlist
@@ -184,10 +205,25 @@ namespace SESDAD.Processes {
                     newEventContainer.NewSeqNumber = brokerSeqNumList[key]++;
                 }
                 newEventContainer.SenderBroker = Header;
+                Console.WriteLine(broker.ProcessName);
                 Task.Run(() => adjacentBrokerList[broker].MulticastEvent(newEventContainer));
             }
         }
 
+        public void ForwardToParent(EventContainer eventContainer)
+        {
+            //Console.WriteLine("ForwardToBrokers Thread: " + Thread.CurrentThread.ManagedThreadId + "\n");
+            EventContainer newEventContainer = eventContainer.Clone();
+
+            if (ParentBroker != null) {
+                Task.Run(() => ParentBroker.UnicastEvent(newEventContainer));
+            } else {
+                newEventContainer.NewSeqNumber = rootSeqNumber++;
+                newEventContainer.SenderBroker = Header;
+
+                Task.Run(() => this.MulticastEvent(newEventContainer));
+            }
+        }
 
         public override String ToString() {
             String nl = Environment.NewLine;

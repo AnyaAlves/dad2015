@@ -24,5 +24,6 @@ namespace SESDAD.Commons {
         void SpreadSubscription(ProcessHeader brokerHeader, String topicName);
         void SpreadUnsubscription(ProcessHeader brokerHeader, String topicName);
         void MulticastEvent(EventContainer eventContainer);
+        void UnicastEvent(EventContainer eventContainer);
     }
 }

@@ -13,6 +13,7 @@ Process bro4 Is broker On Site4 URL tcp://localhost:8004/broker
 Process bro5 Is broker On Site5 URL tcp://localhost:8005/broker
 
 Process pub3 Is publisher On Site3 URL tcp://localhost:10003/pub
+Process pub1 Is publisher On Site1 URL tcp://localhost:10001/pub
 Process sub0 Is subscriber On Site0 URL tcp://localhost:9000/sub
 Process sub1 Is subscriber On Site1 URL tcp://localhost:9001/sub
 Process sub2 Is subscriber On Site2 URL tcp://localhost:9002/sub
@@ -20,8 +21,8 @@ Process sub3 Is subscriber On Site3 URL tcp://localhost:9003/sub
 Process sub4 Is subscriber On Site4 URL tcp://localhost:9004/sub
 Process sub5 Is subscriber On Site5 URL tcp://localhost:9005/sub
 
-Ordering NO
-RoutingPolicy filter
+Ordering TOTAL
+RoutingPolicy flooding
 LoggingLevel full
 
 Subscriber sub0 Subscribe /a/aa/*
@@ -34,6 +35,7 @@ Subscriber sub5 subscribe /a/aa/aaa
 Subscriber sub5 unsubscribe /a/aa/aaa
 
 Publisher pub3 Publish 5 Ontopic /a/aa/aab Interval 1
+Publisher pub1 Publish 10 Ontopic /a/aa/aab Interval 1
 Publisher pub3 Publish 5 Ontopic /a/aa/aaa Interval 1
 Publisher pub3 Publish 5 Ontopic /a/aa/aac Interval 1
 
