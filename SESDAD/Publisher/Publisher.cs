@@ -17,20 +17,22 @@ using SESDAD.Commons;
 namespace SESDAD.Processes {
 
     public class Publisher : GenericProcess, IPublisher {
-        private int SeqNumber { get; set; }
+        public int SeqNumber { get; private set; }
 
         public Publisher(ProcessHeader newProcessHeader) :
             base(newProcessHeader) {
                 SeqNumber = 0;
         }
 
-        public int Publish(String topicName, String content) {
+        public void Publish(String topicName, String content) {
             int seqNumber = SeqNumber++;
             Event @event = new Event(topicName, content, Header, seqNumber);
             Action<Event> method = ParentBroker.Publish;
-            method.BeginInvoke(@event, DonePublishing, method);
-            
-            return seqNumber;
+            try {
+                method.BeginInvoke(@event, DonePublishing, method);
+            } catch (SocketException) {
+                Crash();
+            }
         }
 
         private void DonePublishing(IAsyncResult result) {

@@ -7,6 +7,9 @@ using System.Threading;
 using System.Runtime.Remoting;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
+using System.Security.Permissions;
+using System.Threading.Tasks;
+
 using SESDAD.Commons;
 using SESDAD.Managing.Exceptions;
 
@@ -73,8 +76,9 @@ namespace SESDAD.Managing {
                         brokerService.RoutingPolicy = value;
                     }
                 }
-                catch (Exception e) {
-                    throw e;
+                catch (Exception)
+                {
+                    throw;
                 }
             }
         }
@@ -89,8 +93,9 @@ namespace SESDAD.Managing {
                         brokerService.Ordering = value;
                     }
                 }
-                catch (Exception e) {
-                    throw e;
+                catch (Exception)
+                {
+                    throw;
                 }
             }
         }
@@ -102,8 +107,9 @@ namespace SESDAD.Managing {
                 try {
                     loggingLevel = value;
                 }
-                catch (Exception e) {
-                    throw e;
+                catch (Exception)
+                {
+                    throw;
                 }
             }
         }
@@ -115,21 +121,46 @@ namespace SESDAD.Managing {
             String siteName,
             String processURL,
             String parentBrokerURL) {
+            String arguments;
+            Process broker;
+            IMessageBrokerService processService,
+                                  replicatedBroker;
             lock (stateList) {
                 stateList.Add(processName, ProcessState.OFFLINE);
-                String arguments = processName + " " + siteName + " " + processURL + " " + parentBrokerURL;
-                Process broker = Process.Start(BROKERFILE, arguments);
+                if (parentBrokerURL == null) {
+                    parentBrokerURL = "a a";
+                }
+                arguments = processName + " " + siteName + " " + processURL + " " + parentBrokerURL;
+                broker = Process.Start(BROKERFILE, arguments);
                 broker.Attach(); //DebugTools
-                Thread.Sleep(1);
+
+                // Wait for main service installation
+                Task.Delay(1).Wait();
                 try {
-                    IMessageBrokerService processService = (IMessageBrokerService)Activator.GetObject(
+                    // Get main broker service
+                    processService = (IMessageBrokerService)Activator.GetObject(
                         typeof(IMessageBrokerService),
                         processURL);
                     processService.ConnectToPuppetMaster(serviceURL);
+
+                    // Add main broker services into table
                     brokerTable.Add(processName, processService);
+
+                    // Wait for replicated services installation
+                    Task.Delay(2000).Wait();
+
+                    // Get replicated brokers services
+                    foreach (ProcessHeader header in processService.ReplicatedBrokerList) {
+                        replicatedBroker = (IMessageBrokerService)Activator.GetObject(
+                            typeof(IMessageBrokerService),
+                            header.ProcessURL);
+                        replicatedBroker.ConnectToPuppetMaster(serviceURL);
+                        brokerTable.Add(header.ProcessURL, replicatedBroker);
+                        stateList[header.ProcessURL] = ProcessState.UNFROZEN;
+                    }
                 }
-                catch (Exception e) {
-                    throw e;
+                catch (Exception) {
+                    throw;
                 }
                 stateList[processName] = ProcessState.UNFROZEN;
             }
@@ -155,8 +186,9 @@ namespace SESDAD.Managing {
                     processService.ConnectToPuppetMaster(serviceURL);
                     publisherTable.Add(processName, processService);
                 }
-                catch (Exception e) {
-                    throw e;
+                catch (Exception)
+                {
+                    throw;
                 }
                 stateList[processName] = ProcessState.UNFROZEN;
             }
@@ -182,8 +214,9 @@ namespace SESDAD.Managing {
                     processService.ConnectToPuppetMaster(serviceURL);
                     subscriberTable.Add(processName, processService);
                 }
-                catch (Exception e) {
-                    throw e;
+                catch (Exception)
+                {
+                    throw;
                 }
                 stateList[processName] = ProcessState.UNFROZEN;
             }
@@ -204,8 +237,9 @@ namespace SESDAD.Managing {
                 try {
                     remoteService.ForceSubscribe(topicName);
                 }
-                catch (Exception e) {
-                    throw e;
+                catch (Exception)
+                {
+                    throw;
                 }
             }
         }
@@ -225,8 +259,9 @@ namespace SESDAD.Managing {
                 try {
                     remoteService.ForceUnsubscribe(topicName);
                 }
-                catch (Exception e) {
-                    throw e;
+                catch (Exception)
+                {
+                    throw;
                 }
             }
         }
@@ -251,8 +286,8 @@ namespace SESDAD.Managing {
                         Thread.Sleep(intervalTime);
                     }
                 }
-                catch (Exception e) {
-                    throw e;
+                catch (Exception) {
+                    throw;
                 }
             }
         }
@@ -273,13 +308,11 @@ namespace SESDAD.Managing {
                 foreach (KeyValuePair<String, ProcessState> process in stateList) {
                     Console.WriteLine(" -> " + process.Key + " is " + process.Value);
                 }
-                Console.WriteLine(separator + nl +
-                    " Brokers :" + nl);
                 foreach (IMessageBrokerService process in brokerTable.Values) {
                     try {
                         Console.WriteLine(process.GetStatus());
                     }
-                    catch (Exception e) { }
+                    catch (Exception) { }
                 }
                 Console.WriteLine(separator + nl +
                     " Publishers :" + nl);
@@ -287,7 +320,7 @@ namespace SESDAD.Managing {
                     try {
                         Console.WriteLine(process.GetStatus());
                     }
-                    catch (Exception e) { }
+                    catch (Exception) { }
                 }
                 Console.WriteLine(separator + nl +
                     " Subscribers :" + nl);
@@ -295,7 +328,7 @@ namespace SESDAD.Managing {
                     try {
                         Console.WriteLine(process.GetStatus());
                     }
-                    catch (Exception e) { }
+                    catch (Exception) { }
                 }
             }
         }
@@ -340,8 +373,9 @@ namespace SESDAD.Managing {
                     try {
                         remoteService.ForceCrash();
                     }
-                    catch (Exception e) { }
+                    catch (Exception) { }
                     TryRemoveService(processName);
+
                     stateList[processName] = ProcessState.CRASHED;
                 }
             }
@@ -360,8 +394,9 @@ namespace SESDAD.Managing {
                     try {
                         remoteService.ForceFreeze();
                     }
-                    catch (Exception e) {
-                        throw e;
+                    catch (Exception)
+                    {
+                        throw;
                     }
                     stateList[processName] = ProcessState.FROZEN;
                 }
@@ -381,8 +416,9 @@ namespace SESDAD.Managing {
                     try {
                         remoteService.ForceUnfreeze();
                     }
-                    catch (Exception e) {
-                        throw e;
+                    catch (Exception)
+                    {
+                        throw;
                     }
                     stateList[processName] = ProcessState.UNFROZEN;
                 }
@@ -440,6 +476,12 @@ namespace SESDAD.Managing {
                 subscriberTable = new Dictionary<String, ISubscriberService>();
                 stateList = new Dictionary<String, ProcessState>();
             }
+        }
+
+        [SecurityPermissionAttribute(SecurityAction.Demand, Flags = SecurityPermissionFlag.Infrastructure)]
+        public override object InitializeLifetimeService()
+        {
+            return null;
         }
     }
 }

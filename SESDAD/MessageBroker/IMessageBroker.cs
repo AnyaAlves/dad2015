@@ -17,7 +17,11 @@ namespace SESDAD.Processes {
         /// Broker Interface ordering
         ///</summary>
         OrderingType Ordering { set; }
-        
+
+        IList<ProcessHeader> ReplicatedBrokerList { get; }
+
+        void ConnectToMainBroker(String mainbrokerURL);
+
         //subscriber->broker
         void AddSubscriber(ProcessHeader subscriberHeader);
         void MakeSubscription(ProcessHeader subscriberHeader, String topicName);

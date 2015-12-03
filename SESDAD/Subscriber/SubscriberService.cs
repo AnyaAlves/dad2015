@@ -15,14 +15,29 @@ namespace SESDAD.Processes {
                 @event.PublisherHeader.ProcessName + ", " +
                 @event.TopicName + ", " +
                 @event.SeqNumber);
+            if (Process.Frozen)
+            {
+                Process.Freeze(new Task(() => { Process.ReceiveEvent(@event); }));
+                return;
+            }
             Process.ReceiveEvent(@event);
         }
 
         public void ForceSubscribe(String topicName) {
             Console.Write("Subscribed to: " + topicName + "\n");
+            if (Process.Frozen)
+            {
+                Process.Freeze(new Task(() => { Process.Subscribe(topicName); }));
+                return;
+            }
             Process.Subscribe(topicName);
         }
         public void ForceUnsubscribe(String topicName) {
+            if (Process.Frozen)
+            {
+                Process.Freeze(new Task(() => { Process.Unsubscribe(topicName); }));
+                return;
+            }
             Process.Unsubscribe(topicName);
         }
     }

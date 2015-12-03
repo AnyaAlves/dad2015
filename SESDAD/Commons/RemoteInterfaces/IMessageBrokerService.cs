@@ -8,6 +8,9 @@ namespace SESDAD.Commons {
     public interface IMessageBrokerService : IGenericProcessService {
         RoutingPolicyType RoutingPolicy { set; }
         OrderingType Ordering { set; }
+        IList<ProcessHeader> ReplicatedBrokerList { get; }
+
+        void ConnectToMainBroker(String mainbrokerURL);
 
         //subscriber->broker
         void RegisterSubscriber(ProcessHeader subscriberHeader);

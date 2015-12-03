@@ -20,18 +20,17 @@ namespace SESDAD.Processes {
 
     public abstract class GenericProcess : IGenericProcess {
 
-        private Thread waitingThread;
-        private Object waitingObject;
         private ProcessHeader processHeader;
         private IMessageBrokerService parentBroker;
+        private IList<ProcessHeader> replicatedBrokerList;
+        private List<Task> cooler;
+
+        public bool Frozen { get; private set; }
 
         public GenericProcess(ProcessHeader newProcessHeader) {
-            waitingObject = new Object();
             processHeader = newProcessHeader;
             parentBroker = null;
-        }
-        protected Object WaitingObject {
-            get { return waitingObject; }
+            cooler = new List<Task>();
         }
         public ProcessHeader Header {
             get { return processHeader; }
@@ -79,28 +78,22 @@ namespace SESDAD.Processes {
             parentBroker = (IMessageBrokerService)Activator.GetObject(
                 typeof(IMessageBrokerService),
                 parentBrokerURL);
+            replicatedBrokerList = parentBroker.ReplicatedBrokerList;
         }
 
-        private void Pause() {
-            Monitor.Enter(waitingObject);
-            waitingThread.Suspend();
-            Monitor.Pulse(waitingObject);
-            Monitor.Exit(waitingObject);
-        }
-
-        public void TryFreeze() {
-            Monitor.Enter(waitingObject);
-            Monitor.Pulse(waitingObject);
-            Monitor.Exit(waitingObject);
-        }
 
         public void Freeze() {
-            ThreadStart tw = new ThreadStart(Pause);
-            waitingThread = new Thread(tw);
-            waitingThread.Start();
+            Frozen = true;
+        }
+        public void Freeze(Task task) {
+            cooler.Add(task);
         }
         public void Unfreeze() {
-            waitingThread.Resume();
+            Frozen = false;
+            foreach (Task task in cooler) {
+                task.Start();
+            }
+            cooler.Clear();
         }
         public void Crash() {
             Environment.Exit(-1);

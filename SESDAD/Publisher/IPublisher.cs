@@ -5,8 +5,9 @@ using SESDAD.Commons;
 
 namespace SESDAD.Processes {
     public interface IPublisher : IGenericProcess {
+        int SeqNumber { get; }
 
-        int Publish(String topicName, String content);
+        void Publish(String topicName, String content);
         //void Ack(int seqNumber);
     }
 }

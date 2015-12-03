@@ -81,7 +81,11 @@ namespace SESDAD.Managing {
         //</summary>
         internal void CloseProcesses() {
             foreach (IPuppetMasterService service in puppetMasterServiceTable.Values) {
-                service.CloseProcesses();
+                try
+                {
+                    service.CloseProcesses();
+                }
+                catch (Exception) { }
             }
 
             routingPolicy = RoutingPolicyType.FLOOD;
@@ -108,13 +112,13 @@ namespace SESDAD.Managing {
                 if (line.Equals("") || line[0].Equals('-') || line[0].Equals('/')) {
                     continue;
                 }
-                System.Console.WriteLine(line);
+                Console.WriteLine(line);
                 try {
                     ParseLineToCommand(line);
                 }
-                catch (Exception e) {
-                    CloseProcesses();
-                    throw e;
+                catch (Exception exception) {
+                    Console.WriteLine(exception.Message);
+                    Console.ReadLine();
                 }
             }
             file.Close();
@@ -136,9 +140,10 @@ namespace SESDAD.Managing {
                 try {
                     ParseLineToCommand(command);
                 }
-                catch (Exception e) {
-                    CloseProcesses();
-                    Console.WriteLine(e.Message);
+                catch (Exception exception)
+                {
+                    Console.WriteLine(exception.Message);
+                    Console.ReadLine();
                 }
             }
         }

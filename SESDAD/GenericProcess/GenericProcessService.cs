@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Security.Permissions;
 
 using SESDAD.Commons;
 
@@ -44,6 +45,12 @@ namespace SESDAD.Processes {
 
         public String GetStatus() {
             return process.ToString();
+        }
+
+        [SecurityPermissionAttribute(SecurityAction.Demand, Flags = SecurityPermissionFlag.Infrastructure)]
+        public override object InitializeLifetimeService()
+        {
+            return null;
         }
     }
 }

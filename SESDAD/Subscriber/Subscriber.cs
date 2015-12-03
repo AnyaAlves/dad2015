@@ -23,20 +23,36 @@ namespace SESDAD.Processes {
         }
 
         public void Subscribe(String topicName) {
-            ParentBroker.Subscribe(Header, topicName);
+            try {
+                ParentBroker.Subscribe(Header, topicName);
+            } catch (SocketException) {
+                Crash();
+            }
         }
         public void Unsubscribe(String topicName) {
-            ParentBroker.Unsubscribe(Header, topicName);
+            try {
+                ParentBroker.Unsubscribe(Header, topicName);
+            } catch (SocketException) {
+                Crash();
+            }
         }
 
         public void ReceiveEvent(Event @event) {
             Console.WriteLine("New event received!\n" + @event);
-            ParentBroker.AckDelivery(Header, @event.PublisherHeader);
+            try {
+                ParentBroker.AckDelivery(Header, @event.PublisherHeader);
+            } catch (SocketException) {
+                Crash();
+            }
         }
 
         public override void ConnectToParentBroker(String parentBrokerURL) {
             base.ConnectToParentBroker(parentBrokerURL);
-            ParentBroker.RegisterSubscriber(Header);
+            try {
+                ParentBroker.RegisterSubscriber(Header);
+            } catch (SocketException) {
+                Crash();
+            }
         }
 
         public override String ToString() {

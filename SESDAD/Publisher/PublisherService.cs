@@ -12,8 +12,12 @@ namespace SESDAD.Processes {
         //public void Ack() { }
 
         public void ForcePublish(String topicName, String content) {
-            int seqNumber = Process.Publish(topicName, content);
-            PuppetMaster.WriteIntoLog("PubEvent " + Header.ProcessName + ", " + Header.ProcessName + ", " + topicName + ", " + seqNumber);
+            PuppetMaster.WriteIntoLog("PubEvent " + Header.ProcessName + ", " + Header.ProcessName + ", " + topicName + ", " + Process.SeqNumber);
+            if (Process.Frozen) {
+                Process.Freeze(new Task(() => { Process.Publish(topicName, content); }));
+                return;
+            }
+            Process.Publish(topicName, content);
         }
     }
 }

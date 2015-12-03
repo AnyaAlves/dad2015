@@ -4,6 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Runtime.Remoting;
 using System.Threading;
+using System.Net.Sockets;
+using System.Net.NetworkInformation;
+using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 using SESDAD.Commons;
 
@@ -12,11 +16,13 @@ namespace SESDAD.Processes {
 
     public class MessageBroker : GenericProcess, IMessageBroker {
         private Topic topicRoot;
+        private IMessageBrokerService mainBroker;
         // States
         private RoutingPolicyType routingPolicy;
         // Tables
         private IDictionary<ProcessHeader, ISubscriberService> subscriberList;
-        private IDictionary<ProcessHeader, IMessageBrokerService> adjacentBrokerList;
+        private IDictionary<ProcessHeader, IMessageBrokerService> adjacentBrokerList,
+                                                                  replicatedBrokerList;
         private IDictionary<String, int> brokerSeqNumList;
         private int rootSeqNumber;
 
@@ -27,8 +33,10 @@ namespace SESDAD.Processes {
         public MessageBroker(ProcessHeader processHeader) :
             base(processHeader) {
             topicRoot = new Topic("", null);
+            mainBroker = null;
             subscriberList = new Dictionary<ProcessHeader, ISubscriberService>();
             adjacentBrokerList = new Dictionary<ProcessHeader, IMessageBrokerService>();
+            replicatedBrokerList = new Dictionary<ProcessHeader, IMessageBrokerService>();
             brokerSeqNumList = new Dictionary<String, int>();
             orderManager = new EventOrderManager();
             secondaryManager = new EventOrderManager();
@@ -41,6 +49,9 @@ namespace SESDAD.Processes {
         }
         public OrderingType Ordering {
             set { orderManager.Ordering = value; }
+        }
+        public IList<ProcessHeader> ReplicatedBrokerList {
+            get { return replicatedBrokerList.Keys.ToList(); }
         }
 
         public void AddSubscriber(ProcessHeader subscriberHeader) {
@@ -75,8 +86,13 @@ namespace SESDAD.Processes {
             }
 
             foreach (ProcessHeader broker in brokerList) {
-                //send it
-                adjacentBrokerList[broker].SpreadSubscription(Header, topicName);
+                try {
+                    //send it
+                    adjacentBrokerList[broker].SpreadSubscription(Header, topicName);
+                } catch (SocketException) {
+                    Console.WriteLine("Unregistered " + broker.ProcessName);
+                    adjacentBrokerList.Remove(broker);
+                }
             }
         }
 
@@ -102,8 +118,13 @@ namespace SESDAD.Processes {
             }
 
             foreach (ProcessHeader broker in brokerList) {
-                //send it
-                adjacentBrokerList[broker].SpreadUnsubscription(Header, topicName);
+                try {
+                    //send it
+                    adjacentBrokerList[broker].SpreadUnsubscription(Header, topicName);
+                } catch (SocketException) {
+                    Console.WriteLine("Unregistered " + broker.ProcessName);
+                    adjacentBrokerList.Remove(broker);
+                }
             }
         }
 
@@ -225,6 +246,45 @@ namespace SESDAD.Processes {
             }
         }
 
+        public void Replicate(string[] args, int numberOfReplications) {
+            Match match;
+            int port,
+                brokerPort;
+            String brokerFile,
+                   brokerUrl,
+                   arguments;
+            IMessageBrokerService broker;
+            ProcessHeader brokerHeader;
+
+            // Extract main broker info
+            match = Regex.Match(args[2], @"^tcp://[\w\.]+:(\d{4,5})/(\w+)$");
+            port = Int32.Parse(match.Groups[1].Value);
+            brokerFile = Process.GetCurrentProcess().MainModule.FileName;
+            for (int increment = 1; increment <= numberOfReplications; increment++) {
+                // Calculate replicated broker port, url and arguments
+                brokerPort = port + 4000 * increment;
+                brokerUrl = "tcp://localhost:" + brokerPort + "/broker";
+                arguments = args[0] + " " + args[1] + " " + brokerUrl;
+
+                // Connect with newly created replicated broker service
+                Process.Start(brokerFile, arguments);
+                broker = (IMessageBrokerService)Activator.GetObject(
+                    typeof(IMessageBrokerService),
+                    brokerUrl);
+                broker.ConnectToMainBroker(args[2]);
+                brokerHeader = broker.Header;
+
+                // Add replicated broker service
+                replicatedBrokerList.Add(brokerHeader, broker);
+            }
+        }
+
+        public void ConnectToMainBroker(String mainBrokerURL) {
+            mainBroker = (IMessageBrokerService)Activator.GetObject(
+                typeof(IMessageBrokerService),
+                mainBrokerURL);
+        }
+
         public override String ToString() {
             String nl = Environment.NewLine;
 
@@ -244,13 +304,19 @@ namespace SESDAD.Processes {
 
     class Program {
         static void Main(string[] args) {
+            int numberOfReplications = 2;
             ProcessHeader processHeader = new ProcessHeader(args[0], ProcessType.BROKER, args[1], args[2]);
             MessageBroker process = new MessageBroker(processHeader);
 
             process.LaunchService<MessageBrokerService, IMessageBroker>(((IMessageBroker)process));
             if (args.Length == 4) {
                 process.ConnectToParentBroker(args[3]);
+                process.Replicate(args, numberOfReplications);
+            } if (args.Length == 5) {
+                process.Replicate(args, numberOfReplications);
             }
+
+
             Console.WriteLine(process);
             Console.ReadLine();
         }

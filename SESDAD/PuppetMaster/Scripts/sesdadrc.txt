@@ -22,7 +22,7 @@ Process sub4 Is subscriber On Site4 URL tcp://localhost:9004/sub
 Process sub5 Is subscriber On Site5 URL tcp://localhost:9005/sub
 
 Ordering TOTAL
-RoutingPolicy flooding
+RoutingPolicy filtering
 LoggingLevel full
 
 Subscriber sub0 Subscribe /a/aa/*
@@ -33,6 +33,7 @@ Subscriber sub4 Subscribe /a/aa/aaa
 Subscriber sub5 Subscribe /a/aa/aab
 Subscriber sub5 subscribe /a/aa/aaa
 Subscriber sub5 unsubscribe /a/aa/aaa
+
 
 Publisher pub3 Publish 5 Ontopic /a/aa/aab Interval 1
 Publisher pub1 Publish 10 Ontopic /a/aa/aab Interval 1
