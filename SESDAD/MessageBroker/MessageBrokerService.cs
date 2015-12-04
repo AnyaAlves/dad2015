@@ -24,8 +24,7 @@ namespace SESDAD.Processes {
 
         //subscriber->broker
         public void RegisterSubscriber(ProcessHeader subscriberHeader) {
-            if (Process.Frozen)
-            {
+            if (Process.Frozen) {
                 Process.Freeze(new Task(() => { Process.AddSubscriber(subscriberHeader); }));
                 return;
             }
@@ -33,16 +32,14 @@ namespace SESDAD.Processes {
         }
 
         public void Subscribe(ProcessHeader subscriberHeader, String topicName) {
-            if (Process.Frozen)
-            {
+            if (Process.Frozen) {
                 Process.Freeze(new Task(() => { Process.MakeSubscription(subscriberHeader, topicName); }));
                 return;
             }
             Process.MakeSubscription(subscriberHeader, topicName);
         }
         public void Unsubscribe(ProcessHeader subscriberHeader, String topicName) {
-            if (Process.Frozen)
-            {
+            if (Process.Frozen) {
                 Process.Freeze(new Task(() => { Process.RemoveSubscription(subscriberHeader, topicName); }));
                 return;
             }
@@ -50,8 +47,7 @@ namespace SESDAD.Processes {
         }
 
         public void AckDelivery(ProcessHeader subscriberHeader, ProcessHeader publisherHeader) {
-            if (Process.Frozen)
-            {
+            if (Process.Frozen) {
                 Process.Freeze(new Task(() => { Process.AckDelivery(subscriberHeader, publisherHeader); }));
                 return;
             }
@@ -60,8 +56,7 @@ namespace SESDAD.Processes {
 
         //publisher->broker
         public void Publish(Event @event) {
-            if (Process.Frozen)
-            {
+            if (Process.Frozen) {
                 Process.Freeze(new Task(() => { Process.SubmitEvent(@event); }));
                 return;
             }
@@ -70,8 +65,7 @@ namespace SESDAD.Processes {
 
         //child->broker
         public void RegisterBroker(ProcessHeader brokerHeader) {
-            if (Process.Frozen)
-            {
+            if (Process.Frozen) {
                 Process.Freeze(new Task(() => { Process.AddBroker(brokerHeader); }));
                 return;
             }
@@ -79,17 +73,14 @@ namespace SESDAD.Processes {
         }
         //broker->brokers
         public void SpreadSubscription(ProcessHeader brokerHeader, String topicName) {
-            if (Process.Frozen)
-            {
+            if (Process.Frozen) {
                 Process.Freeze(new Task(() => { Process.SpreadSubscription(brokerHeader, topicName); }));
                 return;
             }
             Process.SpreadSubscription(brokerHeader, topicName);
         }
-        public void SpreadUnsubscription(ProcessHeader brokerHeader, String topicName)
-        {
-            if (Process.Frozen)
-            {
+        public void SpreadUnsubscription(ProcessHeader brokerHeader, String topicName) {
+            if (Process.Frozen) {
                 Process.Freeze(new Task(() => { Process.SpreadUnsubscription(brokerHeader, topicName); }));
                 return;
             }
@@ -102,8 +93,7 @@ namespace SESDAD.Processes {
                 eventContainer.Event.PublisherHeader.ProcessName + ", " +
                 eventContainer.Event.TopicName + ", " +
                 eventContainer.Event.SeqNumber);
-            if (Process.Frozen)
-            {
+            if (Process.Frozen) {
                 Process.Freeze(new Task(() => { Process.MulticastEvent(eventContainer); }));
                 return;
             }
@@ -116,8 +106,7 @@ namespace SESDAD.Processes {
                 eventContainer.Event.PublisherHeader.ProcessName + ", " +
                 eventContainer.Event.TopicName + ", " +
                 eventContainer.Event.SeqNumber);
-            if (Process.Frozen)
-            {
+            if (Process.Frozen) {
                 Process.Freeze(new Task(() => { Process.UnicastEvent(eventContainer); }));
                 return;
             }

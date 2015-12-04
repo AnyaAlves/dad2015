@@ -132,7 +132,7 @@ namespace SESDAD.Processes {
             Event @event;
             lock (locker) {
                 if (orderManager.TryGetPendingEvent(subscriberHeader, publisherHeader, out @event)) {
-                    Task.Run(() => subscriberList[subscriberHeader].DeliverEvent(@event));
+                    subscriberList[subscriberHeader].DeliverEvent(@event);
                 }
             }
         }
@@ -205,7 +205,8 @@ namespace SESDAD.Processes {
         public void ForwardToBrokers(EventContainer eventContainer) {
             //Console.WriteLine("ForwardToBrokers Thread: " + Thread.CurrentThread.ManagedThreadId + "\n");
             IList<ProcessHeader> forwardingBrokerList = null;
-            EventContainer newEventContainer = eventContainer.Clone();
+            //EventContainer newEventContainer = eventContainer.Clone();
+            EventContainer newEventContainer = new EventContainer(eventContainer);
 
             if (routingPolicy == RoutingPolicyType.FLOOD) {
                 forwardingBrokerList = adjacentBrokerList.Keys.ToList();
@@ -217,17 +218,23 @@ namespace SESDAD.Processes {
             forwardingBrokerList.Remove(Header);
 
             //send to brokerlist
+            int newSeqNumber = 0;
             foreach (ProcessHeader broker in forwardingBrokerList) {
                 if (orderManager.Ordering == OrderingType.FIFO) {
                     String key = broker + eventContainer.Event.PublisherHeader;
                     if (!brokerSeqNumList.ContainsKey(key)) {
                         brokerSeqNumList.Add(key, 0);
                     }
-                    newEventContainer.NewSeqNumber = brokerSeqNumList[key]++;
+                    //newEventContainer.NewSeqNumber = brokerSeqNumList[key]++;
+                    newSeqNumber = brokerSeqNumList[key]++;
                 }
+
+                if (broker.ProcessName.Equals("bro4"))
+                Console.WriteLine("New event on buffer:\n" + newEventContainer.Event +
+"Multicasted to: " + broker.ProcessName + " NewSeq: " + newSeqNumber + "\n");
+                
                 newEventContainer.SenderBroker = Header;
-                Console.WriteLine(broker.ProcessName);
-                Task.Run(() => adjacentBrokerList[broker].MulticastEvent(newEventContainer));
+                Task.Run(() => adjacentBrokerList[broker].MulticastEvent(new EventContainer(Header, eventContainer.Event, newSeqNumber)));
             }
         }
 
@@ -311,9 +318,9 @@ namespace SESDAD.Processes {
             process.LaunchService<MessageBrokerService, IMessageBroker>(((IMessageBroker)process));
             if (args.Length == 4) {
                 process.ConnectToParentBroker(args[3]);
-                process.Replicate(args, numberOfReplications);
+                ///process.Replicate(args, numberOfReplications);
             } if (args.Length == 5) {
-                process.Replicate(args, numberOfReplications);
+                //process.Replicate(args, numberOfReplications);
             }
 
 

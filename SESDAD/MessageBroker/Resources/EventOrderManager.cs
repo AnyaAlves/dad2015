@@ -155,8 +155,8 @@ namespace SESDAD.Processes {
             }
 
             public void AddEvent(EventContainer eventContainer) {
-                int newSeqNumber = eventContainer.NewSeqNumber;
                 lock (EventList) {
+                    int newSeqNumber = eventContainer.NewSeqNumber;
                     EventList.Add(newSeqNumber, eventContainer);
                     OrderEvents();
                 }
